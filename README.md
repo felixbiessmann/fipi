@@ -1,4 +1,4 @@
-# fipi
+# fipi (fuer ihre politische information)
 
 A project for political education based on simple machine learning applied to texts of political manifestos, annotated by the political scientists of the [Manifesto Project](https://manifestoproject.wzb.eu/). 
 
