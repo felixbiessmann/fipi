@@ -2,15 +2,13 @@
 import flask
 from flask import Flask, request, jsonify, render_template
 import os
-app = Flask(__name__)
-
-
 from classifier import Classifier
-# from downloader import Downloader
 from retrying import retry
 import urllib2
 from bs4 import BeautifulSoup
 from readability.readability import Document
+
+app = Flask(__name__)
 
 DEBUG = os.environ.get('DEBUG') != None
 VERSION = 0.1
