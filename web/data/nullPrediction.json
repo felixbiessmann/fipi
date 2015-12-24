@@ -1,0 +1,267 @@
+{
+  "domain": [
+    {
+      "label": "External Relations",
+      "prediction": 0.16666666666666666
+    },
+    {
+      "label": "Fabric of Society",
+      "prediction": 0.16666666666666666
+    },
+    {
+      "label": "Welfare and Quality of Life",
+      "prediction": 0.16666666666666666
+    },
+    {
+      "label": "Freedom and Democracy",
+      "prediction": 0.16666666666666666
+    },
+    {
+      "label": "Political System",
+      "prediction": 0.16666666666666666
+    },
+    {
+      "label": "Economy",
+      "prediction": 0.16666666666666666
+    }
+  ],
+  "leftright": [
+    {
+      "label": "right",
+      "prediction": 0.5
+    },
+    {
+      "label": "left",
+      "prediction": 0.5
+    }
+  ],
+  "manifestocode": [
+    {
+      "label": "undefined",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "free enterprise +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "incentives +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "market regulation +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "economic planning +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "corporatism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "protectionism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "protectionism -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "economic goals",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "keynesian demand +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "productivity +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "infrastructure +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "controlled economy +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "nationalization +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "economic orthodoxy +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "marxist analysis +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "anti-growth economy +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "decentralism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "centralism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "gov-admin efficiency +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "political corruption -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "political authority +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "labour +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "labour -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "agriculture +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "middle class +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "minority groups +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "non economic groups +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "freedom/human rights +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "democracy +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "constitution +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "constitution -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "national way of life +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "national way of life -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "traditional morality +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "traditional morality -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "law and order +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "social harmony +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "multiculturalism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "foreign special +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "foreign special -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "anti-imperialism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "military +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "military -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "peace +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "internationalism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "europe +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "internationalism -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "europe -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "environmentalism +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "culture +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "social justice +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "welfare +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "welfare -",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "education +",
+      "prediction": 0.017857142857142856
+    },
+    {
+      "label": "education -",
+      "prediction": 0.017857142857142856
+    }
+  ],
+  "text": [
+    ""
+  ]
+}
