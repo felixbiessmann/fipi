@@ -6,7 +6,7 @@ The idea is to use the high-quality (but relatively low volume) manifesto projec
 
 This code is partially based on an [earlier project](https://github.com/kirel/political-affiliation-prediction), which learned a similar text classification model on speeches in the German Parliament. 
 
-## Setup local 
+## Local setup in virtualenv
 
 Install [virualenv(-wrapper)](https://virtualenvwrapper.readthedocs.org/en/latest/).
 In the folder containing the directory cloned from github then type:
@@ -21,12 +21,25 @@ Start the webserver with
     
     python api.py
 
-A browser window with the app running should have opened. 
+Open a browser window and navigate to localhost:5000. 
 
-## Setup with Docker
+## Local setup with Docker
 
 Install [Docker](https://docs.docker.com/engine/installation/) and start it. 
 In the project root folder then build the docker image and start it with:
 
     docker-compose up
 
+Open a browser window and navigate to [IP-of-docker-container]:5000.
+
+## Deploy with AWS Elasticbeanstalk
+
+Install EB CLI
+    
+    pip install awsebcli
+
+Create and deploy app, then open it
+
+    eb init
+    eb create
+    eb open
