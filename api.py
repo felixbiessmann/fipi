@@ -54,8 +54,8 @@ def static_proxy(path):
   return app.send_static_file(path)
 
 if __name__ == "__main__":
-    port = 80
-    classifier = Classifier(train=true)
+    port = 5000
+    classifier = Classifier(train=True)
     # Open a web browser pointing at the app.
     #os.system("open http://localhost:{0}/".format(port))
     app.run(host='0.0.0.0', port = port, debug = DEBUG)
