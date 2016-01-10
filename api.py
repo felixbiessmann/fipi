@@ -7,13 +7,20 @@ from retrying import retry
 import urllib2
 from bs4 import BeautifulSoup
 from readability.readability import Document
+from apscheduler.schedulers.blocking import BlockingScheduler
+from newsreader import get_news
+import json
 
 app = Flask(__name__)
 
 DEBUG = os.environ.get('DEBUG') != None
 VERSION = 0.1
 
-classifier = Classifier()
+# Schedules news reader to be run at 00:00
+sched = BlockingScheduler()
+sched.add_job(get_news, 'cron', hour='0')
+sched.start()
+
 
 @retry(stop_max_attempt_number=5)
 def fetch_url(url):
@@ -28,6 +35,13 @@ def fetch_url(url):
     return title,text
 
 ### API
+@app.route("/api/newstopics")
+def newstopics():
+    return open('topics.json').read()
+
+@app.route("/api/news")
+def news():
+    return open('news.json').read()
 
 @app.route("/api")
 def api():
@@ -56,6 +70,7 @@ def static_proxy(path):
 if __name__ == "__main__":
     port = 5000
     classifier = Classifier(train=True)
+    get_news()
     # Open a web browser pointing at the app.
-    #os.system("open http://localhost:{0}/".format(port))
+    os.system("open http://localhost:{0}/".format(port))
     app.run(host='0.0.0.0', port = port, debug = DEBUG)

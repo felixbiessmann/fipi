@@ -11,7 +11,7 @@ import cPickle
 import codecs
 import itertools
 from sklearn.feature_extraction.text import TfidfVectorizer
-from scipy import double,triu,ones,hstack,arange,reshape,zeros,setdiff1d,array,zeros,eye,argmax,percentile
+from scipy import double,zeros
 
 def get_news(sources=['spiegel','faz','welt','zeit']):
     '''
@@ -88,8 +88,10 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
 
     # do some topic modeling
     topics = kpca_cluster(map(lambda x: x[1]['text'][0], articles))
-
-    return dict(articles),topics
+    
+    # store current news and topics
+    json.dump(articles,open('news.json','wb'))
+    json.dump(topics,open('topics.json','wb'))
 
 def load_sentiment(negative='SentiWS_v1.8c/SentiWS_v1.8c_Negative.txt',\
         positive='SentiWS_v1.8c/SentiWS_v1.8c_Positive.txt'):
