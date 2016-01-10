@@ -1,3 +1,4 @@
+apscheduler==3.0.3
 pandas==0.15.2
 cchardet==0.3.5
 numpy==1.9.2
