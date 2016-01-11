@@ -18,7 +18,7 @@ VERSION = 0.1
 
 # Schedules news reader to be run at 00:00
 scheduler = BackgroundScheduler()
-scheduler.add_job(get_news, 'interval', minutes=10)
+scheduler.add_job(get_news, 'interval', minutes=360)
 scheduler.start()
 
 @retry(stop_max_attempt_number=5)
