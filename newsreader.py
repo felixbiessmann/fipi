@@ -144,7 +144,7 @@ def kpca_cluster(data,nclusters=20,topwhat=10):
     '''
     from sklearn.cluster import KMeans
     # filtering out some noise words
-    stops = map(lambda x:x.lower().strip(),open('data/stopwords.txt').readlines()[6:])
+    stops = map(lambda x:x.lower().strip(),codecs.open('data/stopwords.txt',"r","utf-8").readlines()[6:])
 
     # vectorize non-stopwords 
     bow = TfidfVectorizer(min_df=4,stop_words=stops)
@@ -163,7 +163,7 @@ def kpca_cluster(data,nclusters=20,topwhat=10):
             members = (km.labels_==icluster).nonzero()[0]
             topwordidx = km.cluster_centers_[icluster,:].argsort()[-topwhat:][::-1]
             topwords = ' '.join([idx2word[wi] for wi in topwordidx])
-            print u'Cluster %d'%icluster + u' %d members'%nmembers + u'\n\t'+topwords
+            #print u'Cluster %d'%icluster + u' %d members'%nmembers + u'\n\t'+topwords
             clusters.append({
                 'name':'Cluster-%d'%icluster,
                 'description': topwords,

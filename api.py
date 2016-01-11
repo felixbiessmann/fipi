@@ -7,8 +7,8 @@ from retrying import retry
 import urllib2
 from bs4 import BeautifulSoup
 from readability.readability import Document
-from apscheduler.schedulers.blocking import BlockingScheduler
 from newsreader import get_news
+from apscheduler.schedulers.background import BackgroundScheduler
 import json
 
 app = Flask(__name__)
@@ -17,10 +17,9 @@ DEBUG = os.environ.get('DEBUG') != None
 VERSION = 0.1
 
 # Schedules news reader to be run at 00:00
-sched = BlockingScheduler()
-sched.add_job(get_news, 'cron', hour='0')
-sched.start()
-
+scheduler = BackgroundScheduler()
+scheduler.add_job(get_news, 'interval', minutes=10)
+scheduler.start()
 
 @retry(stop_max_attempt_number=5)
 def fetch_url(url):
