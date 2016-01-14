@@ -5,7 +5,10 @@ d3.json("/api/news",function(error, json) {
     if (error) return console.warn(error);
 	news = json
 
-console.log(news)
+function getMaxPredictions(p,nMax) {
+	var sorted = p.sort(function(a,b){return b.prediction-a.prediction});
+	return sorted.slice(0,nMax).map(function(i){return i.label});
+}
 
 d3.json("/api/newstopics",function(error, json) {
     if (error) return console.warn(error);
@@ -33,9 +36,12 @@ d3.json("/api/newstopics",function(error, json) {
 						.map(
 			function(article) {
 			var leftrightPrediction = article[1].leftright.map(function(p){return " "+p.label + ": " + Math.round(p.prediction * 100) / 100;})
-			console.log(leftrightPrediction)
-			var itemhead = "<p><a href=\"" + article[1].url + "\">" + article[0].slice(0,40)
-				+ "... | " + leftrightPrediction +  "</a></p>"
+
+			var itemhead = "<p><a href=\"" + article[1].url + "\">" + article[0].slice(0,200)
+				+ "...  </a></br>"
+				+ "<p>Left/Right: " + getMaxPredictions(article[1].leftright,1) + "  ====   "
+				+ "Domain: " + getMaxPredictions(article[1].domain,1) + "   ====   "
+				+ "Manifestocode: " + getMaxPredictions(article[1].manifestocode,1) +  "</p>"
 			return itemhead
 			}
 		).join("") + "</post-description>"
