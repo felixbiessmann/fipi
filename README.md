@@ -6,6 +6,8 @@ The idea is to use the high-quality (but relatively low volume) manifesto projec
 
 This code is partially based on an [earlier project](https://github.com/kirel/political-affiliation-prediction), which learned a similar text classification model on speeches in the German Parliament. 
 
+A preliminary [demo can be found here](http://fipi-dev.elasticbeanstalk.com/).
+
 ## Local setup in virtualenv
 
 Install [virualenv(-wrapper)](https://virtualenvwrapper.readthedocs.org/en/latest/).
