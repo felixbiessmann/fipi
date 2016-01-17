@@ -81,6 +81,7 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
                 prediction = clf.predict(text)
                 prediction['url'] = url
                 prediction['source'] = source
+                prediction['text'] = 'deleted'
                 articles.append((title,prediction))
             except:
                 print('Could not get text from %s'%url)
