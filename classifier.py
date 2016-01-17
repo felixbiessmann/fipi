@@ -144,6 +144,9 @@ class Classifier:
             return nullPrediction()
         # make it a list, if it is a string
         if not type(text) is list: text = [text]
+        # remove digits
+        text = map(lambda y: filter(lambda x: not x.isdigit(),y),text)
+        # predict probabilities
         probabilities = self.clf.predict_proba(text).flatten()
         predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
         

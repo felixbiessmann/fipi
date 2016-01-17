@@ -81,7 +81,6 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
                 prediction = clf.predict(text)
                 prediction['url'] = url
                 prediction['source'] = source
-                prediction['text'] = 'deleted'
                 articles.append((title,prediction))
             except:
                 print('Could not get text from %s'%url)
@@ -89,7 +88,11 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
 
     # do some topic modeling
     topics = kpca_cluster(map(lambda x: x[1]['text'][0], articles))
-    
+  
+    # remove original article text for faster web-frontend
+    for a in articles:
+        a[1]['text'] = 'deleted'
+
     # store current news and topics
     json.dump(articles,open('news.json','wb'))
     json.dump(topics,open('topics.json','wb'))

@@ -38,7 +38,7 @@ d3.json("/api/newstopics",function(error, json) {
 						.map(
 			function(article) {
 			var itemhead = "<div style=\"background:#eef7f3;border:1px solid #eef7f3;padding:0.5em;margin:0.5em;\">"
-				+ "<p style=\"padding:0.1em;margin:0.1em;\"><a href=\"" + article[1].url + "\">" + article[0].slice(0,80)
+				+ "<p style=\"padding:0.1em;margin:0.1em;\"><a href=\"" + article[1].url + "\">" + article[0].slice(0,50)
 				+ " ...  </a></p>"
 				+ "<div>"
 				+ "<div class=\"post-category post-category-design\">" + article[1].source + "</div>"
