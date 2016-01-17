@@ -114,23 +114,24 @@ h3 {
 }
 
 .post-category {
-    margin: 0 0.1em;
-    padding: 0.3em 1em;
+    margin: 0.5 1.2em;
+    display: inline;
+    padding: 0.3em 0.5em;
     color: #fff;
     background: #999;
-    font-size: 80%;
+    font-size: 75%;
 }
     .post-category-design {
         background: #5aba59;
     }
     .post-category-pure {
-        background: #4d85d1;
+        background: #99ccff;
     }
     .post-category-yui {
-        background: #8156a7;
+        background: #ffcc66;
     }
     .post-category-js {
-        background: #df2d4f;
+        background:  #dcd1cf;
     }
 
 .post-images {

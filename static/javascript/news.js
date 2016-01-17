@@ -1,13 +1,15 @@
 var news;
 var topics;
 
+var icons = {"spiegel":"http://img.informer.com/icons/png/32/150/150726.png"}
+
 d3.json("/api/news",function(error, json) {
     if (error) return console.warn(error);
 	news = json
 
 function getMaxPredictions(p,nMax) {
 	var sorted = p.sort(function(a,b){return b.prediction-a.prediction});
-	return sorted.slice(0,nMax).map(function(i){return i.label});
+	return sorted.slice(0,nMax).map(function(i){return i.label + " (" + Math.round(i.prediction*100) + "%)"});
 }
 
 d3.json("/api/newstopics",function(error, json) {
@@ -35,13 +37,15 @@ d3.json("/api/newstopics",function(error, json) {
 						})
 						.map(
 			function(article) {
-			var leftrightPrediction = article[1].leftright.map(function(p){return " "+p.label + ": " + Math.round(p.prediction * 100) / 100;})
-
-			var itemhead = "<p><a href=\"" + article[1].url + "\">" + article[0].slice(0,200)
-				+ "...  </a></br>"
-				+ "<p>Left/Right: " + getMaxPredictions(article[1].leftright,1) + "  ====   "
-				+ "Domain: " + getMaxPredictions(article[1].domain,1) + "   ====   "
-				+ "Manifestocode: " + getMaxPredictions(article[1].manifestocode,1) +  "</p>"
+			var itemhead = "<div style=\"background:#eef7f3;border:1px solid #eef7f3;padding:0.5em;margin:0.5em;\">"
+				+ "<p style=\"padding:0.1em;margin:0.1em;\"><a href=\"" + article[1].url + "\">" + article[0].slice(0,80)
+				+ " ...  </a></p>"
+				+ "<div>"
+				+ "<div class=\"post-category post-category-design\">" + article[1].source + "</div>"
+				+ "<div class=\"post-category post-category-yui\"\">" + getMaxPredictions(article[1].leftright,1) + "</div>"
+				+ "<div class=\"post-category post-category-pure\">"+ getMaxPredictions(article[1].domain,1) + "</div>"
+				+ "<div class=\"post-category post-category-js\">" + getMaxPredictions(article[1].manifestocode,1) +  "</div>"
+				+ "</div></div>"
 			return itemhead
 			}
 		).join("") + "</post-description>"
