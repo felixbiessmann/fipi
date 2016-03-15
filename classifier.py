@@ -148,7 +148,7 @@ class Classifier:
         text = map(lambda y: filter(lambda x: not x.isdigit(),y),text)
         # predict probabilities
         probabilities = self.clf.predict_proba(text).flatten()
-        predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
+        predictions = dict(zip(self.clf.steps[-1][1].classes_, probabilities.tolist()))
         
         # transform the predictions into json output
         return {
