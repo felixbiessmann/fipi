@@ -9,6 +9,24 @@ TXT_DIR = os.path.join(DATA_PATH, 'txt')
 OUT_DIR = os.path.join(DATA_PATH, 'out')
 clf = classifier.Classifier(train=False)
 
+def get_party_predictions():
+    pred_init = {'leftright':{},'manifestocode':{}}
+    pred = {'gruene':pred_init,'cducsu':pred_init,'spd':pred_init,'fdp':pred_init,'linke':pred_init}
+    for f in glob.glob(OUT_DIR+'/*-with-classification.json'):
+        speeches = json.load(open(f))
+        for speech in speeches:
+            if speech['speaker_party'] is not None and speech['speaker_party'] in pred.keys():
+                for prediction_type in pred_init.keys():
+                    for pr in speech['predictions'][prediction_type]:
+                        k = pr['label']
+                        if not pred[speech['speaker_party']][prediction_type].has_key(k): 
+                            pred[speech['speaker_party']][prediction_type][k] = [pr['prediction']]
+                        else:
+                            pred[speech['speaker_party']][prediction_type][k].append(pr['prediction'])
+                            pdb.set_trace()
+    json.dump(pred,open(OUT_DIR+'/predictions.json','wb'))
+    
+
 def classify_all_speeches():
     for f in glob.glob(OUT_DIR+'/*.json'):
         classify_speeches(f)
