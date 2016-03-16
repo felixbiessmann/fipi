@@ -111,5 +111,5 @@ class PartyClassifier:
         gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'),-1)
+        cPickle.dump(gs_clf.best_estimator_,open('party_classifier.pickle','wb'),-1)
 
