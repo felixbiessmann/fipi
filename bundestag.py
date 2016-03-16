@@ -2,6 +2,8 @@
 import glob
 import os
 import json
+import pdb
+import scipy as sp
 import classifier
 
 DATA_PATH = os.environ.get('DATA_PATH', 'data')
@@ -11,19 +13,30 @@ clf = classifier.Classifier(train=False)
 
 def get_party_predictions():
     pred_init = {'leftright':{},'manifestocode':{}}
-    pred = {'gruene':pred_init,'cducsu':pred_init,'spd':pred_init,'fdp':pred_init,'linke':pred_init}
-    for f in glob.glob(OUT_DIR+'/*-with-classification.json'):
+    pred = {
+            'gruene': {'leftright':{},'manifestocode':{}},
+            'cducsu': {'leftright':{},'manifestocode':{}},
+            'spd': {'leftright':{},'manifestocode':{}},
+            'fdp': {'leftright':{},'manifestocode':{}},
+            'linke': {'leftright':{},'manifestocode':{}}
+            }
+    for f in glob.glob(OUT_DIR+'/17*-with-classification.json'):
         speeches = json.load(open(f))
+        print "processing %d speeches in %s"%(len(speeches),f)
         for speech in speeches:
-            if speech['speaker_party'] is not None and speech['speaker_party'] in pred.keys():
+            if speech['speaker_party'] is not None and pred.has_key(speech['speaker_party']):
                 for prediction_type in pred_init.keys():
                     for pr in speech['predictions'][prediction_type]:
                         k = pr['label']
+                        v = pr['prediction']
                         if not pred[speech['speaker_party']][prediction_type].has_key(k): 
-                            pred[speech['speaker_party']][prediction_type][k] = [pr['prediction']]
+                            pred[speech['speaker_party']][prediction_type][k] = [v]
                         else:
-                            pred[speech['speaker_party']][prediction_type][k].append(pr['prediction'])
-                            pdb.set_trace()
+                            pred[speech['speaker_party']][prediction_type][k].append(v)
+    for party in pred.keys():
+        for prediction_type in pred[party].keys():
+            for pr in pred[party][prediction_type].keys():
+                pred[party][prediction_type][pr] = sp.percentile(pred[party][prediction_type][pr],[5, 25, 50, 75, 95]).tolist()
     json.dump(pred,open(OUT_DIR+'/predictions.json','wb'))
     
 
