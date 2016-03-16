@@ -5,6 +5,7 @@ import json
 import pdb
 import scipy as sp
 import classifier
+from sklearn import metrics
 
 DATA_PATH = os.environ.get('DATA_PATH', 'data')
 TXT_DIR = os.path.join(DATA_PATH, 'txt')
@@ -26,8 +27,25 @@ bundestagParties = {
     18:['gruene','cducsu','spd','linke']
 }
 
-def classify_speeches():
-    
+def classify_speeches_party():
+    from party_classifier import PartyClassifier
+    pclf = PartyClassifier(train=False)
+    predictedParty = []
+    trueParty = []
+    for f in glob.glob(OUT_DIR+'/18*.json'):
+        speeches = json.load(open(f))
+        print "processing %d speeches in %s"%(len(speeches),f)
+        for speech in speeches:
+            if speech['type']=='speech' and \
+            speech['speaker_party'] is not None and \
+            speech['speaker_party'] in bundestagParties[18]:
+                prediction = pclf.predict(speech['text'])
+                predictedParty.append(sp.argmax(prediction.values()))
+                trueParty.append(prediction.keys().index(speech['speaker_party']))
+    report = metrics.classification_report(trueParty, predictedParty,target_names=prediction.keys())
+    open(OUT_DIR+'/report','wb').write(report)
+    return report
+
 def plot_leftright():
     import pylab as pl
     predTs = {

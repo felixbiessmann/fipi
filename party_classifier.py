@@ -22,7 +22,7 @@ partyManifestoMap = {
     'pirates':41952
 }
 
-def nullprediction(parties=['linke','gruene','spd','cducsu']):
+def nullPrediction(parties=['linke','gruene','spd','cducsu']):
     return dict([(k, 1.0/len(parties)) for k in parties])
 
 def get_raw_text(folder="data",parties=['linke','gruene','spd','cducsu']):
