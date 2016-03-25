@@ -25,14 +25,14 @@ partyManifestoMap = {
 def nullPrediction(parties=['linke','gruene','spd','cducsu']):
     return dict([(k, 1.0/len(parties)) for k in parties])
 
-def get_raw_text(folder="data",parties=['linke','gruene','spd','cducsu']):
+def get_raw_text(folder="data", parties=['linke','gruene','spd','cducsu']):
     '''
     Loads raw text and labels from manifestoproject csv files 
     (Downloaded from https://visuals.manifesto-project.wzb.eu)
     '''
     partyIds = [str(partyManifestoMap[p]) for p in parties]
     files = glob.glob(folder+"/[0-9]*_[0-9]*.csv")
-    files = filter(lambda x: x.split('/')[-1].split('_')[-1] not in partyIds,files)
+    files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
     return zip(*chain(*filter(None,map(csv2DataTuple,files))))
 
 def csv2DataTuple(f):
@@ -47,7 +47,17 @@ def csv2DataTuple(f):
 
 class PartyClassifier:
 
-    def __init__(self,train=False):
+    def __init__(self,train=False,\
+        parties=['linke','gruene','cducsu'],\
+        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
+        text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto',dual=True))]),\
+        parameters = {'vect__ngram_range': [(1, 1)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**arange(4,5,1.)).tolist()}  
+         ):
+        
         '''
         Creates a PartyClassifier object
         if no model is found, or train is set True, a new classifier is learned
@@ -60,9 +70,9 @@ class PartyClassifier:
         # if there is no classifier file or training is invoked
         if (not os.path.isfile('party_classifier.pickle')) or train:
             print 'Training party classifier'
-            self.train()
+            self.train(parties=parties,text_clf=text_clf,parameters=parameters)
         print 'Loading party classifier'
-        self.clf = cPickle.load(open('party_classifier.pickle'))
+        self.clf = cPickle.load(open('party_classifier.pickle'))['clf']
 
     def predict(self,text):
         '''
@@ -86,7 +96,16 @@ class PartyClassifier:
         # transform the predictions into json output
         return predictions
    
-    def train(self,folds = 2):
+    def train(self,folds = 2, \
+        parties=['linke','gruene','cducsu'],\
+        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
+        text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto',dual=True))]),\
+        parameters = {'vect__ngram_range': [(1, 1)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**arange(4,5,1.)).tolist()}  
+         ):
         '''
         trains a classifier on the bag of word vectors
 
@@ -96,20 +115,14 @@ class PartyClassifier:
         '''
         try:
             # load the data
-            data,labels = get_raw_text()
+            data,labels = get_raw_text(parties=parties)
         except:
             print('Could not load text data file in\n')
             raise
-        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
-        text_clf = Pipeline([('vect', CountVectorizer()),
-                            ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='auto',dual=True))])
-        parameters = {'vect__ngram_range': [(1, 1)],\
-               'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(4,5,1.)).tolist()}  
-        # perform gridsearch to get the best regularizer
-        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
+       # perform gridsearch to get the best regularizer
+        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump(gs_clf.best_estimator_,open('party_classifier.pickle','wb'),-1)
+        cPickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},\
+            open('party_classifier.pickle','wb'),-1)
 

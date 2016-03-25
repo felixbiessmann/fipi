@@ -114,7 +114,14 @@ def mapPredictions2Domain(pred):
 
 class Classifier:
 
-    def __init__(self,train=False):
+    def __init__(self,train=False,
+        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
+        text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto',dual=True))]),
+        parameters = {'vect__ngram_range': [(1, 1)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**arange(4,5,1.)).tolist()}):
         '''
         Creates a classifier object
         if no model is found, or train is set True, a new classifier is learned
@@ -127,9 +134,9 @@ class Classifier:
         # if there is no classifier file or training is invoked
         if (not os.path.isfile('classifier.pickle')) or train:
             print 'Training classifier'
-            self.train()
+            self.train(text_clf=text_clf,parameters=parameters)
         print 'Loading classifier'
-        self.clf = cPickle.load(open('classifier.pickle'))
+        self.clf = cPickle.load(open('classifier.pickle'))['clf']
 
     def predict(self,text):
         '''
@@ -158,7 +165,15 @@ class Classifier:
                 'manifestocode':[{"label":mc[x[0]],"prediction":x[1]} for x in predictions.items()]
                 }
    
-    def train(self,folds = 2):
+    def train(self,
+        folds = 2,
+        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
+        text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto'))]),
+        parameters = {'vect__ngram_range': [(1, 1)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**arange(-1,2,1.)).tolist()}):
         '''
         trains a classifier on the bag of word vectors
 
@@ -172,16 +187,9 @@ class Classifier:
         except:
             print('Could not load text data file in\n')
             raise
-        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
-        text_clf = Pipeline([('vect', CountVectorizer()),
-                            ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='auto',dual=True))])
-        parameters = {'vect__ngram_range': [(1, 1)],\
-               'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(4,5,1.)).tolist()}  
         # perform gridsearch to get the best regularizer
-        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
+        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'),-1)
+        cPickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},open('classifier.pickle','wb'),-1)
 

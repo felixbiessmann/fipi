@@ -4,13 +4,17 @@ import os
 import json
 import pdb
 import scipy as sp
-import classifier
+from classifier import Classifier
+from party_classifier import PartyClassifier
 from sklearn import metrics
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.grid_search import GridSearchCV
+from sklearn.pipeline import Pipeline
 
 DATA_PATH = os.environ.get('DATA_PATH', 'data')
 TXT_DIR = os.path.join(DATA_PATH, 'txt')
 OUT_DIR = os.path.join(DATA_PATH, 'out')
-clf = classifier.Classifier(train=False)
 
 partyManifestoMap = {
     'gruene':41113,
@@ -27,8 +31,35 @@ bundestagParties = {
     18:['gruene','cducsu','spd','linke']
 }
 
-def classify_speeches_party():
+def optimize_hyperparams(legislationPeriod=18):
+    Classifier(train=True,
+    text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto'))]),\
+        parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**sp.arange(-3,5,1.)).tolist(),
+            'vect__max_df':[0.01,0.1,0.2,.5,1.0],
+            'vect__min_df':[1,2,5]})
+
+def optimize_hyperparams_party(legislationPeriod=18, \
+    parties=['gruene','cducsu','spd','linke']):
+    pclf = PartyClassifier(train=True,parties=parties,
+    text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='auto'))]),\
+        parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
+               'tfidf__use_idf': (True,False),\
+               'clf__C': (10.**sp.arange(-3,5,1.)).tolist(),
+            'vect__max_df':[0.01,0.1,0.2,.5,1.0],
+            'vect__min_df':[1,2,5]
+            }
+    )
+    
+
+def classify_speeches_party(legislationPeriod = 18):
     from party_classifier import PartyClassifier
+    #optimize_hyperparams(legislationPeriod,bundestagParties[legislationPeriod])
     pclf = PartyClassifier(train=False)
     predictedParty = []
     trueParty = []
@@ -38,11 +69,15 @@ def classify_speeches_party():
         for speech in speeches:
             if speech['type']=='speech' and \
             speech['speaker_party'] is not None and \
-            speech['speaker_party'] in bundestagParties[18]:
+            speech['speaker_party'] in bundestagParties[legislationPeriod]:
                 prediction = pclf.predict(speech['text'])
                 predictedParty.append(sp.argmax(prediction.values()))
                 trueParty.append(prediction.keys().index(speech['speaker_party']))
-    report = metrics.classification_report(trueParty, predictedParty,target_names=prediction.keys())
+    report = metrics.classification_report(trueParty, \
+                predictedParty,target_names=prediction.keys())
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(prediction.keys())+'\n'
+    for line in metrics.confusion_matrix(trueParty, predictedParty).tolist():
+        report += str(line)+"\n" 
     open(OUT_DIR+'/report','wb').write(report)
     return report
 
