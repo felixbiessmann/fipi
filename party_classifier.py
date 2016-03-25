@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import cPickle
-from scipy import ones,hstack,arange,reshape,zeros,setdiff1d
+from scipy import ones,hstack,arange,reshape,zeros,random
 import json
 import os
 import glob
@@ -34,7 +34,7 @@ def get_raw_text(folder="data", parties=['linke','gruene','spd','cducsu']):
     (Downloaded from https://visuals.manifesto-project.wzb.eu)
     '''
     partyIds = [str(partyManifestoMap[p]) for p in parties]
-    files = glob.glob(folder+"/[0-9]*_[0-9]*.csv")
+    files = glob.glob(folder+"/[0-9]*_2009.csv")
     files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
     return zip(*chain(*filter(None,map(csv2DataTuple,files))))
 
@@ -61,7 +61,7 @@ class PartyClassifier:
                             ('clf',LogisticRegression(class_weight='auto',dual=True))]),\
         parameters = {'vect__ngram_range': [(1, 1)],\
                'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(-3,3,1.)).tolist()}  
+               'clf__C': (10.**arange(-3,6,1.)).tolist()}  
          ):
         
         '''
@@ -125,6 +125,9 @@ class PartyClassifier:
         except:
             print('Could not load text data file in\n')
             raise
+        ridx = random.permutation(len(labels)) 
+        data = [data[i] for i in ridx]
+        labels = [labels[i] for i in ridx]
         # perform gridsearch to get the best regularizer
         gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(labels, folds), n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)

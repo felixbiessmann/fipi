@@ -16,6 +16,7 @@ DATA_PATH = os.environ.get('DATA_PATH', 'data')
 TXT_DIR = os.path.join(DATA_PATH, 'txt')
 OUT_DIR = os.path.join(DATA_PATH, 'out')
 
+MINLEN = 1000
 partyManifestoMap = {
     'gruene':41113,
     'cducsu':41521,
@@ -36,10 +37,10 @@ def optimize_hyperparams():
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='auto'))]),\
-        parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
+        parameters = {'vect__ngram_range': [(1, 1), (1,3)],\
                'tfidf__use_idf': (True,False),\
                'clf__C': (10.**sp.arange(-3,5,1.)).tolist(),
-            'vect__max_df':[0.01,0.1,0.2,.5,1.0],
+            'vect__max_df':[0.01,0.1,1.0],
             'vect__min_df':[1,2,5]})
 
 def optimize_hyperparams_party(legislationPeriod=18, \
@@ -48,28 +49,31 @@ def optimize_hyperparams_party(legislationPeriod=18, \
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='auto'))]),\
-        parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
+        parameters = {'vect__ngram_range': [(1, 1), (1,3)],\
                'tfidf__use_idf': (True,False),\
                'clf__C': (10.**sp.arange(-2,4,1.)).tolist(),
             'vect__max_df':[0.01,0.1,1.0],
-            'vect__min_df':[1,5]
+            'vect__min_df':[1,2]
             }
     )
     
 
 def classify_speeches_party(legislationPeriod = 18):
     from party_classifier import PartyClassifier
-    optimize_hyperparams_party(legislationPeriod,bundestagParties[legislationPeriod])
-    pclf = PartyClassifier(train=False)
+    #optimize_hyperparams_party(legislationPeriod)
+    pclf = PartyClassifier(train=True)
     predictedParty = []
     trueParty = []
-    for f in glob.glob(OUT_DIR+'/18*.json'):
+    for f in glob.glob(OUT_DIR+'/17*.json'):
         speeches = json.load(open(f))
         print "processing %d speeches in %s"%(len(speeches),f)
         for speech in speeches:
             if speech['type']=='speech' and \
             speech['speaker_party'] is not None and \
-            speech['speaker_party'] in bundestagParties[legislationPeriod]:
+            speech['speaker_party'] in bundestagParties[legislationPeriod] and \
+            len(speech['text']) > MINLEN:
+                import pdb
+                pdb.set_trace()
                 prediction = pclf.predict(speech['text'])
                 predictedParty.append(sp.argmax(prediction.values()))
                 trueParty.append(prediction.keys().index(speech['speaker_party']))
