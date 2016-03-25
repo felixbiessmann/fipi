@@ -27,22 +27,23 @@ bundestagParties = {
     18:['gruene','cducsu','spd','linke']
 }
 
-def classify_speeches_party():
+def classify_speeches_party(parties=['cducsu','spd','linke']):
     from party_classifier import PartyClassifier
-    pclf = PartyClassifier(train=False)
+    pclf = PartyClassifier(train=True,parties=parties)
     predictedParty = []
     trueParty = []
     for f in glob.glob(OUT_DIR+'/18*.json'):
         speeches = json.load(open(f))
         print "processing %d speeches in %s"%(len(speeches),f)
         for speech in speeches:
-            if speech['type']=='speech' and \
-            speech['speaker_party'] is not None and \
-            speech['speaker_party'] in bundestagParties[18]:
+            if speech['speaker_party'] in parties:
                 prediction = pclf.predict(speech['text'])
                 predictedParty.append(sp.argmax(prediction.values()))
                 trueParty.append(prediction.keys().index(speech['speaker_party']))
     report = metrics.classification_report(trueParty, predictedParty,target_names=prediction.keys())
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(prediction.keys())+'\n'
+    for line in metrics.confusion_matrix(trueParty, predictedParty).tolist():
+        report += str(line)+"\n"
     open(OUT_DIR+'/report','wb').write(report)
     return report
 
