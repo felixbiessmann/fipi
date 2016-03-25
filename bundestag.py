@@ -31,7 +31,7 @@ bundestagParties = {
     18:['gruene','cducsu','spd','linke']
 }
 
-def optimize_hyperparams(legislationPeriod=18):
+def optimize_hyperparams():
     Classifier(train=True,
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
@@ -50,16 +50,16 @@ def optimize_hyperparams_party(legislationPeriod=18, \
                             ('clf',LogisticRegression(class_weight='auto'))]),\
         parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
                'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**sp.arange(-3,5,1.)).tolist(),
-            'vect__max_df':[0.01,0.1,0.2,.5,1.0],
-            'vect__min_df':[1,2,5]
+               'clf__C': (10.**sp.arange(-2,4,1.)).tolist(),
+            'vect__max_df':[0.01,0.1,1.0],
+            'vect__min_df':[1,5]
             }
     )
     
 
 def classify_speeches_party(legislationPeriod = 18):
     from party_classifier import PartyClassifier
-    #optimize_hyperparams(legislationPeriod,bundestagParties[legislationPeriod])
+    optimize_hyperparams_party(legislationPeriod,bundestagParties[legislationPeriod])
     pclf = PartyClassifier(train=False)
     predictedParty = []
     trueParty = []

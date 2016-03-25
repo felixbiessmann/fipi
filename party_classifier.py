@@ -9,8 +9,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 import pandas as pd
 from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn import metrics
+
+MINLEN = 200
 
 partyManifestoMap = {
     'gruene':41113,
@@ -39,7 +42,10 @@ def csv2DataTuple(f):
     '''
     Extracts list of tuples of (text,label) for each manifestoproject file
     '''
-    df = pd.read_csv(f).dropna()
+    df = pd.read_csv(f)
+    df['content'] = df['content'].astype('str')
+    mask = (df['content'].str.len() > MINLEN)
+    df = df.loc[mask]
     partyId = f.split('/')[-1].split('_')[0]
     party = [k for (k,v) in partyManifestoMap.items() if str(v) == partyId]
     return zip(df['content'].tolist(), party * len(df))
@@ -48,14 +54,14 @@ def csv2DataTuple(f):
 class PartyClassifier:
 
     def __init__(self,train=False,\
-        parties=['linke','gruene','cducsu'],\
+        parties=partyManifestoMap.keys(),\
         # the scikit learn pipeline for vectorizing, normalizing and classifying text 
         text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='auto',dual=True))]),\
         parameters = {'vect__ngram_range': [(1, 1)],\
                'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(4,5,1.)).tolist()}  
+               'clf__C': (10.**arange(-3,3,1.)).tolist()}  
          ):
         
         '''
@@ -101,10 +107,10 @@ class PartyClassifier:
         # the scikit learn pipeline for vectorizing, normalizing and classifying text 
         text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='auto',dual=True))]),\
+                            ('clf',LogisticRegression(class_weight='auto'))]),\
         parameters = {'vect__ngram_range': [(1, 1)],\
                'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(4,5,1.)).tolist()}  
+               'clf__C': (10.**arange(-2,3,1.)).tolist()}  
          ):
         '''
         trains a classifier on the bag of word vectors
@@ -119,8 +125,8 @@ class PartyClassifier:
         except:
             print('Could not load text data file in\n')
             raise
-       # perform gridsearch to get the best regularizer
-        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=4)
+        # perform gridsearch to get the best regularizer
+        gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(labels, folds), n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
         cPickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},\

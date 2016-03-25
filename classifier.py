@@ -62,7 +62,7 @@ def csv2DataTuple(f):
     '''
     Extracts list of tuples of (text,label) for each manifestoproject file
     '''
-    df = pd.read_csv(f,quotechar="\"").dropna()
+    df = pd.read_csv(f,quotechar="\"")
     return zip(df['content'].tolist(),df['cmp_code'].map(int).tolist())
 
 def mapLabel2RightLeft(label):
