@@ -14,8 +14,9 @@ from sklearn.pipeline import Pipeline
 from itertools import chain
 from sklearn.cross_validation import StratifiedKFold
 import pandas as pd
-from scipy import random
+from scipy import random,unique
 import cPickle
+from sentiments import SentimentClassifier
 
 DATA_PATH = os.environ.get('DATA_PATH', 'data')
 TXT_DIR = os.path.join(DATA_PATH, 'txt')
@@ -44,6 +45,11 @@ bundestagGovernment = {
     18:{'government':['cducsu','spd'],'opposition':['gruene','linke']}
 }
 
+bundestagSeats = {
+    17:{'gruene':68,'cducsu':239,'spd':146,'fdp':93,'linke':76},
+    18:{'gruene':63,'cducsu':311,'spd':193,'linke':64}
+}
+
 def nullPrediction(parties=['linke','gruene','spd','cducsu']):
     return dict([(k, 1.0/len(parties)) for k in parties])
 
@@ -64,6 +70,26 @@ def get_raw_text_bundestag(folder="data/out", legislationPeriod=17):
                 data.append(speech['text'])
                 labels.append(speech['speaker_party'])
     return data,labels
+
+def run_experiments():
+    for legis in [17,18]:
+        classify_speeches_binary_manifesto(legis);
+        classify_speeches_binary_manifhes_binary_parliament(legis)
+        get_sentiments(legis)
+
+def get_sentiments(legis=17):
+    trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
+    se = SentimentClassifier()
+    sentiments = {p:[] for p in bundestagParties[legis]}
+    for item in zip(trainData,trainLabels):
+        sentiments[item[1]].append(se.predict(item[0]))
+    sortedParties = sorted(sentiments,key=bundestagSeats[legis].get)
+    sortedSentiments = [sentiments[d] for d in sortedParties]
+    import pylab
+    pylab.figure(figsize=(8,5))
+    pylab.boxplot(sortedSentiments,labels=[p+" (%d)"%bundestagSeats[legis][p] for p in sortedParties])
+    pylab.grid('on')
+    pylab.savefig("sentiments-%d.pdf"%legis)
 
 def get_raw_text(folder="data", legislationPeriod=18):
     '''
