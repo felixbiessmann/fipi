@@ -108,19 +108,19 @@ def get_sentiments(legis=17):
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
     stops = map(lambda x:x.lower().strip(),codecs.open('data/stopwords.txt',"r", encoding="utf-8", errors='ignore').readlines()[6:])
-    bow = CountVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
+    bow = CountVectorizer(stop_words=stops).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
     for pa in bundestagParties[legis]:
-        party = [1.0 if x==pa else 0.0 for x in trainLabels]
+        party = [1.0 if x==pa else -1.0 for x in trainLabels]
         co = cosine_similarity(X.T,vstack(party).T)
         wordCors[pa] = dict([(wordidx2word[x],co[x,0]) for x in co.nonzero()[0]])
     json.dump(dict(wordCors),open(OUT_DIR+'/wordCors-%d.json'%legis,'wb'))
 
-def list_top_words(topwhat=20):
+def list_top_words(legis=17,topwhat=20):
     import pylab
-    fn = OUT_DIR+'/wordCors.json'
+    fn = OUT_DIR+'/wordCors-%d.json'%legis
     cors = json.loads(open(fn).read())
     colors = {'linke':'purple','gruene':'green','spd':'red','cducsu':'black','fdp':'yellow'}
     cors = {key:sorted(cors[key].items(), key=operator.itemgetter(1)) for key in cors.keys()}
@@ -130,13 +130,12 @@ def list_top_words(topwhat=20):
         tmp = cors[party][:topwhat] + [('...',0)] +  cors[party][-topwhat:]
         words = [x[0] for x in tmp]
         wordcors = [x[1] for x in tmp]
-        import pdb;pdb.set_trace() 
         pylab.barh(arange(len(words)),wordcors,color=colors[party])
         pylab.yticks(arange(len(words)),words)
         pylab.ylim(-.2,len(words))
-        lim = max(abs(array(wordcors))) * 1.1
-        pylab.xlim(-lim,lim)
-        pylab.xticks(array([-.2,0,.2]))
+        #lim = max(abs(array(wordcors))) * 1.1
+        #pylab.xlim(-l,lim)
+        #pylab.xticks(array([-.2,0,.02]))
         pylab.title(party)
         pylab.xlabel('Correlation')
         font = {'family' : 'normal', 'size'   : 16}
