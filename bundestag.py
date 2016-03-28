@@ -105,10 +105,21 @@ def get_sentiments(legis=17):
 
     pylab.savefig(OUT_DIR+"/sentiments-%d.pdf"%legis)
 
+def get_stops(legislationPeriod=17,includenames=True):
+    # generic stopwords
+    stopwords = codecs.open("data/stopwords.txt", "r", "utf-8").readlines()[7:]
+    stops = map(lambda x:x.lower().strip(),stopwords)
+    names = []
+    if includenames:
+        # names of abgeordnete
+        abgeordnete = codecs.open('data/abgeordnete-%d.txt'%legislationPeriod,encoding='utf-8').readlines()
+        names = [y.strip().lower().split(' ')[0] for x in abgeordnete for y in x.split(',')]
+    return unique(stops + names).tolist()
+
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
-    stops = map(lambda x:x.lower().strip(),codecs.open('data/stopwords.txt',"r", encoding="utf-8", errors='ignore').readlines()[6:])
-    bow = CountVectorizer(max_df=0.1).fit(trainData)
+    stops = get_stops()
+    bow = CountVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
@@ -134,14 +145,12 @@ def list_top_words(legis=17,topwhat=20):
         pylab.barh(arange(len(words)),wordcors,color=colors[party])
         pylab.yticks(arange(len(words)),words)
         pylab.ylim(-.2,len(words))
-        #lim = max(abs(array(wordcors))) * 1.1
-        #pylab.xlim(-l,lim)
-        #pylab.xticks(array([-.2,0,.02]))
+        pylab.xticks(array([-.2,0,.02]))
         pylab.title(party)
         pylab.xlabel('Correlation')
         font = {'family' : 'normal', 'size'   : 16}
         pylab.rc('font', **font)
-        pylab.savefig(OUT_DIR+'/party_word_correlations-%s.pdf'%party,bbox_inches='tight')
+        pylab.savefig(OUT_DIR+'/party_word_correlations-%s-%d.pdf'%(party,legis),bbox_inches='tight')
 
 
 def get_raw_text(folder="data", legislationPeriod=18):
@@ -168,7 +177,7 @@ def csv2DataTuple(f):
     return zip(df['content'].tolist(), party * len(df))
 
 def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
-    stops = map(lambda x:x.lower().strip(),codecs.open('stopwords.txt',"r", encoding="utf-8", errors='ignore').readlines()[6:])
+    stops = get_stops()
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='auto'))])
