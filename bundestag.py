@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline
 from itertools import chain
 from sklearn.cross_validation import StratifiedKFold
 import pandas as pd
-from scipy import random,unique,vstack,arange,array
+from scipy import random,unique,vstack,arange,array,mean
 import cPickle
 from sentiments import SentimentClassifier
 
@@ -108,13 +108,14 @@ def get_sentiments(legis=17):
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
     stops = map(lambda x:x.lower().strip(),codecs.open('data/stopwords.txt',"r", encoding="utf-8", errors='ignore').readlines()[6:])
-    bow = CountVectorizer(stop_words=stops).fit(trainData)
+    bow = CountVectorizer(max_df=0.1).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
     for pa in bundestagParties[legis]:
         party = [1.0 if x==pa else -1.0 for x in trainLabels]
-        co = cosine_similarity(X.T,vstack(party).T)
+        partyLabel = vstack(party)
+        co = cosine_similarity(X.T,partyLabel.T - mean(partyLabel))
         wordCors[pa] = dict([(wordidx2word[x],co[x,0]) for x in co.nonzero()[0]])
     json.dump(dict(wordCors),open(OUT_DIR+'/wordCors-%d.json'%legis,'wb'))
 
