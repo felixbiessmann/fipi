@@ -125,7 +125,8 @@ def get_stops(legislationPeriod=17,includenames=True):
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
     stops = get_stops()
-    bow = TfidfVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
+    import pdb;pdb.set_trace()
+    bow = TfidbVectorizer(max_df=0.1).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
@@ -142,16 +143,16 @@ def list_top_words(legis=17,topwhat=20):
     cors = json.loads(open(fn).read())
     colors = {'linke':'purple','gruene':'green','spd':'red','cducsu':'black','fdp':'yellow'}
     cors = {key:sorted(cors[key].items(), key=operator.itemgetter(1)) for key in cors.keys()}
+    stops = get_stops(legislationPeriod=legis)
     
     for party in cors.keys():
         pylab.figure(figsize=(3,12))
         tmp = cors[party][:topwhat] + [('...',0)] +  cors[party][-topwhat:]
-        words = [x[0] for x in tmp]
-        wordcors = [x[1] for x in tmp]
+        words = [x[0] for x in tmp if x[0] not in stops]
+        wordcors = [x[1] for x in tmp if x[0] not in stops]
         pylab.barh(arange(len(words)),wordcors,color=colors[party])
         pylab.yticks(arange(len(words)),words)
         pylab.ylim(-.2,len(words))
-        pylab.xticks(array([-.2,0,.02]))
         pylab.title(party)
         pylab.xlabel('Correlation')
         font = {'family' : 'normal', 'size'   : 16}
