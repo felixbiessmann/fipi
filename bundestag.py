@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline
 from itertools import chain
 from sklearn.cross_validation import StratifiedKFold
 import pandas as pd
-from scipy import random,unique,vstack,arange,array,mean
+from scipy import random,unique,vstack,hstack,arange,array,mean,corrcoef
 import cPickle
 from sentiments import SentimentClassifier
 
@@ -88,22 +88,28 @@ def get_sentiments(legis=17):
         sentiments[item[1]].append(se.predict(item[0]))
     sortedParties = sorted(sentiments,key=bundestagSeats[legis].get)
     sortedSentiments = [sentiments[d] for d in sortedParties]
+    gov = bundestagGovernment[legis]['government']
+    sortedParties = [p +" (%d)"%bundestagSeats[legis][p]+ "\n" + '[Government]' if p in gov else p+" (%d)"%bundestagSeats[legis][p]+"\n[Opposition]"for p in sortedParties]
     import pylab
-    pylab.figure(figsize=(8,5))
-    pylab.boxplot(sortedSentiments,labels=[p+" (%d)"%bundestagSeats[legis][p] for p in sortedParties])
+    pylab.figure(figsize=(7,4))
+    pylab.boxplot(sortedSentiments,labels=sortedParties)
     pylab.grid('on')
-    #pylab.yticks(arange(len(words)),words)
-    #pylab.ylim(-.2,len(words))
-    #lim = max(abs(array(wordcors))) * 1.1
-    #pylab.xlim(-lim,lim)
-    #pylab.xticks(array([-.2,0,.2]))
-    #pylab.title(party)
-    #pylab.xlabel('Correlation')
-    font = {'family' : 'normal', 'size'   : 16}
+    font = {'family' : 'normal', 'size'   : 10}
     pylab.rc('font', **font)
-    pylab.savefig(OUT_DIR+'/party_word_correlations-%s.pdf'%party,bbox_inches='tight')
-
-    pylab.savefig(OUT_DIR+"/sentiments-%d.pdf"%legis)
+    pylab.savefig(OUT_DIR+'/party-sentiments-%d.pdf'%legis,bbox_inches='tight')
+    # correlation between sentiment and government membership
+    member = hstack([vstack([sentiments[p],[1.0] * len(sentiments[p])]) if p in gov else vstack([sentiments[p],[-1.0] * len(sentiments[p])]) for p in sentiments.keys()])
+    corMember = corrcoef(member[0,:],member[1,:])
+    print "Corr sentiment vs government membership: %0.2f"%corMember[0,1]
+    meanSentiment,govMember =zip(*[(mean(sentiments[p]),1.0) if p in gov else (mean(sentiments[p]), -1.0) for p in sentiments.keys()])
+    print "Corr Mean Sentiment vs gov membership: %0.2f"%corrcoef(meanSentiment,govMember)[0,1]
+    # correlation between sentiment and party seats
+    seats = hstack([vstack([sentiments[p],[bundestagSeats[legis][p]] * len(sentiments[p])]) for p in sentiments.keys()])
+    corSeats = corrcoef(seats[0,:],seats[1,:])
+    print "Corr sentiment vs seats: %0.2f"%corSeats[0,1]
+    # mean of parties
+    meanSentiment,seats=zip(*[(mean(sentiments[p]),bundestagSeats[legis][p]) for p in sentiments.keys()])
+    print "Corr Mean Sentiment vs seats: %0.2f"%corrcoef(meanSentiment,seats)[0,1]
 
 def get_stops(legislationPeriod=17,includenames=True):
     # generic stopwords

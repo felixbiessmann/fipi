@@ -1,0 +1,4 @@
+Corr sentiment vs government membership: 0.28
+Corr Mean Sentiment vs gov membership: 0.98
+Corr sentiment vs seats: 0.24
+Corr Mean Sentiment vs seats: 0.89

@@ -1,0 +1,24 @@
+*** Training Set (CVd) ***
+             precision    recall  f1-score   support
+
+ government       0.89      0.93      0.91      3989
+ opposition       0.82      0.72      0.77      1670
+
+avg / total       0.87      0.87      0.87      5659
+
+Confusion Matrix (rows=true, cols=predicted)
+government, opposition
+[3727, 262]
+[463, 1207]
+*** Evaluation Set ***
+             precision    recall  f1-score   support
+
+ government       0.52      0.66      0.58      5972
+ opposition       0.69      0.55      0.62      8229
+
+avg / total       0.62      0.60      0.60     14201
+
+Confusion Matrix (rows=true, cols=predicted)
+government, opposition
+[3946, 2026]
+[3668, 4561]

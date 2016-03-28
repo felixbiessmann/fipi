@@ -1,0 +1,37 @@
+Legislation 17
+*** Training Set (CVd) ***
+             precision    recall  f1-score   support
+
+     cducsu       0.41      0.40      0.40       993
+        fdp       0.50      0.57      0.53      1177
+     gruene       0.50      0.55      0.53      1853
+      linke       0.49      0.50      0.49       852
+        spd       0.45      0.30      0.36      1163
+
+avg / total       0.47      0.48      0.47      6038
+
+Confusion Matrix (rows=true, cols=predicted)
+cducsu, fdp, gruene, linke, spd
+[400, 156, 238, 76, 123]
+[127, 674, 254, 70, 52]
+[189, 285, 1024, 175, 180]
+[49, 97, 198, 425, 83]
+[221, 141, 326, 121, 354]
+*** Evaluation Set ***
+             precision    recall  f1-score   support
+
+     cducsu       0.66      0.04      0.08      7374
+        fdp       0.17      0.36      0.23      3259
+     gruene       0.14      0.71      0.23      3036
+      linke       0.52      0.01      0.01      3080
+        spd       0.00      0.00      0.00      6035
+
+avg / total       0.33      0.16      0.09     22784
+
+Confusion Matrix (rows=true, cols=predicted)
+cducsu, fdp, gruene, linke, spd
+[331, 2216, 4809, 5, 13]
+[99, 1174, 1977, 5, 4]
+[8, 864, 2162, 2, 0]
+[7, 1021, 2035, 16, 1]
+[53, 1536, 4443, 3, 0]
