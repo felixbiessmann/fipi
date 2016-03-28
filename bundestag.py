@@ -190,7 +190,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
                             ('clf',LogisticRegression(class_weight='auto'))])
     parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
            'tfidf__use_idf': (True,False),\
-           'stop_words':(stops, None),\
+           'vect__stop_words':(stops, None),\
            'clf__C': (10.**sp.arange(-1,4,1.)).tolist(),
         'vect__max_df':[0.01, 0.1, 1.0],
         'vect__min_df':[2, 5]
