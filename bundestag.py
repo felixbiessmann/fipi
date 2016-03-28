@@ -9,7 +9,7 @@ import scipy as sp
 from classifier import Classifier
 from party_classifier import PartyClassifier
 from sklearn import metrics, cross_validation
-from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer,TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics.pairwise import cosine_similarity
@@ -125,7 +125,7 @@ def get_stops(legislationPeriod=17,includenames=True):
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
     stops = get_stops()
-    bow = CountVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
+    bow = TfidfVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
