@@ -1,6 +1,8 @@
 #from plpr_parser.scraper import *
 import glob
+import operator
 import os
+import codecs
 import json
 import pdb
 import scipy as sp
@@ -10,11 +12,12 @@ from sklearn import metrics, cross_validation
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.grid_search import GridSearchCV
+from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.pipeline import Pipeline
 from itertools import chain
 from sklearn.cross_validation import StratifiedKFold
 import pandas as pd
-from scipy import random,unique
+from scipy import random,unique,vstack,arange,array
 import cPickle
 from sentiments import SentimentClassifier
 
@@ -89,7 +92,57 @@ def get_sentiments(legis=17):
     pylab.figure(figsize=(8,5))
     pylab.boxplot(sortedSentiments,labels=[p+" (%d)"%bundestagSeats[legis][p] for p in sortedParties])
     pylab.grid('on')
-    pylab.savefig("sentiments-%d.pdf"%legis)
+    #pylab.yticks(arange(len(words)),words)
+    #pylab.ylim(-.2,len(words))
+    #lim = max(abs(array(wordcors))) * 1.1
+    #pylab.xlim(-lim,lim)
+    #pylab.xticks(array([-.2,0,.2]))
+    #pylab.title(party)
+    #pylab.xlabel('Correlation')
+    font = {'family' : 'normal', 'size'   : 16}
+    pylab.rc('font', **font)
+    pylab.savefig(OUT_DIR+'/party_word_correlations-%s.pdf'%party,bbox_inches='tight')
+
+    pylab.savefig(OUT_DIR+"/sentiments-%d.pdf"%legis)
+
+def get_word_correlations(legis=17):
+    trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
+    stops = map(lambda x:x.lower().strip(),codecs.open('data/stopwords.txt',"r", encoding="utf-8", errors='ignore').readlines()[6:])
+    bow = CountVectorizer(max_df=0.1,stop_words=stops).fit(trainData)
+    X = bow.transform(trainData)
+    wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
+    wordCors = {}
+    for pa in bundestagParties[legis]:
+        party = [1.0 if x==pa else 0.0 for x in trainLabels]
+        co = cosine_similarity(X.T,vstack(party).T)
+        wordCors[pa] = dict([(wordidx2word[x],co[x,0]) for x in co.nonzero()[0]])
+    json.dump(dict(wordCors),open(OUT_DIR+'/wordCors-%d.json'%legis,'wb'))
+
+def list_top_words(topwhat=20):
+    import pylab
+    fn = OUT_DIR+'/wordCors.json'
+    cors = json.loads(open(fn).read())
+    colors = {'linke':'purple','gruene':'green','spd':'red','cducsu':'black','fdp':'yellow'}
+    cors = {key:sorted(cors[key].items(), key=operator.itemgetter(1)) for key in cors.keys()}
+    
+    for party in cors.keys():
+        pylab.figure(figsize=(3,12))
+        tmp = cors[party][:topwhat] + [('...',0)] +  cors[party][-topwhat:]
+        words = [x[0] for x in tmp]
+        wordcors = [x[1] for x in tmp]
+        import pdb;pdb.set_trace() 
+        pylab.barh(arange(len(words)),wordcors,color=colors[party])
+        pylab.yticks(arange(len(words)),words)
+        pylab.ylim(-.2,len(words))
+        lim = max(abs(array(wordcors))) * 1.1
+        pylab.xlim(-lim,lim)
+        pylab.xticks(array([-.2,0,.2]))
+        pylab.title(party)
+        pylab.xlabel('Correlation')
+        font = {'family' : 'normal', 'size'   : 16}
+        pylab.rc('font', **font)
+        pylab.savefig(OUT_DIR+'/party_word_correlations-%s.pdf'%party,bbox_inches='tight')
+
 
 def get_raw_text(folder="data", legislationPeriod=18):
     '''
