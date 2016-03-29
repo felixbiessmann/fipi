@@ -195,24 +195,30 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
         'vect__max_df':[0.01, 0.1, 1.0],
         'vect__min_df':[2, 5]
         }
-    gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(trainLabels, folds), n_jobs=-1,verbose=4)
-    best_clf = gs_clf.fit(trainData, trainLabels).best_estimator_
-    # dump classifier to pickle
-    cPickle.dump(best_clf, open('party_classifier.pickle','wb'),-1) 
-    # test on training data with CV
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.5, random_state=0)
+    saveId = idstr+"-"+randid()
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
+    # optimize hyperparams on training set
+    gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(y_train, folds), n_jobs=-1,verbose=4)
+    # train on training set
+    best_clf = gs_clf.fit(X_train, y_train).best_estimator_
+    # test on test set
     test_clf = text_clf.set_params(**best_clf.get_params()).fit(X_train,y_train)
     predictedTest = test_clf.predict(X_test)
+    # dump report on training held out data with CV
     report = "*** Training Set (CVd) ***\n" + metrics.classification_report(y_test, predictedTest)
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(test_clf.steps[-1][1].classes_)+'\n'
     for line in metrics.confusion_matrix(y_test, predictedTest).tolist(): report += str(line)+"\n" 
-    # test on held-out data
-    predictedEval = best_clf.predict(evalData)
+    # train again on entire training set
+    final_clf = text_clf.set_params(**best_clf.get_params()).fit(trainData, trainLabels)
+    # dump classifier to pickle
+    cPickle.dump(final_clf,open(OUT_DIR+'/pipeline-'+saveId+'.pickle','wb'))
+    # test on evaluation data ste
+    predictedEval = final_clf.predict(evalData)
     report += "*** Evaluation Set ***\n" + metrics.classification_report(evalLabels, predictedEval)
-    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(best_clf.steps[-1][1].classes_)+'\n'
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(final_clf.steps[-1][1].classes_)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
-    report += "Pipeline-params\n"+json.dumps(best_clf.get_params())
-    open(OUT_DIR+'/report-'+idstr+"-"+randid()+'.txt','wb').write(report)
+    # dump report
+    open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
     return report
 
 def randid(N=10):
