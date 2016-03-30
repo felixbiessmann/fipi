@@ -160,24 +160,59 @@ The following sections provide an overview of the results for both types of poli
 & \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
     &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
 \hline \hline
-      Linke     &  0.61    &  0.61  &    0.61   &   2315 &  0.81   &   0.76   &   0.79     &  104\\
-     Gr\"une   &    0.65    &  0.64   &   0.64 &     3050 & 0.57  &     0.21  &    0.31    &   110\\
-        SPD     &  0.55    &  0.55  &   0.55 &    2608 & 0.10  &    0.50   &   0.16    &    16\\
-        CDU/CSU    &   0.68    &  0.70  &    0.69  &    3837 & 0.06   &   0.08  &    0.07   &     38 \\
+       cducsu   &    0.62  &    0.81  &    0.70  &     706&0.26    &  0.58   &   0.36    &  2030\\
+        fdp    &   0.70   &   0.37  &    0.49    &   331&0.38   &   0.28    &  0.33   &   2319\\
+     gruene &      0.59  &    0.40   &   0.48   &    298&0.47  &    0.20   &   0.28 &     3747\\
+      linke    &   0.71   &   0.61  &    0.65    &   338&0.30   &   0.47   &   0.37    &  1701\\
+        spd   &    0.60   &   0.69  &    0.65   &    606&0.26   &   0.16   &   0.20  &    2278\\
 \hline
-avg / total    &   0.63  &    0.63  &    0.63 &    11810 & 0.57   &   0.42    &  0.45  &     268\\
+avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.35    &  0.31 &     0.30   &  12075
 %
 \end{tabular}
 \end{center}
 \caption{
 \label{tab:results_four_classes}
-Classification performance on the four party prediction problem; while classification on held-out data from parliament speeches was on average higher than on party programs, also on the completely out-of-training-sample data the model obtained reasonable accuracies in some cases. 
+Classification performance on the party affiliation prediction problem for data from the 17th legislative period on test set and evaluation set, respectively. Chance level is at 0.2.  
 }
 \end{table}
 
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lrrrrrrrr}
+& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+    &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
+\hline \hline
+government    &   0.83   &   0.84&      0.84     & 1037 & 0.49  &    0.59 &     0.54  &    4349\\
+ opposition     &  0.86  &    0.86   &   0.86    &  1242 & 0.74 &     0.66  &    0.70   &   7726\\
+\hline
+avg / total   &    0.85 &     0.85 &     0.85  &    2279 & 0.65  &     0.63  &     0.64  &    12075\\
+
+%
+\end{tabular}
+\end{center}
+\caption{
+\label{tab:results_binary}
+Classification performance on the binary prediction problem in the 17th legislative period, categorizing speeches to government (FDP/CDU/CSU) and opposition (Linke, Gr\"une, SPD).
+}
+\end{table}
 
 \subsection{Predicting political views}
 
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lrrrr}
+    &         precision    &recall &  f1-score  & N\\
+\hline\hline
+test set    &  0.48   &   0.47  &    0.47  &    2651\\
+evaluation set    &  0.47    &  0.46 &     0.46 &     2946\\
+%
+\end{tabular}
+\end{center}
+\caption{
+\label{tab:results_avg_political_view}
+Classification performance on the 56 class prediction problem of political views, see \autoref{sec:data}; chance performance would be around 0.02.
+}
+\end{table}
 
 \section{Speech sentiment correlates with political power}\label{sec:sentiment_result}
 We analysed the sentiment of each speech of a political party and plot the results in \autoref{fig:party_sentiments}. While the methodology used for estimating the sentiment (see \autoref{sec:sentiment_analysis_methods}), it can yield some insight into the emotional content of a speech. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content. We can quantify political power as the number of seats a party has in the parliament. Our analyses show a strong trend supporting the hypothesis that the more political power a party has, the more positive sentiment their speech has, and vice versa, the less seats a party has, the more negative content their speeches contain. This pattern is evident from the barplot in \autoref{fig:party_sentiments} and supported by a high correlation of 0.86 between number of parliament seats and sentiment index.
