@@ -136,6 +136,79 @@ We used a publicly available key word list to extract sentiments from the text s
 \subsection{Analysing bag-of-words features}
 In order to get  better picture of which features contribute to the classification we computed correlation coefficients between each word and each party. Often linear models are interpreted by just looking at the weights of the model. Note that due to the fact that the features are obtained from real data and thus correlated we cannot inspect the model by interpreting the coefficients of $\vec{W}$; for an in-depth discussion of this problem see e.g. \cite{Haufe2013}. The words corresponding to the top positive and negative correlations are shown in section \autoref{sec:word_party_correlations}.
 
+\section{Results}
+
+The following sections provide an overview of the results for both types of political bias prediction tasks, party affiliation and political view. Some interpretations of discriminative features are given one section will highlight a finding on the correlation of political power and positive sentiment of political texts. 
+
+\subsection{Predicting political party affiliation}
+
+% Confusion matrix
+%\begin{table}[t]\label{tab:conf_mat_four_class}
+%\begin{center}
+%\begin{tabular}{lrrrr}
+%&	1402&518&216&179\\
+%&510&1939&295&306\\
+%&185&235&1422&766\\
+%&202&271&672&2692\\
+%\end{tabular}
+%\end{center}
+%\end{table}
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lrrrrrrrr}
+& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+    &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
+\hline \hline
+      Linke     &  0.61    &  0.61  &    0.61   &   2315 &  0.81   &   0.76   &   0.79     &  104\\
+     Gr\"une   &    0.65    &  0.64   &   0.64 &     3050 & 0.57  &     0.21  &    0.31    &   110\\
+        SPD     &  0.55    &  0.55  &   0.55 &    2608 & 0.10  &    0.50   &   0.16    &    16\\
+        CDU/CSU    &   0.68    &  0.70  &    0.69  &    3837 & 0.06   &   0.08  &    0.07   &     38 \\
+\hline
+avg / total    &   0.63  &    0.63  &    0.63 &    11810 & 0.57   &   0.42    &  0.45  &     268\\
+%
+\end{tabular}
+\end{center}
+\caption{
+\label{tab:results_four_classes}
+Classification performance on the four party prediction problem; while classification on held-out data from parliament speeches was on average higher than on party programs, also on the completely out-of-training-sample data the model obtained reasonable accuracies in some cases. 
+}
+\end{table}
+
+
+\subsection{Predicting political views}
+
+
+\section{Speech sentiment correlates with political power}\label{sec:sentiment_result}
+We analysed the sentiment of each speech of a political party and plot the results in \autoref{fig:party_sentiments}. While the methodology used for estimating the sentiment (see \autoref{sec:sentiment_analysis_methods}), it can yield some insight into the emotional content of a speech. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content. We can quantify political power as the number of seats a party has in the parliament. Our analyses show a strong trend supporting the hypothesis that the more political power a party has, the more positive sentiment their speech has, and vice versa, the less seats a party has, the more negative content their speeches contain. This pattern is evident from the barplot in \autoref{fig:party_sentiments} and supported by a high correlation of 0.86 between number of parliament seats and sentiment index.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=8cm]{images/party-sentiments-18.pdf} 
+%
+\end{center}
+\caption{
+\label{fig:party_sentiments}
+Speech sentiments computed for speeches of each party (parties are ordered according to political power measured in number of seats in the parliament from left to right). The more political power a party has, the more positive the speech content is, the fewer seats a party has the more words associated with negative emotions are used in a speech. 
+}
+\end{figure}
+
+\section{Correlations between words and parties}\label{sec:word_party_correlations}
+
+\autoref{fig:party_word_correlations} shows the correlations of individual words and each party. We plotted the top 20 words for each sign, i.e. the 20 words with the strongest positive and negative correlations for each party, respectively. While the correlations do indicate that there are -- despite extensive and careful cleaning procedures -- still words with strong correlations in the top words, we conjecture that at least some of these words do have some discriminatory power, even if they do not refer to political views. Below we list some examples, but the most prominent is probably: the opposition often addresses the government in their speeches, the govermental parties do that less often. This is reflected in the frequency of the usage of words that refer to members of the government or ministers. But among the often used and avoided words we also find words that refer to actual political content. Thus we hypothesize that to some extent these correlation coefficients can give hints as to what the bag-of-words histogram representation into which we transformed the speeches are related to the actual content of the speeches. In the following we give some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these quantitative results are somewhat invalid, as they neglect the context in which these words were mentioned, we find some interesting patterns. 
+
+\begin{figure}
+\begin{center}
+%\includegraphics[width=3.5cm]{party_word_correlations-linke.pdf} 
+%\includegraphics[width=3.1cm]{party_word_correlations-gruene.pdf} 
+%\includegraphics[width=3.45cm]{party_word_correlations-spd.pdf} 
+%\includegraphics[width=3.65cm]{party_word_correlations-cdu.pdf}
+%
+\end{center}
+\caption{
+\label{fig:party_word_correlations}
+Correlations between words and party for parliament speeches. }
+\end{figure}
 
 
 \small
