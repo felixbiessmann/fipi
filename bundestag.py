@@ -220,7 +220,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     predictedTest = test_clf.predict(X_test)
     # dump report on training held out data with CV
     report = "*** Training Set (CVd) ***\n" + metrics.classification_report(y_test, predictedTest)
-    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(test_clf.steps[-1][1].classes_)+'\n'
+    labelsStr = [str(x) for x in test_clf.steps[-1][1].classes_]
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(y_test, predictedTest).tolist(): report += str(line)+"\n" 
     # train again on entire training set
     final_clf = text_clf.set_params(**best_clf.get_params()).fit(trainData, trainLabels)
@@ -229,7 +230,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     # test on evaluation data ste
     predictedEval = final_clf.predict(evalData)
     report += "*** Evaluation Set ***\n" + metrics.classification_report(evalLabels, predictedEval)
-    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(final_clf.steps[-1][1].classes_)+'\n'
+    labelsStr = [str(x) for x in final_clf.steps[-1][1].classes_]
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)

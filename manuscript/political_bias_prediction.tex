@@ -1,0 +1,151 @@
+
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+% For citations
+\usepackage{natbib}
+\usepackage{amsmath,amsfonts,amscd,amssymb}
+\usepackage{dsfont}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\usepackage{hyperref}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\Corr}{Corr}
+\newcommand{\R}{\mathds{R}}
+
+\usepackage{url}
+\urldef{\mailsa}\path|{felix.biessmann,|
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
+\begin{document}
+
+\mainmatter  % start of an individual contribution
+
+% first the title is needed
+\title{Automating Political Bias Prediction}
+
+% a short form should be given in case it is too long for the running head
+\titlerunning{Political Bias Prediction}
+
+% the name(s) of the author(s) follow(s) next
+%
+% NB: Chinese authors should write their first names(s) in front of
+% their surnames. This ensures that the names appear correctly in
+% the running heads and the author index.
+%
+\author{
+%Felix Bie\ss{}mann%
+\thanks{}
+%
+\authorrunning{Political Bias Prediction}}
+% (feature abused for this document to repeat the title also on left hand pages)
+
+% the affiliations are given next; don't give your e-mail address
+% unless you accept that it will be published
+%\institute{
+%\mailsa\\
+%\mailsb\\
+%\mailsc\\
+%\url{http://www.springer.com/lncs}}
+
+%
+% NB: a more complex sample for affiliations and the mapping to the
+% corresponding authors can be found in the file "llncs.dem"
+% (search for the string "\mainmatter" where a contribution starts).
+% "llncs.dem" accompanies the document class "llncs.cls".
+%
+
+\toctitle{Political Bias Prediction}
+\tocauthor{}
+\maketitle
+
+\begin{abstract} 
+Every day media generate large amounts of text. Getting an unbiased view on what media report on requires an unbiased and heterogenous sample of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. In this study a simple statistical learning approach is presented that can be used to predict political bias from text. Standard text features extracted from political texts are used to train classifiers that predict political bias in terms of a) party affiliation and b) in terms of political views. Results indicate that political bias prediction is possible with well above chance accuracy. The results are further validated by relating discriminative text features to the political orientation of a party. Moreover the results demonstrate that sentiment appears to be a very discriminative feature: Political power of an author strongly correlates with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
+\end{abstract} 
+
+\section{Introduction}
+\label{sec:intro}
+%
+Modern media generate a large amount of content at an ever increasing rate. Keeping an unbiased view on what media report on requires to understand the political bias of texts. In many cases it is obvious which political bias an author has. In other cases some expertise is required to judge the political bias of a text. 
+%
+When dealing with large amounts of text however there are simply not enough experts to examine all possible sources and publications. Assistive technology can help in this context to try and obtain a more unbiased sample of information. 
+
+Ideally one would choose for each topic a sample of reports from the entire political spectrum in order to form an unbiased opinion. But ordering and assigning media content with respect to the political spectrum at scale requires automated prediction of political bias. The aim of this study is to provide some empirical evidence indicating that political bias prediction is possible with well above chance accuracy. 
+
+
+
+%-- in fact even the very definition of a spectrum could be considered a difficult problem. The aim of this study is to investigate
+
+\section{Data Sets and Feature Extraction}\label{sec:data}
+%
+We used publicly available data sets of german political texts and standard libraries for processing the text. The following sections describe the details of data acquisition and feature extraction. 
+
+\subsection{Data}
+We obtained annotated political text data from sources a) the discussions and speeches held in the german parliament ({\em Bundestag}) and b) all manifesto texts from parties running for election in the german parliament in the current 18th and the last, 17th, legislation period.
+
+\paragraph{Parliament discussion data} Parliament texts are annotated with the respective party label, which we take here as a proxy of political bias. The texts of parliament protocols are available through the website of the german bundestag\footnote{\url{https://www.bundestag.de/protokolle}}, we used an open source API to that data to query the data in cleaned and structured format\footnote{\url{https://github.com/bundestag}}. This API returns for each speech the speaker and its party affiliation. In total we obtained 22784 speeches for the 17th legislative period and 11317 speeches for the 18th period, queried until March 2016. 
+
+\paragraph{Party manifesto data}
+For party manifestos we also use an openly accessible API provided by the Wissenschaftszentrum Berlin (WZB). The API is released as part of the {\em Manifestoproject} \cite{manifesto}. The data released in this project comprises the complete manifestos for each party that ran for election enriched with annotations by political experts. Each sentence (in some cases also parts of sentences) are labels with one of 56 political labels. Examples of these labels are {\em pro/contra protectionism, decentralism, centralism, pro/contra welfare, ...}. The set of labels was developed by political scientists at the WZB and released for public use. We obtained all manifestos of parties that were running for election in this and the last legislative period. In total this resulted in 29451 political statements that had two types of labels, for one we stored the party affiliation of each political statement. This party affiliation label was used to evaluate the party evaluation classifiers trained on the parliament speeches. For this purpose we constrained the data to only those parties that were elected into the parliament. Next to the party affiliation we were mainly interested in the political view labels annotated by human experts. For the analyses based on political view labels we considered all parties, also those that did not make it into the parliament. 
+
+\subsection{Bag-of-Words Vectorization}\label{sec:bow-vectorization}
+For each semantic unit, in the case of parliament discussions this were the speeches\footnote{Often speeches were interrupted; in this case each uninterrupted part of a speech was considered a semantic unit.} in the case of the party manifesto data semantic units were the sentences or sentence parts associated with one of the 56 political view labels. Strings of each semantic unit were tokenized and transformed into bag-of-word vectors as implemented in scikit-learn \cite{scikit-learn}. The general idea of bag-of-words vectors is to simply count occurences of words (or word sequences, also called {\em n-grams}) for each data point (usually documents, here parliament speeches). So the text of each speech is transformed into a vector $\vec{x}\in\mathds{R}^d$, were $d$ is the size of our dictionary; the $w$th entry of $\vec{x}$ contains the (normalized) count of the $w$th word (or sequence of words) in our dictionary. We tried several options for vectorizing the speeches, including term-frequency-inverse-document-frequency normalisation using n-gram patterns up to size $n=3$ and several cutoffs for discarding too frequent and too infrequent words. All of these hyperparameters were subjected to hyperparameter optimization as explained in \autoref{sec:crossvalidation}. 
+
+
+\section{Classification Model and Training Procedure}
+
+We used a multinomial logistic regression model in order to classify bag-of-words feature vectors $\vec{x}\in\R^d$, where $d$ is the size of the bag-of-words dictionary. Let $y\in\{1,2,\dots,K\}$ be the true party label, where $K$ is the total number of parties in the parliament and $\vec{W}=[\vec{w}_1,\dots,\vec{w}_K]\in\R^{d\times K}$ be the concatenation of the weight vectors $\vec{w}_k$ associated with the $k$th party then 
+\begin{eqnarray}\label{eq:logreg_multiclass}
+p(y=k|\vec{x},\vec{W}) = &\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}} \qquad \textrm{with }  z_k=&\vec{w}_k^{\top}\vec{x} \\\nonumber
+\end{eqnarray}
+%
+We estimated $\vec{W}$ using quasi-newton gradient descent as packaged in the scikit-learn toolbox. The optimization function was obtained by adding a penalization term to the negative log-likelihood of the multinomial logistic regression objective and the optimization hence found the $\vec{W}$ that minimized
+\begin{equation}\label{eq:objective}
+L(\vec{W}, \vec{x}, \gamma) = - \log{\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}}}+ \gamma \| \vec{W} \|_{F}
+\end{equation}
+Where $\|~\|_F$ denotes the Frobenius Norm and $\gamma$ is a regularization parameter controlling the complexity of the model. 
+ We optimized the regularization parameter on a log-scaled grid from $10^{-4,\dots,4}$ and the regularization constant was adopted to reflect asymmetric class frequency distributions. The performance of the model was optimized using the classification accuracy, but we also report all other standard measures, precision ($TP / (FP + TP$), recall ($TP / (TP + FN)$) and f1-score ($2\times (Prec. \times Rec) / (Prec + Rec.)$). 
+
+Next to the four class problem of categorizing all four parties of the german parliament we also considered the binary classification task of only distinguishing texts between wether they were read by members of the government or members of the opposition. Results of this simpler two-class problem were obtained by exactly the same methods as in the four class case. 
+
+\subsection{Optimisation of Model Parameters}\label{sec:crossvalidation}
+The model pipeline contained a number of {\em hyperparameters} that we did not want to tune by hand. These parameters are called hyperparameters becase we cannot optimize these like we optimize the parameters of our classifier, by writing down an objective function and optimizing this linear function by doing gradient descent. Thus we resort to the standard 'trial-and-error' approach in machine learning and perform cross-validation on the hyperparameters. In order to not overfit to our data and obtain good generalization performance to other texts we used two approaches. The first one is the usual procedure of 'nested-crossvalidation', which performs two stages of cross-validation, an {\em outer} cross-validation loop to evaluate the model correctly on held-out data, and an {\em inner} cross-validation loop within each training data fold of the outer cross-validation. In practice this means that in each step of the outer loop we set aside a part of our data set and then try out all parameters using the inner cross-validation on the not-held-out data, and afterwards make a prediction on the held-out data of the outer cross-validation. For each set of preprocessing (hyper-) parameters and regularisation parameter of the classifier, we performed the entire data extraction, vectorization and classifier training workflow. Next to this rather standard approach, we also tested the classifiers on the text of the party programs (see \autoref{sec:data}) which were never included in any of the training procedures.
+
+\subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
+We used a publicly available key word list to extract sentiments from the text subjected to classification \cite{remquahey2010}. The sentiment index used for attributing positive or negative sentiment to a text was computed  as the Pearson correlation coefficient between bag-of-word vectors $\vec{x}\in\R^d$ and sentiment vector $\vec{s}\in\R^d$ which was constructed by simply taking the values from the sentiment dictionary. 
+
+\subsection{Analysing bag-of-words features}
+In order to get  better picture of which features contribute to the classification we computed correlation coefficients between each word and each party. Often linear models are interpreted by just looking at the weights of the model. Note that due to the fact that the features are obtained from real data and thus correlated we cannot inspect the model by interpreting the coefficients of $\vec{W}$; for an in-depth discussion of this problem see e.g. \cite{Haufe2013}. The words corresponding to the top positive and negative correlations are shown in section \autoref{sec:word_party_correlations}.
+
+
+
+\small
+\subsection*{Acknowledgements}
+
+%
+\small{
+\bibliographystyle{plain}
+\bibliography{political_bias_prediction} 
+}
+
+
+\end{document}
