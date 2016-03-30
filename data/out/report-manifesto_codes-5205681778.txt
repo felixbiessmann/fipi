@@ -1,0 +1,44 @@
+*** Training Set (CVd) ***
+             precision    recall  f1-score   support
+
+        afd       0.50      0.60      0.55         5
+     cducsu       0.50      0.54      0.52       469
+        fdp       0.51      0.44      0.47       455
+     gruene       0.50      0.64      0.56       831
+      linke       0.55      0.45      0.49       401
+    pirates       0.51      0.40      0.45       191
+        spd       0.40      0.33      0.36       492
+
+avg / total       0.49      0.50      0.49      2844
+
+Confusion Matrix (rows=true, cols=predicted)
+afd, cducsu, fdp, gruene, linke, pirates, spd
+[3, 0, 1, 0, 1, 0, 0]
+[0, 255, 47, 93, 16, 6, 52]
+[0, 79, 200, 96, 15, 21, 44]
+[2, 60, 54, 533, 67, 23, 92]
+[0, 18, 24, 130, 180, 12, 37]
+[0, 9, 24, 47, 16, 76, 19]
+[1, 84, 41, 161, 32, 10, 163]
+*** Evaluation Set ***
+             precision    recall  f1-score   support
+
+        afd       0.29      0.25      0.27         8
+     cducsu       0.45      0.50      0.47       496
+        fdp       0.55      0.43      0.48       559
+     gruene       0.52      0.64      0.57       923
+      linke       0.54      0.51      0.52       438
+    pirates       0.56      0.47      0.51       218
+        spd       0.35      0.30      0.32       519
+
+avg / total       0.49      0.49      0.49      3161
+
+Confusion Matrix (rows=true, cols=predicted)
+afd, cducsu, fdp, gruene, linke, pirates, spd
+[2, 0, 1, 2, 2, 0, 1]
+[2, 248, 44, 99, 18, 13, 72]
+[0, 92, 241, 119, 29, 19, 59]
+[1, 83, 55, 587, 80, 20, 97]
+[1, 26, 24, 105, 222, 18, 42]
+[0, 12, 24, 42, 21, 102, 17]
+[1, 96, 51, 167, 40, 10, 154]

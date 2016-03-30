@@ -1,0 +1,32 @@
+*** Training Set (CVd) ***
+             precision    recall  f1-score   support
+
+     cducsu       0.58      0.50      0.53       307
+     gruene       0.57      0.69      0.62       549
+      linke       0.61      0.55      0.57       264
+        spd       0.45      0.38      0.41       301
+
+avg / total       0.55      0.55      0.55      1421
+
+Confusion Matrix (rows=true, cols=predicted)
+cducsu, gruene, linke, spd
+[153, 88, 21, 45]
+[52, 377, 49, 71]
+[12, 84, 144, 24]
+[49, 115, 23, 114]
+*** Evaluation Set ***
+             precision    recall  f1-score   support
+
+     cducsu       0.73      0.14      0.23      4768
+     gruene       0.18      0.93      0.29      1701
+      linke       0.45      0.20      0.28      1616
+        spd       0.39      0.08      0.13      3232
+
+avg / total       0.51      0.25      0.22     11317
+
+Confusion Matrix (rows=true, cols=predicted)
+cducsu, gruene, linke, spd
+[656, 3579, 202, 331]
+[21, 1582, 68, 30]
+[20, 1231, 329, 36]
+[207, 2643, 131, 251]

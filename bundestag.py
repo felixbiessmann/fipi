@@ -75,10 +75,13 @@ def get_raw_text_bundestag(folder="data/out", legislationPeriod=17):
     return data,labels
 
 def run_experiments():
-    for legis in [17,18]:
+    for legis in [18]:
         classify_speeches_binary_manifesto(legis);
-        classify_speeches_binary_manifhes_binary_parliament(legis)
+        classify_speeches_binary_parliament(legis);
+        classify_speeches_party_manifesto(legis);
+        classify_speeches_party_parliament(legis);
         get_sentiments(legis)
+        get_word_correlations(legis)
 
 def get_sentiments(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
@@ -125,16 +128,18 @@ def get_stops(legislationPeriod=17,includenames=True):
 def get_word_correlations(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
     stops = get_stops()
-    import pdb;pdb.set_trace()
-    bow = TfidbVectorizer(max_df=0.1).fit(trainData)
+    bow = TfidfVectorizer(max_df=0.1).fit(trainData)
     X = bow.transform(trainData)
     wordidx2word = dict(zip(bow.vocabulary_.values(),bow.vocabulary_.keys()))
     wordCors = {}
     for pa in bundestagParties[legis]:
         party = [1.0 if x==pa else -1.0 for x in trainLabels]
         partyLabel = vstack(party)
-        co = cosine_similarity(X.T,partyLabel.T - mean(partyLabel))
-        wordCors[pa] = dict([(wordidx2word[x],co[x,0]) for x in co.nonzero()[0]])
+        print "Calculating correlations for %s"%pa
+        #co = cosine_similarity(X.T,partyLabel.T - mean(partyLabel))
+        #import pdb;pdb.set_trace()
+        co = array([corrcoef(X[:,wo].todense().flatten(),partyLabel.flatten())[0,1] for wo in range(X.shape[-1])])
+        wordCors[pa] = dict([(wordidx2word[x],co[x]) for x in co.nonzero()[0] if wordidx2word[x] not in stops])
     json.dump(dict(wordCors),open(OUT_DIR+'/wordCors-%d.json'%legis,'wb'))
 
 def list_top_words(legis=17,topwhat=20):
@@ -159,6 +164,17 @@ def list_top_words(legis=17,topwhat=20):
         pylab.rc('font', **font)
         pylab.savefig(OUT_DIR+'/party_word_correlations-%s-%d.pdf'%(party,legis),bbox_inches='tight')
 
+def get_raw_text_manifesto(folder="data", legislationPeriod=17):
+    '''
+    Loads raw text and labels from manifestoproject csv files
+    (Downloaded from https://visuals.manifesto-project.wzb.eu)
+    '''
+    files = glob.glob(folder+"/[0-9]*_[0-9]*.csv")
+    return zip(*chain(*filter(None,map(csv2ManifestoCodeTuple,files))))
+
+def csv2ManifestoCodeTuple(f):
+    df = pd.read_csv(f,quotechar="\"")[['content','cmp_code']].dropna()
+    return zip(df['content'].tolist(),df['cmp_code'].map(int).tolist())
 
 def get_raw_text(folder="data", legislationPeriod=18):
     '''
@@ -190,10 +206,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
                             ('clf',LogisticRegression(class_weight='auto'))])
     parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
            'tfidf__use_idf': (True,False),\
-           'vect__stop_words':(stops, None),\
-           'clf__C': (10.**sp.arange(-1,4,1.)).tolist(),
-        'vect__max_df':[0.01, 0.1, 1.0],
-        'vect__min_df':[2, 5]
+           'clf__C': (10.**sp.arange(-1,5,1.)).tolist(),
+        'vect__max_df':[0.01, 0.1, .5, 1.0],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -223,6 +237,11 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
 
 def randid(N=10):
     return "".join(map(lambda x: str(x),random.randint(0,9,N).tolist()))
+
+def classify_manifesto_codes():
+    data, labels = get_raw_text_manifesto()
+    trainData, evalData, trainLabels, evalLabels = cross_validation.train_test_split(data, labels, test_size=0.1, random_state=0)
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="manifesto_codes")
 
 def classify_speeches_binary_manifesto(legislationPeriod = 18):
     evalDataParty, evalLabelsParty = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
