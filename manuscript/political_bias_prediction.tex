@@ -30,7 +30,9 @@
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\Corr}{Corr}
 \newcommand{\R}{\mathds{R}}
-
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{pbox}
 \usepackage{url}
 \urldef{\mailsa}\path|{felix.biessmann,|
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
@@ -146,20 +148,33 @@ The following sections provide an overview of the results for both types of poli
 \subsection{Predicting political party affiliation}
 
 % Confusion matrix
-%\begin{table}[t]\label{tab:conf_mat_four_class}
-%\begin{center}
-%\begin{tabular}{lrrrr}
-%&	1402&518&216&179\\
-%&510&1939&295&306\\
-%&185&235&1422&766\\
-%&202&271&672&2692\\
-%\end{tabular}
-%\end{center}
-%\end{table}
+\begin{table}[t]\label{tab:conf_mat_four_class}
+\begin{tabular}{lccccccc}
+&&& \multicolumn{5}{c}{Predicted Class}\\
+&&& cducsu & fdp& gruene& linke& spd\\
+\multirow{5}{*}{\rotatebox{90}{\pbox{3cm}{\centering True Class}}}& &cducsu &1186 &289& 178& 198& 179\\
+&&fdp &882& 658& 236& 329& 214\\
+&&gruene &1174& 404& 764& 941& 464\\
+&&linke &388& 92& 214& 806& 201\\
+&&spd &999& 268& 240& 398& 373\\
+ \multicolumn{8}{c}{\bf 17th Bundestag}\\
+\end{tabular}
+\quad
+\begin{tabular}{lcccccc}
+&&& \multicolumn{4}{c}{Predicted Class}\\
+&&& cducsu & gruene& linke& spd\\
+\multirow{4}{*}{\rotatebox{90}{\pbox{3cm}{\centering True Class}}}&&cducsu&1912& 156& 331& 584\\
+&&gruene&2092& 827& 1311& 1444\\
+&&linke&596& 186& 1216& 557\\
+&&spd&1284& 226& 563& 916\\
+ \multicolumn{7}{c}{\bf 18th Bundestag}\\
+\end{tabular}
+\caption{\label{tab:confusion} Confusion matrices for predictions on evaluation data (party manifestos) for classifiers trained on parliament speeches for the 17th legislative period (left) and 18th legislative period (right); the most prominent effect is the high likelihood for a party to be taken as the strongest, governing party, cdu/csu. In particular the green party suffers from this effect: when trained on the speeches in the 18th Bundestag, 2092 statements out of the green party's manifesto were classified as belonging to the cducsu party. This can be interpreted as a change in policies of the conservative party cdu/csu towards the policies of the green party.}
+\end{table}
 
 \begin{table}[t]
 \begin{center}
-\begin{tabular}{lrrrrrrrr}
+\begin{tabular}{lcccccccc}
 & \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
     &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
 \hline \hline
@@ -174,14 +189,36 @@ avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.35    &  0.31 &     
 \end{tabular}
 \end{center}
 \caption{
-\label{tab:results_four_classes}
+\label{tab:results_17}
 Classification performance on the party affiliation prediction problem for data from the 17th legislative period on test set and evaluation set, respectively. Chance level is at 0.2.  
 }
 \end{table}
 
 \begin{table}[t]
 \begin{center}
-\begin{tabular}{lrrrrrrrr}
+\begin{tabular}{lcccccccc}
+& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+    &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
+\hline \hline
+    cducsu    &   0.66   &   0.82   &   0.73    &   456 & 0.32  &    0.64  &    0.43    &  2983\\
+     gruene   &    0.68    &  0.54   &   0.60    &   173   &0.59   &   0.15   &   0.23   &   5674\\
+      linke     &  0.77  &    0.58    &  0.66    &   173 & 0.36   &   0.48   &   0.41   &   2555\\
+        spd     &  0.60  &    0.54   &   0.57    &   330 & 0.26 &     0.31   &   0.28     & 2989\\
+\hline
+avg / total    &   0.66  &    0.66  &    0.65   &   1132&  0.42 &     0.34  &    0.32&     14201\\
+%
+\end{tabular}
+\end{center}
+\caption{
+\label{tab:results_18}
+Classification performance on the party affiliation prediction problem for data from the 18th legislative period on test set and evaluation set, respectively. 
+}
+\end{table}
+
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lcccccccc}
 & \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
     &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
 \hline \hline
@@ -194,10 +231,30 @@ avg / total   &    0.85 &     0.85 &     0.85  &    2279 & 0.65  &     0.63  &  
 \end{tabular}
 \end{center}
 \caption{
-\label{tab:results_binary}
-Classification performance on the binary prediction problem in the 17th legislative period, categorizing speeches to government (FDP/CDU/CSU) and opposition (Linke, Gr\"une, SPD).
+\label{tab:results_binary_17}
+Classification performance on the binary prediction problem in the 17th legislative period, categorizing speeches into government (FDP/CDU/CSU) and opposition (Linke, Gr\"une, SPD).
 }
 \end{table}
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lcccccccc}
+& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+    &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
+\hline \hline
+government   &    0.88  &    0.95    &  0.92   &    786   &0.52   &   0.66 &     0.58  &    5972\\
+ opposition    &   0.86    &  0.71   &   0.78   &    346 & 0.69  &    0.56    &  0.62   &   8229\\
+\hline
+avg / total    &   0.88    &  0.88     & 0.87  &    1132 &  0.62   &   0.60    &  0.60 &    14201\\
+%
+\end{tabular}
+\end{center}
+\caption{
+\label{tab:results_binary_18}
+Classification performance on the binary prediction problem in the 18th legislative period, categorizing speeches into government (SDP/CDU/CSU) and opposition (Linke, Gr\"une).
+}
+\end{table}
+
 
 \subsection{Predicting political views}
 

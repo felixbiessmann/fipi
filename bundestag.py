@@ -96,7 +96,7 @@ def get_sentiments(legis=17):
     import pylab
     pylab.figure(figsize=(7,4))
     #pylab.boxplot(sortedSentiments,labels=sortedParties)
-    pylab.bar(sortedSentiments,labels=sortedParties)
+    pylab.bar(arange(len(sortedSentiments)),[mean(s) for s in sortedSentiments],labels=sortedParties)
     pylab.grid('on')
     font = {'family' : 'normal', 'size'   : 10}
     pylab.rc('font', **font)
