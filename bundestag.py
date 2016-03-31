@@ -95,7 +95,8 @@ def get_sentiments(legis=17):
     sortedParties = [p +" (%d)"%bundestagSeats[legis][p]+ "\n" + '[Government]' if p in gov else p+" (%d)"%bundestagSeats[legis][p]+"\n[Opposition]"for p in sortedParties]
     import pylab
     pylab.figure(figsize=(7,4))
-    pylab.boxplot(sortedSentiments,labels=sortedParties)
+    #pylab.boxplot(sortedSentiments,labels=sortedParties)
+    pylab.bar(sortedSentiments,labels=sortedParties)
     pylab.grid('on')
     font = {'family' : 'normal', 'size'   : 10}
     pylab.rc('font', **font)
@@ -158,6 +159,7 @@ def list_top_words(legis=17,topwhat=20):
         pylab.barh(arange(len(words)),wordcors,color=colors[party])
         pylab.yticks(arange(len(words)),words)
         pylab.ylim(-.2,len(words))
+        pylab.xticks([-.2,0,.2])
         pylab.title(party)
         pylab.xlabel('Correlation')
         font = {'family' : 'normal', 'size'   : 16}

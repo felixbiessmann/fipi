@@ -6,6 +6,10 @@
 ; Quell Link: http://solariz.de/649/deutsche-stopwords.htm
 dr.
 angeblich
+verehrten
+besonderen
+weise
+hinaus
 überhaupt
 seien
 definitiv
@@ -256,6 +260,7 @@ wann
 wenn
 wie
 zu
+zunächst
 bin
 eines
 hat
