@@ -81,7 +81,7 @@
 \maketitle
 
 \begin{abstract} 
-Every day media generate large amounts of text. Getting an unbiased view on what media report on requires an unbiased and heterogenous sample of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. In this study a simple statistical learning approach is presented that can be used to predict political bias from text. Standard text features extracted from political texts are used to train classifiers that predict political bias in terms of a) party affiliation and b) in terms of political views. Results indicate that political bias prediction is possible with well above chance accuracy. The results are further validated by relating discriminative text features to the political orientation of a party. Moreover the results demonstrate that sentiment appears to be a very discriminative feature: Political power of an author strongly correlates with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
+Every day media generate large amounts of text. An unbiased view on what media report on requires an understanding of the political bias of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. This study proposes a simple statistical learning approach to predict political bias from text. Standard text features extracted from speeches and manifestos of political parties are used to predict political bias in terms of political party affiliation and in terms of political views. Results indicate that political bias can be predicted with well above chance accuracy. Mistakes of the model can be interpreted with respect to changes of policies of political actors. Two approaches are presented to make the results more interpretable: a) discriminative text features are related to the political orientation of a party and b) sentiment features of texts are correlated with a measure of political power. Political power appears to be strongly correlated with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
 \end{abstract} 
 
 \section{Introduction}
@@ -136,10 +136,10 @@ The model pipeline contained a number of {\em hyperparameters} that we did not w
 We first split the training data into a training data set and a test data set for optimizing the hyperparameters, the test data for hyperparameter optimization was 10\% of the entire training data. Hyperparameters were optimized using grid search: For each setting of hyperparameters the entire pipeline was trained and evaluated on the test set. For the best setting of all hyperparameters, we trained the pipeline again on all training data and evaluated it on the evaluation set. Evaluation data was never used for training the models. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a legislative period. Evaluation data were the texts from party manifestos. For the political view prediction setting we first split all labeled manifesto sentences in both legislative periods into a training/test and evaluation set of 90\% (train/test) and 10\% (evaluation), then we split the train/test part again with a 90\%/10\% ratio for training/testing of the hyperparameters. 
 
 \subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
-We used a publicly available key word list to extract sentiments from the text subjected to classification \cite{remquahey2010}. The sentiment index used for attributing positive or negative sentiment to a text was computed  as the Pearson correlation coefficient between bag-of-word vectors $\vec{x}\in\R^d$ and sentiment vector $\vec{s}\in\R^d$ which was constructed by simply taking the values from the sentiment dictionary. 
+We used a publicly available key word list to extract sentiments from the text subjected to classification \cite{remquahey2010}. The sentiment index used for attributing positive or negative sentiment to a text was computed  as the cosine similarity between bag-of-word vectors $\vec{x}\in\R^d$ and sentiment vector $\vec{s}\in\R^d$ which was constructed by simply taking the values from the sentiment dictionary. 
 
 \subsection{Analysing bag-of-words features}
-In order to get  better picture of which features contribute to the classification we computed correlation coefficients between each word and each party. Often linear models are interpreted by just looking at the weights of the model. Note that due to the fact that the features are obtained from real data and thus correlated we cannot inspect the model by interpreting the coefficients of $\vec{W}$; for an in-depth discussion of this problem see e.g. \cite{Haufe2013}. The words corresponding to the top positive and negative correlations are shown in section \autoref{sec:word_party_correlations}.
+In order to get  better picture of which features contribute to the classification we computed correlation coefficients between each word and each party. Often linear models are interpreted by just looking at the weights of the model. Since the text features are obtained from real data and thus correlated we cannot inspect the model by interpreting the coefficients of $\vec{W}$, see e.g. \cite{Haufe2013}.  We thus only use univariate correlation to investigate how discriminative features are. The words corresponding to the top positive and negative correlations are shown in section \autoref{sec:word_party_correlations}.
 
 \section{Results}\label{sec:results}
 
@@ -149,10 +149,11 @@ The following sections provide an overview of the results for both types of poli
 
 % Confusion matrix
 \begin{table}[t]\label{tab:conf_mat_four_class}
-\begin{tabular}{lccccccc}
-&&& \multicolumn{5}{c}{Predicted Class}\\
+\begin{tabular}{lcc|ccccc}
+&&& \multicolumn{5}{c}{Predicted}\\
 &&& cducsu & fdp& gruene& linke& spd\\
-\multirow{5}{*}{\rotatebox{90}{\pbox{3cm}{\centering True Class}}}& &cducsu &1186 &289& 178& 198& 179\\
+\hline
+\multirow{5}{*}{\rotatebox{90}{\pbox{3cm}{\centering True}}}& &cducsu &1186 &289& 178& 198& 179\\
 &&fdp &882& 658& 236& 329& 214\\
 &&gruene &1174& 404& 764& 941& 464\\
 &&linke &388& 92& 214& 806& 201\\
@@ -160,10 +161,11 @@ The following sections provide an overview of the results for both types of poli
  \multicolumn{8}{c}{\bf 17th Bundestag}\\
 \end{tabular}
 \quad
-\begin{tabular}{lcccccc}
-&&& \multicolumn{4}{c}{Predicted Class}\\
+\begin{tabular}{lcc|cccc}
+&&& \multicolumn{4}{c}{Predicted}\\
 &&& cducsu & gruene& linke& spd\\
-\multirow{4}{*}{\rotatebox{90}{\pbox{3cm}{\centering True Class}}}&&cducsu&1912& 156& 331& 584\\
+\hline
+\multirow{4}{*}{\rotatebox{90}{\pbox{4.7cm}{\centering True}}}&&cducsu&1912& 156& 331& 584\\
 &&gruene&2092& 827& 1311& 1444\\
 &&linke&596& 186& 1216& 557\\
 &&spd&1284& 226& 563& 916\\
@@ -190,7 +192,7 @@ avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.35    &  0.31 &     
 \end{center}
 \caption{
 \label{tab:results_17}
-Classification performance on the party affiliation prediction problem for data from the 17th legislative period on test set and evaluation set, respectively. Chance level is at 0.2.  
+Classification performance on the party affiliation prediction problem for data from the 17th legislative period on test set and evaluation set, respectively.
 }
 \end{table}
 
@@ -270,7 +272,7 @@ evaluation set    &  0.47    &  0.46 &     0.46 &     2946\\
 \end{center}
 \caption{
 \label{tab:results_avg_political_view}
-Classification performance on the 56 class prediction problem of political views, see \autoref{sec:data}; chance performance would be around 0.02.
+Classification performance on the 56 class prediction problem of political views, see \autoref{sec:data}.
 }
 \end{table}
 
@@ -279,22 +281,22 @@ We analysed the sentiment of each speech of a political party and plot the resul
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=8cm]{images/party-sentiments-18.pdf} 
+\includegraphics[width=6cm]{images/party-sentiments-17.pdf}  \hfill \includegraphics[width=6cm]{images/party-sentiments-18.pdf} 
 %
 \end{center}
 \caption{
 \label{fig:party_sentiments}
-Speech sentiments computed for speeches of each party (parties are ordered according to political power measured in number of seats in the parliament from left to right). The more political power a party has, the more positive the speech content is, the fewer seats a party has the more words associated with negative emotions are used in a speech. 
+Speech sentiments computed for speeches of each party; parties are ordered according to political power measured in number of seats in the parliament from left to right. The more political power a party has, the more positive the speech content is. Note that while the SPD (red) was in the opposition in the 17th Bundestag it became part of the government in the 18th Bundestag: their seats in the parliament increased and the average sentiment of their speeches switched sign from negative to overall positive sentiment.
 }
 \end{figure}
 
 \begin{table}[t]
 \begin{center}
-\begin{tabular}{lrr}
+\begin{tabular}{lcc}
    Sentiment vs. &          Gov. Member    &  Seats\\
 \hline\hline
-17th period    &  0.84 & 0.70\\
-18th period    &  0.98 & 0.89\\
+17th Bundestag    &  0.84 & 0.70\\
+18th Bundestag   &  0.98 & 0.89\\
 %
 \end{tabular}
 \end{center}

@@ -92,13 +92,17 @@ def get_sentiments(legis=17):
     sortedParties = sorted(sentiments,key=bundestagSeats[legis].get)
     sortedSentiments = [sentiments[d] for d in sortedParties]
     gov = bundestagGovernment[legis]['government']
-    sortedParties = [p +" (%d)"%bundestagSeats[legis][p]+ "\n" + '[Government]' if p in gov else p+" (%d)"%bundestagSeats[legis][p]+"\n[Opposition]"for p in sortedParties]
+    sortedPartiesLabels = [p +" (%d)"%bundestagSeats[legis][p]+ "\n" + '[Government]' if p in gov else p+" (%d)"%bundestagSeats[legis][p]+"\n[Opposition]"for p in sortedParties]
     import pylab
     pylab.figure(figsize=(7,4))
     #pylab.boxplot(sortedSentiments,labels=sortedParties)
-    pylab.bar(arange(len(sortedSentiments)),[mean(s) for s in sortedSentiments],labels=sortedParties)
+    col = {'gruene':'green','linke':'purple','spd':'red','cducsu':'black','fdp':'yellow'}
+    pylab.bar(0.1+arange(len(sortedSentiments)),[mean(s) for s in sortedSentiments],color=[col[p] for p in sortedParties])
     pylab.grid('on')
-    font = {'family' : 'normal', 'size'   : 10}
+    pylab.ylabel('Average Text Sentiment')
+    pylab.xticks(0.5 + arange(len(sortedSentiments)), sortedPartiesLabels)
+    pylab.xlim([0,len(sortedSentiments)+.01])
+    font = {'family' : 'normal', 'size'   : 12}
     pylab.rc('font', **font)
     pylab.savefig(OUT_DIR+'/party-sentiments-%d.pdf'%legis,bbox_inches='tight')
     # correlation between sentiment and government membership
