@@ -197,6 +197,19 @@ def get_raw_text(folder="data", legislationPeriod=18):
     files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
     return zip(*chain(*filter(None,map(csv2DataTuple,files))))
 
+def get_raw_text_topics(folder="data", legislationPeriod=18):
+    '''
+    Loads raw text and labels from manifestoproject csv files
+    (Downloaded from https://visuals.manifesto-project.wzb.eu)
+    '''
+    parties = bundestagParties[legislationPeriod]
+    partyIds = [str(partyManifestoMap[p]) for p in parties]
+    year = '2013'
+    if legislationPeriod==17:year='2009'
+    files = glob.glob(folder+"/[0-9]*_%s.csv"%year)
+    files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
+    return zip(*chain(*filter(None,map(csv2DataTupleTopics,files))))
+
 def csv2DataTuple(f):
     '''
     Extracts list of tuples of (text,label) for each manifestoproject file
@@ -206,6 +219,18 @@ def csv2DataTuple(f):
     partyId = f.split('/')[-1].split('_')[0]
     party = [k for (k,v) in partyManifestoMap.items() if str(v) == partyId]
     return zip(df['content'].tolist(), party * len(df))
+
+def csv2DataTupleTopics(f):
+    '''
+    Extracts list of tuples of (text,label) for each manifestoproject file
+    '''
+    df = pd.read_csv(f)
+    df['content'] = df['content'].astype('str')
+    df['topic'] = ((df['cmp_code'].dropna()) / 100).apply(lambda x: int(x))
+    partyId = f.split('/')[-1].split('_')[0]
+    party = [k for (k,v) in partyManifestoMap.items() if str(v) == partyId]
+    contentByTopic = df.groupby('topic')['content'].sum().tolist()
+    return zip(contentByTopic, party * len(contentByTopic))
 
 def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
     stops = get_stops()
