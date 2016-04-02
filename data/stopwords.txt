@@ -6,6 +6,26 @@
 ; Quell Link: http://solariz.de/649/deutsche-stopwords.htm
 dr.
 angeblich
+verstehe
+worte
+wesentlichen
+maßnahmen
+2016
+abschließend
+erreichen
+begrüße
+schaffen
+bedeutung
+wochen
+willy
+walter
+manuela
+schwesig
+angela
+merkel
+genannt
+bedanken
+hierbei
 verehrten
 besonderen
 weise

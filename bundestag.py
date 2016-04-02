@@ -147,7 +147,7 @@ def get_word_correlations(legis=17):
         wordCors[pa] = dict([(wordidx2word[x],co[x]) for x in co.nonzero()[0] if wordidx2word[x] not in stops])
     json.dump(dict(wordCors),open(OUT_DIR+'/wordCors-%d.json'%legis,'wb'))
 
-def list_top_words(legis=17,topwhat=20):
+def list_top_words(legis=17,topwhat=10):
     import pylab
     fn = OUT_DIR+'/wordCors-%d.json'%legis
     cors = json.loads(open(fn).read())
@@ -156,14 +156,16 @@ def list_top_words(legis=17,topwhat=20):
     stops = get_stops(legislationPeriod=legis)
     
     for party in cors.keys():
-        pylab.figure(figsize=(3,12))
-        tmp = cors[party][:topwhat] + [('...',0)] +  cors[party][-topwhat:]
-        words = [x[0] for x in tmp if x[0] not in stops]
-        wordcors = [x[1] for x in tmp if x[0] not in stops]
+        pylab.figure(figsize=(3,10))
+        c = [x for x in cors[party] if x[0] not in stops]
+        tmp = c[:topwhat] + [('...',0)] +  c[-topwhat:]
+        words = [x[0] for x in tmp]
+        wordcors = [x[1] for x in tmp]
         pylab.barh(arange(len(words)),wordcors,color=colors[party])
         pylab.yticks(arange(len(words)),words)
         pylab.ylim(-.2,len(words))
-        pylab.xticks([-.2,0,.2])
+        xl = max(abs(array(wordcors))) + .01
+        pylab.xticks([-xl,0,xl])
         pylab.title(party)
         pylab.xlabel('Correlation')
         font = {'family' : 'normal', 'size'   : 16}

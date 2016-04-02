@@ -302,7 +302,7 @@ Note that there is one party, the social democrats (SPD), which have a large num
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=6cm]{images/party-sentiments-17.pdf}  \hfill \includegraphics[width=6cm]{images/party-sentiments-18.pdf} 
+\includegraphics[width=6cm]{images/party-sentiments-17.pdf}  \hfill \includegraphics[width=5cm]{images/party-sentiments-18.pdf} 
 %
 \end{center}
 \caption{
@@ -331,33 +331,38 @@ Correlation coefficient between average sentiment of political speeches of a par
 
 \subsection{Correlations between words and parties}\label{sec:word_party_correlations}
 
-In order to enable better interpretation of the results, we investigated the univariate dependency between single text features and the party affiliation labels of texts, see also \autoref{sec:correlations_methods}. The highest and lowest correlations between individual words and each party are shown in \autoref{fig:party_word_correlations}. While the correlations do indicate that there are -- despite extensive and careful cleaning procedures -- still some unspecific words in the top words, we conjecture that at least some of these words can be useful for a better interpretation of the model and the results, even if not every word can be easily associated with political views. 
+While interpretability of linear models is often propagated as one of their main advantages, doing so naively without modelling the noise covariances can lead to wrong conclusions, see e.g. \cite{Zien2009, Haufe2013} -- essentially interpreting coefficients of linear models (independent of the regularizer used) implicitly assumes uncorrelated features; as this assumption is violated by our data simple univariate correlation measures are used to interpret the features used in the linear predictors, see also \autoref{sec:correlations_methods}. The 10 highest and lowest correlations between individual words and each party are shown in \autoref{fig:party_word_correlations}. While the correlations do indicate that there are -- despite extensive and careful cleaning procedures -- still some unspecific words in the top words, we conjecture that at least some of these words can be useful for a better interpretation of the model and the results, even if not every word can be easily associated with political views. 
 
 In the following we give some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these quantitative results are somewhat problematic, as they neglect the context in which these words were mentioned, we find some interesting patterns. 
 
-\paragraph{\bf Green party (Gruene)}
+\paragraph{\bf Left party (linke)}
+The left party mostly criticises measures that affect social welfare negatively, such as the {\em Hartz IV} program. Main actors that are blamed for decisions of the conservative governments by the left party are big companies ({\em konzerne}). Rarely the party addresses concerns related to security ({\em sicherheit}). 
 
-\paragraph{\bf Conservative party (CDU/CSU)}
+\paragraph{\bf Green party (Gruene)}
+The green party heavily criticised the secret negotiations about the TiSA agreement\footnote{\url{https://en.wikipedia.org/wiki/Trade_in_Services_Agreement}} and insists in formal inquiries that the representatives of the green party put forward in this matter ({\em fragen, anfragen}). They also often put forward critical questions related to army projects ({\em R\"ustungsprojekte, Wehrbericht}) or the military development in east europe ({\em  Jalta}\footnote{Referring to the \url{https://en.wikipedia.org/wiki/Yalta_Conference}}).
 
 \paragraph{\bf Social democratic party (SPD)}
+The social democrats often use words related to rights of the working class, as reflected by the heavy use of the {\em International Labour Organisation} (ILO) or rights of employes ({\em Arbeitnehmerrechte}). They rarely talk about competition ({\em Wettbewerb}) or climate change ({\em klimapolitik}). 
 
-\paragraph{\bf Left party (linke)}
+\paragraph{\bf Conservative party (CDU/CSU)}
+The conservative christian party often uses words related to a pro-economy attitute, such as competitiveness ({\em Wettbewerbsf\"ahigkeit, Entwicklung}) and words related to security ({\em Sicherheit}). The latter refers to the ongoing debates about whether or not the governments should be allowed to collect data and thus restrict fundamental civil rights in order to better secure the population from terrorist attacks. However the party rarely uses the word war ({\em krieg}).
+
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=2.7cm]{images/party_word_correlations-linke-17.pdf} 
-\includegraphics[width=3cm]{images/party_word_correlations-gruene-17.pdf} 
-\includegraphics[width=2.8cm]{images/party_word_correlations-spd-17.pdf} 
-\includegraphics[width=2.8cm]{images/party_word_correlations-cducsu-17.pdf}
+\includegraphics[width=2.8cm]{images/party_word_correlations-linke-18.pdf} 
+\includegraphics[width=2.9cm]{images/party_word_correlations-gruene-18.pdf} 
+\includegraphics[width=3cm]{images/party_word_correlations-spd-18.pdf} 
+\includegraphics[width=3cm]{images/party_word_correlations-cducsu-18.pdf}
 %
 \end{center}
 \caption{
 \label{fig:party_word_correlations}
-Correlations between words and party for parliament speeches. }
+Correlations between words and party affiliation label for parliament speeches can help interpreting the features used by a predictive model. Shown are the top 10 positively and negatively correlated text features for the current Bundestag. For interpretations see \autoref{sec:word_party_correlations}.}
 \end{figure}
 
 \subsection{An example web application}
-We implemented an example web application that downloads regularly all articles from major german news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}}, applies some simple topic modelling to them and assigns articles to a topic and predicts the political view of an article using the manifesto code classifier trained on all party manifestos. Within each topic it is then possible to get an order (from left to right) overview of the opinions on that topic. An example of one topic that emerged on March 31st is shown in \autoref{fig:fipi}. The demo is live and running\footnote{\url{http://to-be-included-in-camera-ready-version.com}} and the code is open sourced an available on git-hub\footnote{\url{http://to-be-included-in-camera-ready-version.com}}.
+To show an example use case of the above approach a web application was implemented that downloads regularly all articles from major german news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}}, applies some simple topic modelling to them and assigns articles to a topic and predicts the political view of an article using the manifesto code classifier trained on all party manifestos. Within each topic it is then possible to get an order (from left to right) overview of the opinions on that topic. The left right index is computed according to the outputs of the manifestocodes and deterministic left-right mapping defined by human experts \cite{leftright}. An example of one topic that emerged on March 31st is shown in \autoref{fig:fipi}. The demo is live and running\footnote{\url{http://to-be-included-in-camera-ready-version.com}} and the code is open sourced an available on git-hub\footnote{\url{http://to-be-included-in-camera-ready-version.com}}.
 \begin{figure}
 \begin{center}
 \includegraphics[width=10cm]{images/fipi-screenshot}
