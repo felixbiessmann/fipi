@@ -144,7 +144,7 @@ We first split the training data into a training data set that was used for opti
 \subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
 We used a publicly available key word list to extract sentiments from the text subjected to classification \cite{remquahey2010}. The sentiment index used for attributing positive or negative sentiment to a text was computed  as the cosine similarity between bag-of-word vectors $\vec{x}\in\R^d$ and sentiment vector $\vec{s}\in\R^d$ which was constructed by simply taking the values from the sentiment dictionary. 
 
-\subsection{Analysing bag-of-words features}
+\subsection{Analysing bag-of-words features}\label{sec:correlations_methods}
 In order to get  better picture of which features contribute to the classification we computed correlation coefficients between each word and each party. Often linear models are interpreted by just looking at the weights of the model. Since the text features are obtained from real data and thus correlated we cannot inspect the model by interpreting the coefficients of $\vec{W}$, see e.g. \cite{Haufe2013}.  We thus only use univariate correlation to investigate how discriminative features are. The words corresponding to the top positive and negative correlations are shown in section \autoref{sec:word_party_correlations}.
 
 \section{Results}\label{sec:results}
@@ -331,14 +331,24 @@ Correlation coefficient between average sentiment of political speeches of a par
 
 \subsection{Correlations between words and parties}\label{sec:word_party_correlations}
 
-\autoref{fig:party_word_correlations} shows the correlations of individual words and each party. We plotted the top 20 words for each sign, i.e. the 20 words with the strongest positive and negative correlations for each party, respectively. While the correlations do indicate that there are -- despite extensive and careful cleaning procedures -- still words with strong correlations in the top words, we conjecture that at least some of these words do have some discriminatory power, even if they do not refer to political views. Below we list some examples, but the most prominent is probably: the opposition often addresses the government in their speeches, the govermental parties do that less often. This is reflected in the frequency of the usage of words that refer to members of the government or ministers. But among the often used and avoided words we also find words that refer to actual political content. Thus we hypothesize that to some extent these correlation coefficients can give hints as to what the bag-of-words histogram representation into which we transformed the speeches are related to the actual content of the speeches. In the following we give some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these quantitative results are somewhat invalid, as they neglect the context in which these words were mentioned, we find some interesting patterns. 
+In order to enable better interpretation of the results, we investigated the univariate dependency between single text features and the party affiliation labels of texts, see also \autoref{sec:correlations_methods}. The highest and lowest correlations between individual words and each party are shown in \autoref{fig:party_word_correlations}. While the correlations do indicate that there are -- despite extensive and careful cleaning procedures -- still some unspecific words in the top words, we conjecture that at least some of these words can be useful for a better interpretation of the model and the results, even if not every word can be easily associated with political views. 
+
+In the following we give some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these quantitative results are somewhat problematic, as they neglect the context in which these words were mentioned, we find some interesting patterns. 
+
+\paragraph{\bf Green party (Gruene)}
+
+\paragraph{\bf Conservative party (CDU/CSU)}
+
+\paragraph{\bf Social democratic party (SPD)}
+
+\paragraph{\bf Left party (linke)}
 
 \begin{figure}
 \begin{center}
-%\includegraphics[width=3.5cm]{party_word_correlations-linke.pdf} 
-%\includegraphics[width=3.1cm]{party_word_correlations-gruene.pdf} 
-%\includegraphics[width=3.45cm]{party_word_correlations-spd.pdf} 
-%\includegraphics[width=3.65cm]{party_word_correlations-cdu.pdf}
+\includegraphics[width=2.7cm]{images/party_word_correlations-linke-17.pdf} 
+\includegraphics[width=3cm]{images/party_word_correlations-gruene-17.pdf} 
+\includegraphics[width=2.8cm]{images/party_word_correlations-spd-17.pdf} 
+\includegraphics[width=2.8cm]{images/party_word_correlations-cducsu-17.pdf}
 %
 \end{center}
 \caption{

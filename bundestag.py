@@ -94,7 +94,7 @@ def get_sentiments(legis=17):
     gov = bundestagGovernment[legis]['government']
     sortedPartiesLabels = [p +" (%d)"%bundestagSeats[legis][p]+ "\n" + '[Government]' if p in gov else p+" (%d)"%bundestagSeats[legis][p]+"\n[Opposition]"for p in sortedParties]
     import pylab
-    pylab.figure(figsize=(7,4))
+    pylab.figure(figsize=(1.5*len(sortedParties),4))
     #pylab.boxplot(sortedSentiments,labels=sortedParties)
     col = {'gruene':'green','linke':'purple','spd':'red','cducsu':'black','fdp':'yellow'}
     pylab.bar(0.1+arange(len(sortedSentiments)),[mean(s) for s in sortedSentiments],color=[col[p] for p in sortedParties])
