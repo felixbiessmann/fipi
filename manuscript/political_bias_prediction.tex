@@ -206,6 +206,8 @@ Next to the party affiliation we also predicted whether or not a text is from a 
 % Confusion matrix
 \begin{table}[t]\label{tab:conf_mat_four_class}
 \begin{tabular}{lcc|ccccc}
+ \multicolumn{8}{c}{\bf 17th Bundestag}\\
+ \\
 &&& \multicolumn{5}{c}{Predicted}\\
 &&& cducsu & fdp& gruene& linke& spd\\
 \hline
@@ -214,10 +216,11 @@ Next to the party affiliation we also predicted whether or not a text is from a 
 &&gruene &1174& 404& 764& 941& 464\\
 &&linke &388& 92& 214& 806& 201\\
 &&spd &999& 268& 240& 398& 373\\
- \multicolumn{8}{c}{\bf 17th Bundestag}\\
 \end{tabular}
 \quad
 \begin{tabular}{lcc|cccc}
+ \multicolumn{7}{c}{\bf 18th Bundestag}\\
+ \vspace{1em}\\
 &&& \multicolumn{4}{c}{Predicted}\\
 &&& cducsu & gruene& linke& spd\\
 \hline
@@ -225,7 +228,6 @@ Next to the party affiliation we also predicted whether or not a text is from a 
 &&gruene&2092& 827& 1311& 1444\\
 &&linke&596& 186& 1216& 557\\
 &&spd&1284& 226& 563& 916\\
- \multicolumn{7}{c}{\bf 18th Bundestag}\\
 \end{tabular}
 \vspace{1em}
 \caption{\label{tab:confusion} Confusion matrices for predictions on evaluation data (party manifestos) for classifiers trained on parliament speeches for the 17th legislative period (left) and 18th legislative period (right); the most prominent effect is the high likelihood for a party to be taken as the strongest, governing party, cdu/csu. In particular the green party suffers from this effect: when trained on the speeches in the 18th Bundestag, 2092 statements out of the green party's manifesto were classified as belonging to the cducsu party. This can be interpreted as a change in policies of the conservative party cdu/csu towards the policies of the green party.}
@@ -292,7 +294,11 @@ Classification performance on the 56 class prediction problem of political views
 \end{table}
 
 \subsection{Speech sentiment correlates with political power}\label{sec:sentiment_result}
-We analysed the sentiment of each speech of a political party and plot the results in \autoref{fig:party_sentiments}. While the methodology used for estimating the sentiment (see \autoref{sec:sentiment_analysis_methods}), it can yield some insight into the emotional content of a speech. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content. We can quantify political power as the number of seats a party has in the parliament. Our analyses show a strong trend supporting the hypothesis that the more political power a party has, the more positive sentiment their speech has, and vice versa, the less seats a party has, the more negative content their speeches contain. This pattern is evident from the barplot in \autoref{fig:party_sentiments} and supported by a high correlation of 0.86 between number of parliament seats and sentiment index.
+In order to investigate the features that give rise to the classifiers' performance the bag-of-words features were analysed with respect to their sentiment. The average sentiment of each political party is shown in \autoref{fig:party_sentiments} for the two legislative periods under investigation. While the methodology used for estimating the sentiment (see \autoref{sec:sentiment_analysis_methods}) is simple and limited to a one dimensional spectrum of sentiment, it can yield some insight into the emotional content of a speech. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content. 
+
+The results show an interesting relationship between political power and sentiment. Political power was evaluated in two ways: a) in terms of the number of seats a party has and b) in terms of membership of the government. Correlating either of these two proxies of political power with the mean sentiment of a party shows a strong positive correlation between speech sentiment and political power. This pattern is evident from the barplot in \autoref{fig:party_sentiments} and in \autoref{tab:sentiments}: In the current Bundestag, government membership correlates with positive sentiment with a correlation coefficient of 0.98 and the number of seats correlates with 0.89. 
+
+Note that there is one party, the social democrats (SPD), which have a large number of seats and were in the opposition in the 17th Bundestag and member of the government in the 18th Bundestag: The average sentiment of this party switched sign from negative to positive when they joined the government, indicating that positive sentiment is a strong indicator of government membership of affiliation when analysing a text. 
 
 \begin{figure}
 \begin{center}
@@ -316,7 +322,7 @@ Speech sentiments computed for speeches of each party; parties are ordered accor
 \end{tabular}
 \end{center}
 \caption{
-\label{tab:results_avg_political_view}
+\label{tab:sentiments}
 Correlation coefficient between average sentiment of political speeches of a party in the german bundestag with two measures of their political power, a) their membership in the government and b) with the number of seats that party occupies in the parliament. Shown are correlations for the 17th legislative period and the (ongoing) 18th legislative period.
 }
 \end{table}
@@ -340,15 +346,34 @@ Correlation coefficient between average sentiment of political speeches of a par
 Correlations between words and party for parliament speeches. }
 \end{figure}
 
+\subsection{An example web application}
+We implemented an example web application that downloads regularly all articles from major german news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}}, applies some simple topic modelling to them and assigns articles to a topic and predicts the political view of an article using the manifesto code classifier trained on all party manifestos. Within each topic it is then possible to get an order (from left to right) overview of the opinions on that topic. An example of one topic that emerged on March 31st is shown in \autoref{fig:fipi}. The demo is live and running\footnote{\url{http://to-be-included-in-camera-ready-version.com}} and the code is open sourced an available on git-hub\footnote{\url{http://to-be-included-in-camera-ready-version.com}}.
+\begin{figure}
+\begin{center}
+\includegraphics[width=10cm]{images/fipi-screenshot}
+%
+\end{center}
+\caption{
+\label{fig:fipi}
+A screen shot of an example web application using the political view prediction combined with topic modelling to provide a heterogeneous overview of a topic. }
+\end{figure}
 
-\section{Conclusions and Outlook}\label{sec:conclusion}
-Note that not in all settings we had this type of data, and also for the cases where we can get out-of-domain evaluation data, there will be quite some non-stationarities or covariate shifts between the in-domain and out-of-domain evaluation data. 
+
+\section{Conclusions, Limitations and Outlook}\label{sec:conclusion}
+The goal of this study was to present a simple approach for automating political bias prediction and to quantify how well this is possible. The results of these experiments show that automated political bias prediction is possible with above chance accuracy. Moreover there are some interesting aspects of these analyses that could be interesting for social science researchers, too.
+
+For one the misclassifications of a model can be related to the changes in policy of a party. This can be helpful to quantitatively back up such a change in policy with more than just anecdotal evidence from single texts. Second analysing the word-party correlations shows some discriminative words that are also used by the classifier to determine political bias. This insight can be related to the political views of a party and allows for validation of the models by human experts. Third when correlating the sentiment of a speech with proxies of political power there is a strong and significant positive correlation between political power and positive sentiment. This supports the (probably trivial) intuition that if we read a text that has a positive opinion on what the party in power does, the author of the text is probably affiliated with those in power. While such an insight of something rather obvious in itself might not be very useful, the technology behind it is: Sentiment analysis, and in particular such a simple approach as used here, can be easily automated and scaled up to massive amounts of text data. Having established such a way of relating this aspect of media content to the political bias allows to automate political bias direction using the proxy of sentiments, which are a rather domain-independent measure. 
+
+One of the main limitations of an automated political bias prediction system is the availability of training data. Every training data set that is publicly available has an inherent bias as it is taken from a different domain. This study tried to quantify the impact of this, but not in all settings we had out-of-domain data to quantify generalization performance across text domains. 
+For the cases where we had evaluation data from two domains there was a pronounced shift in performance between in-domain evaluation set and out-of-domain evaluation set. This was to be expected, given that the texts are written for a different audience and in completely different styles. This results in quite some non-stationarities or covariate shifts between the in-domain and out-of-domain evaluation data. Another important issue was that the semantic units in the case of the out-of-domain data were of much shorter length (often just parts of a sentence) and hence much noisier than the in-domain evaluation data. \\
+
+Taken together the results show that when training on one domain and evaluating on an entirely different domain one can still obtain above chance performance, even though there is a significant drop in performance. The generalization performance across domains will be an important topic of future research. The aim of this study was mainly to assess the impact of this effect, but if the goal is to minimize the generalization performance the simplest solution, next to more complicated approaches from semisupervised learning, non-stationary methods or covariate shift approaches, is to simply include data from different -- possibly very heterogeneous -- domains in the training data set.  A popular approach is to integrate data from social networks such as Facebook, as advocated for instance in \cite{Arzheimer2016}. \\
+
+All data sets used in this study were publicly available, all code for experiments and the live web application can be found online \cite{fipi, fipidemo}.
 %-- in fact even the very definition of a spectrum could be considered a difficult problem. The aim of this study is to investigate
 
-
-\small
 \subsection*{Acknowledgements}
-
+This study would not have been possible without the open data initiatives behind the code and projects that led to the publicly available data sets and APIs described in \autoref{sec:data}.
 %
 \small{
 \bibliographystyle{plain}
