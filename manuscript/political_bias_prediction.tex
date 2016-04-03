@@ -276,13 +276,14 @@ Classification performance on the binary prediction problem in the 18th legislat
 
 
 \subsection{Predicting political views}
+Parties change their policies and positions in the political spectrum. More reliable categories for political bias are party independent labels for political standpoints. These are provided by social scientists in the manifesto project \cite{manifesto}. A separate suite of experiments was run to train and test the prediction performance of the text classifiers models described in \autoref{sec:models} on the manifesto code labels. As we do not have an out-of-domain evaluation set for this type of experiment we only report evaluation error. Note however that also in this experiment the evaluation data was never seen by any model during training time.
+Note that a precision of close to 0.5 is rather high considering the large number of labels. 
 
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{lrrrr}
     &         precision    &recall &  f1-score  & N\\
 \hline\hline
-test set    &  0.48   &   0.47  &    0.47  &    2651\\
 evaluation set    &  0.47    &  0.46 &     0.46 &     2946\\
 %
 \end{tabular}
