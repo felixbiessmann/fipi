@@ -13,6 +13,9 @@ import itertools
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy import double,zeros
 
+
+codes = [x['label'] for x in json.load(open("data/nullPrediction.json"))['manifestocode']]
+
 def get_news(sources=['spiegel','faz','welt','zeit']):
     '''
     Collects all news articles from political ressort of major German newspapers
@@ -33,7 +36,7 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
     articles = []
     
     # the classifier for prediction of political attributes 
-    clf = classifier.Classifier(train=False)
+    clf = classifier.Classifier(train=True)#False)
     
     for source in sources:
 
@@ -84,7 +87,7 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
                 articles.append((title,prediction))
             except:
                 print('Could not get text from %s'%url)
-                pass
+                #pass
 
     # do some topic modeling
     topics = kpca_cluster(map(lambda x: x[1]['text'][0], articles))
@@ -176,6 +179,16 @@ def kpca_cluster(data,nclusters=20,topwhat=10):
 
     return clusters
 
+def embed_manifesto_prediction(articles):
+    # get predictions
+    preds = []
+    for article in articles:
+        p = sp.zeros(len(codes))
+        for code in article[1]['manifestocode']: 
+            p[codes.index(x['label'])] = code['prediction']
+        preds.append(p)
+    return preds
+
 def write_distances_json(folder='model'):
     articles, data = get_news()
     distances_json = {
@@ -206,3 +219,5 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     if args['distances']:
         write_distances_json(folder=args['folder'])
+
+
