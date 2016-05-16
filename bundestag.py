@@ -9,7 +9,7 @@ import scipy as sp
 from classifier import Classifier
 from party_classifier import PartyClassifier
 from sklearn import metrics, cross_validation
-from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer,TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer,CountVectorizer,TfidfTransformer,TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics.pairwise import cosine_similarity
@@ -56,6 +56,31 @@ bundestagSeats = {
 def nullPrediction(parties=['linke','gruene','spd','cducsu']):
     return dict([(k, 1.0/len(parties)) for k in parties])
 
+def get_raw_text_bundestag_timeseries(folder="data/out", legislationPeriod=17):
+    '''
+    Loads raw text and labels from bundestag sessions
+    (Preprocessed with https://github.com/bundestag/plpr-scraper, saved in json)
+    '''
+    data = []
+    labels = []
+    timestamp = []
+    for f in glob.glob(folder+'/%d*.json'%legislationPeriod):
+        speechdata,speechlabels=[],[]
+        speeches = json.load(open(f))
+        for speech in speeches:
+            if speech['type']=='speech' and \
+            speech['speaker_party'] is not None and \
+            speech['speaker_party'] in bundestagParties[legislationPeriod] and \
+            len(speech['text']) > MINLEN_SPEECH:
+                speechdata.append(speech['text'])
+                speechlabels.append(speech['speaker_party'])
+        if len(speechdata) > 0:
+            df = pd.DataFrame(zip(speechlabels,speechdata),columns=['labels','text']).groupby('labels').sum()
+            labels.extend(df.index.tolist())
+            data.extend(df.values.flatten().tolist())
+            timestamp.extend([speech['filename']]*len(df))
+    return data,labels,timestamp
+
 def get_raw_text_bundestag(folder="data/out", legislationPeriod=17):
     '''
     Loads raw text and labels from bundestag sessions
@@ -75,13 +100,13 @@ def get_raw_text_bundestag(folder="data/out", legislationPeriod=17):
     return data,labels
 
 def run_experiments():
-    for legis in [18]:
-        classify_speeches_binary_manifesto(legis);
-        classify_speeches_binary_parliament(legis);
-        classify_speeches_party_manifesto(legis);
+    for legis in [17,18]:
+        #classify_speeches_binary_manifesto(legis);
+        #classify_speeches_binary_parliament(legis);
+        #classify_speeches_party_manifesto(legis);
         classify_speeches_party_parliament(legis);
-        get_sentiments(legis)
-        get_word_correlations(legis)
+        #get_sentiments(legis)
+        #get_word_correlations(legis)
 
 def get_sentiments(legis=17):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legis)
@@ -181,7 +206,7 @@ def get_raw_text_manifesto(folder="data", legislationPeriod=17):
     return zip(*chain(*filter(None,map(csv2ManifestoCodeTuple,files))))
 
 def csv2ManifestoCodeTuple(f):
-    df = pd.read_csv(f,quotechar="\"")[['content','cmp_code']].dropna()
+    df = pd.read_csv(f,quotechar="\"")[['content','cmp_code']]
     return zip(df['content'].tolist(),df['cmp_code'].map(int).tolist())
 
 def get_raw_text(folder="data", legislationPeriod=18):
@@ -229,23 +254,24 @@ def csv2DataTupleTopics(f):
     df['topic'] = ((df['cmp_code'].dropna()) / 100).apply(lambda x: int(x))
     partyId = f.split('/')[-1].split('_')[0]
     party = [k for (k,v) in partyManifestoMap.items() if str(v) == partyId]
-    contentByTopic = df.groupby('topic')['content'].sum().tolist()
-    return zip(contentByTopic, party * len(contentByTopic))
+    contentByTopic = df.groupby('topic')['content'].sum()
+    return zip(contentByTopic.tolist(), [party[0] + ":%d"%topic for topic in contentByTopic.index.tolist()])
 
 def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
     stops = get_stops()
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='auto'))])
-    parameters = {'vect__ngram_range': [(1, 1), (1,2), (1,3)],\
-           'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(-1,5,1.)).tolist(),
-        'vect__max_df':[0.01, 0.1, .5, 1.0],
+                            ('clf',LogisticRegression(class_weight='balanced'))])
+    parameters = {'vect__ngram_range': [(1,2)],\
+           #'vect__stop_words':(None,stops),\
+           #'tfidf__use_idf': (True,False),\
+           'clf__C': (10.**sp.arange(1,5,1.)).tolist(),
+           'vect__max_df':[.3, .5, .75],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
     # optimize hyperparams on training set
-    gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(y_train, folds), n_jobs=-1,verbose=4)
+    gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(y_train, folds), n_jobs=-1,verbose=1)
     # train on training set
     best_clf = gs_clf.fit(X_train, y_train).best_estimator_
     # test on test set
@@ -304,6 +330,38 @@ def classify_speeches_party_manifesto(legislationPeriod = 18):
     evalData, evalLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     trainData, trainLabels = get_raw_text(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="manifesto-train-%d"%legislationPeriod)
+
+def party_similarity(text,bow,partyVecs):
+    cosine_similarity(partyVecs,bow.transform([text]))
+
+def plot_similarity_sessions_party_manifesto(legislationPeriod = 18):
+    evalData, evalLabels, timestamp = get_raw_text_bundestag_timeseries(legislationPeriod=legislationPeriod)
+    trainData, trainLabels = get_raw_text_topics(legislationPeriod=legislationPeriod)
+    stops = get_stops()
+    text_preprocessing = Pipeline([('vect', CountVectorizer(ngram_range=(1,2),stop_words=stops)),('tfidf', TfidfTransformer())])
+    # train bow vectorizer
+    bow = text_preprocessing.fit(evalData + list(trainData))
+    mf = bow.transform(trainData)
+    df = pd.DataFrame(zip(evalData, evalLabels, timestamp),columns=['text','labels','timestamp'])
+    df['sims'] = [cosine_similarity(mf, bow.transform([t[1][0]])).flatten() for t in df.iterrows()]
+    sessions = df.groupby(['timestamp','labels'])
+    parties = df['labels'].unique().tolist()
+    partySimTimeseries = {k:[] for k in parties}
+    for sess,idcs in sessions.groups.items():
+        partySimTimeseries[sess[1]].append(df.ix[idcs]['sims'].tolist())
+
+    import pylab as pl
+    pl.figure(figsize=(7,10))
+    pl.ion()
+    for p in parties:
+        pl.clf()
+        pl.imshow(sp.vstack(partySimTimeseries[p]).T,aspect='auto',interpolation='nearest')
+        pl.yticks(range(len(trainLabels)),trainLabels)
+        pl.xlabel("#session")
+        pl.title("Similarity session BOW vector %s with manifesto BOW"%p)
+        pl.savefig(OUT_DIR + "/timeseries-%s-legislationPeriod-%d.pdf"%(p,legislationPeriod))
+        
+    
 
 def classify_speeches_party(legislationPeriod = 18):
     from party_classifier import PartyClassifier
