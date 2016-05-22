@@ -102,7 +102,7 @@ def get_raw_text_bundestag(folder="data/out", legislationPeriod=17):
 def run_experiments():
     for legis in [17,18]:
         #classify_speeches_binary_manifesto(legis);
-        #classify_speeches_binary_parliament(legis);
+        classify_speeches_binary_parliament(legis);
         #classify_speeches_party_manifesto(legis);
         classify_speeches_party_parliament(legis);
         #get_sentiments(legis)
@@ -292,6 +292,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     labelsStr = [str(x) for x in final_clf.steps[-1][1].classes_]
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
+    import pdb;pdb.set_trace()
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
     return report
@@ -377,8 +378,6 @@ def classify_speeches_party(legislationPeriod = 18):
             speech['speaker_party'] is not None and \
             speech['speaker_party'] in bundestagParties[legislationPeriod] and \
             len(speech['text']) > MINLEN:
-                import pdb
-                pdb.set_trace()
                 prediction = pclf.predict(speech['text'])
                 predictedParty.append(sp.argmax(prediction.values()))
                 trueParty.append(prediction.keys().index(speech['speaker_party']))
@@ -388,6 +387,8 @@ def classify_speeches_party(legislationPeriod = 18):
     for line in metrics.confusion_matrix(trueParty, predictedParty).tolist():
         report += str(line)+"\n" 
     open(OUT_DIR+'/report','wb').write(report)
+    import pdb;pdb.set_trace()
+    report += "Accuracy: %d" + accuracy_score(trueParty,predictedParty)
     return report
 
 def plot_leftright():
