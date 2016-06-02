@@ -16,7 +16,7 @@ from scipy import double,zeros
 
 codes = [x['label'] for x in json.load(open("data/nullPrediction.json"))['manifestocode']]
 
-def get_news(sources=['spiegel','faz','welt','zeit']):
+def get_news(sources=['spiegel','sz','faz','welt','zeit']):
     '''
     Collects all news articles from political ressort of major German newspapers
     Articles are transformed to BoW vectors and assigned to a political party
@@ -61,7 +61,7 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
             titles = site.findAll("a", { "class" : "as_teaser-kicker" })
             urls = [a['href'] for a in titles]
          
-        if source is 'sz-without-readability':
+        if source is 'sz':
             # fetching articles from sueddeutsche.de/politik
             url = 'http://www.sueddeutsche.de/politik'
             site = BeautifulSoup(urllib2.urlopen(url).read())
@@ -99,6 +99,81 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
     # store current news and topics
     json.dump(articles,open('news.json','wb'))
     json.dump(topics,open('topics.json','wb'))
+
+def get_daily_news(sources=['faz','welt','sz']):
+    '''
+    Collects all news articles from political ressort of major German newspapers
+    Articles are transformed to BoW vectors and assigned to a political party
+    For better visualization, articles' BoW vectors are also clustered into topics
+
+    INPUT
+    folder      the model folder containing classifier and BoW transformer
+    sources     a list of strings for each newspaper for which a crawl is implemented
+                default ['zeit','sz']
+
+    '''
+    from bs4 import BeautifulSoup
+    from api import fetch_url
+    import urllib2
+    
+    articles = []
+    
+    for source in sources:
+
+        if source is 'spiegel':
+            # fetching articles from sueddeutsche.de/politik
+            url = 'http://www.spiegel.de/politik'
+            site = BeautifulSoup(urllib2.urlopen(url).read())
+            titles = site.findAll("div", { "class" : "teaser" })
+            urls = ['http://www.spiegel.de'+a.findNext('a')['href'] for a in titles]
+         
+        if source is 'faz':
+            # fetching articles from sueddeutsche.de/politik
+            url = 'http://www.faz.net/aktuell/politik'
+            site = BeautifulSoup(urllib2.urlopen(url).read())
+            titles = site.findAll("a", { "class" : "TeaserHeadLink" })
+            urls = ['http://www.faz.net'+a['href'] for a in titles]
+         
+        if source is 'welt':
+            # fetching articles from sueddeutsche.de/politik
+            url = 'http://www.welt.de/politik'
+            site = BeautifulSoup(urllib2.urlopen(url).read())
+            titles = site.findAll("a", { "class" : "as_teaser-kicker" })
+            urls = [a['href'] for a in titles]
+         
+        if source is 'sz':
+            # fetching articles from sueddeutsche.de/politik
+            url = 'http://www.sueddeutsche.de/politik'
+            site = BeautifulSoup(urllib2.urlopen(url).read())
+            titles = site.findAll("div", { "class" : "teaser" })
+            urls = [a.findNext('a')['href'] for a in titles]
+       
+        if source is 'zeit':
+            # fetching articles from zeit.de/politik
+            url = 'http://www.zeit.de/politik'
+            site = BeautifulSoup(urllib2.urlopen(url).read())
+            urls = [a['href'] for a in site.findAll("a", { "class" : "teaser-small__combined-link" })]
+
+        print "Found %d articles on %s"%(len(urls),url)
+         
+        # predict party from url for this source
+        print "Collecting articles from %s"%source
+        for url in urls:
+            try:
+                title,text = fetch_url(url)
+                articles.append({'title':title,'text':text,'source':source,'url':url})
+            except:
+                print('Could not get text from %s'%url)
+                #pass
+    date = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d-%H:%M:%S')
+    json.dump(articles,open('news-%s.json'%date,'wb'))
+
+
+def get_daily_news_job():
+    from apscheduler.schedulers.background import BackgroundScheduler
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(get_daily_news, 'interval', hours=6)
+    scheduler.start()
 
 def load_sentiment(negative='SentiWS_v1.8c/SentiWS_v1.8c_Negative.txt',\
         positive='SentiWS_v1.8c/SentiWS_v1.8c_Positive.txt'):

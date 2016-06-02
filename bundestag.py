@@ -197,6 +197,17 @@ def list_top_words(legis=17,topwhat=10):
         pylab.rc('font', **font)
         pylab.savefig(OUT_DIR+'/party_word_correlations-%s-%d.pdf'%(party,legis),bbox_inches='tight')
 
+def newsFileTuple(nf):
+    return [(x['text'],x['source']) for x in json.load(open(nf))]
+
+def get_raw_text_news(folder="data", prefix="news-2016"):
+    '''
+    Loads raw text and labels from news article files
+    (Downloaded using newsreader.get_daily_news())
+    '''
+    files = glob.glob(folder+"/"+prefix+"*")
+    return zip(*chain(*filter(None,map(newsFileTuple,files))))
+
 def get_raw_text_manifesto(folder="data", legislationPeriod=17):
     '''
     Loads raw text and labels from manifestoproject csv files
@@ -257,6 +268,51 @@ def csv2DataTupleTopics(f):
     contentByTopic = df.groupby('topic')['content'].sum()
     return zip(contentByTopic.tolist(), [party[0] + ":%d"%topic for topic in contentByTopic.index.tolist()])
 
+def news_experiment(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
+    stops = get_stops()
+    text_clf = Pipeline([('vect', CountVectorizer()),
+                            ('tfidf', TfidfTransformer()),
+                            ('clf',LogisticRegression(class_weight='balanced'))])
+    parameters = {'vect__ngram_range': [(1,2)],\
+           #'vect__stop_words':(None,stops),\
+           #'tfidf__use_idf': (True,False),\
+           'clf__C': (10.**sp.arange(1,5,2.)).tolist(),
+           #'vect__max_df':[.3, .5, .75],
+        }
+    saveId = idstr+"-"+randid()
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
+    # optimize hyperparams on training set
+    gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(y_train, folds), n_jobs=-1,verbose=1)
+    # train on training set
+    best_clf = gs_clf.fit(X_train, y_train).best_estimator_
+    # test on test set
+    test_clf = text_clf.set_params(**best_clf.get_params()).fit(X_train,y_train)
+    predictedTest = test_clf.predict(X_test)
+    # dump report on training held out data with CV
+    report = "*** Training Set (CVd) ***\n" + metrics.classification_report(y_test, predictedTest)
+    labelsStr = [str(x) for x in test_clf.steps[-1][1].classes_]
+    report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
+    for line in metrics.confusion_matrix(y_test, predictedTest).tolist(): report += str(line)+"\n" 
+    # train again on entire training set
+    final_clf = text_clf.set_params(**best_clf.get_params()).fit(trainData, trainLabels)
+    # dump report on training held out data with CV
+    labels = {'welt': {'cducsu':.743+.029, 'fdp':.086},
+    'faz': {'cducsu':.743, 'fdp':.057},
+    'sz': {'spd':.686,'fdp':.057,'gruene':.085, 'cducsu':.0290}}
+    # transform human judgements into vectors so we can compare with classifier output
+    y = [[labels[evl][l] if l in labels[evl] else 0.0 for l in labelsStr] if evl in labels else [0]*len(labelsStr) for evl in evalLabels]
+    humanJudgements = sp.array(y)
+    predictedEval = final_clf.predict_proba(evalData)
+    C = corrcoef(predictedEval,humanJudgements)
+    corrs = sp.diag(C[predictedEval.shape[0]:,:humanJudgements.shape[0]])
+    # correlations of human newspaper jugdement and party predictions per news paper
+    npp = [[corrs[idx] for idx,evl in enumerate(evalLabels) if evl == l] for l in labels.keys()]
+    perc = [25,50,75]
+    corrsPercentiles = dict([(np,[sp.percentile(npp[labels.keys().index(np)],p) for p in perc]) for np in labels.keys()])
+    import pdb;pdb.set_trace()
+    
+    print("\n".join([x[0]+":\tperc "+"\t".join(["%d:%0.2f"%y for y in zip(perc,x[1])]) for x in corrsPercentiles.items()]))
+
 def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
     stops = get_stops()
     text_clf = Pipeline([('vect', CountVectorizer()),
@@ -292,7 +348,6 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     labelsStr = [str(x) for x in final_clf.steps[-1][1].classes_]
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
-    import pdb;pdb.set_trace()
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
     return report
@@ -331,6 +386,12 @@ def classify_speeches_party_manifesto(legislationPeriod = 18):
     evalData, evalLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     trainData, trainLabels = get_raw_text(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="manifesto-train-%d"%legislationPeriod)
+
+def classify_speeches_party_news(legislationPeriod = 17):
+    evalData, evalLabels = get_raw_text_news()
+
+    trainData, trainLabels = get_raw_text(legislationPeriod=legislationPeriod)
+    news_experiment(trainData,trainLabels, evalData, evalLabels,idstr="manifesto-train-%d"%legislationPeriod)
 
 def party_similarity(text,bow,partyVecs):
     cosine_similarity(partyVecs,bow.transform([text]))
