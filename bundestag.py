@@ -274,10 +274,10 @@ def news_experiment(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='d
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='balanced'))])
     parameters = {'vect__ngram_range': [(1,2)],\
-           #'vect__stop_words':(None,stops),\
-           #'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(1,5,2.)).tolist(),
-           #'vect__max_df':[.3, .5, .75],
+           'vect__stop_words':(None,stops),\
+           'tfidf__use_idf': (True,False),\
+           'clf__C': (10.**sp.arange(1,5,1.)).tolist(),
+           'vect__max_df':[.3, .5, .75],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -309,9 +309,9 @@ def news_experiment(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='d
     npp = [[corrs[idx] for idx,evl in enumerate(evalLabels) if evl == l] for l in labels.keys()]
     perc = [25,50,75]
     corrsPercentiles = dict([(np,[sp.percentile(npp[labels.keys().index(np)],p) for p in perc]) for np in labels.keys()])
-    import pdb;pdb.set_trace()
     
     print("\n".join([x[0]+":\tperc "+"\t".join(["%d:%0.2f"%y for y in zip(perc,x[1])]) for x in corrsPercentiles.items()]))
+    import pdb;pdb.set_trace()
 
 def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='default'):
     stops = get_stops()
