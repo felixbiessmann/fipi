@@ -1,26 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2015 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% This is the LaTeX source for the instructions to authors using
-% the LaTeX document class 'llncs.cls' for contributions to
-% the Lecture Notes in Computer Sciences series.
-% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
-%
-% It may be used as a template for your own input - copy it
-% to a new file with a new name and use it as the basis
-% for your article.
-%
-% NB: the document class 'llncs' has its own and detailed documentation, see
-% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2015,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
 
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure} 
 
-\documentclass[runningheads,a4paper]{llncs}
-
-\setcounter{tocdepth}{3}
-\usepackage{graphicx}
-% For citations
 \usepackage{natbib}
 \usepackage{amsmath,amsfonts,amscd,amssymb}
 \usepackage{dsfont}
@@ -33,52 +26,53 @@
 \usepackage{multicol}
 \usepackage{multirow}
 \usepackage{pbox}
-\usepackage{url}
-\urldef{\mailsa}\path|{felix.biessmann,|
-\newcommand{\keywords}[1]{\par\addvspace\baselineskip
-\noindent\keywordname\enspace\ignorespaces#1}
 
-\begin{document}
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2015} with
+% \usepackage[nohyperref]{icml2015} above.
+\usepackage{hyperref}
 
-\mainmatter  % start of an individual contribution
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
 
-% first the title is needed
-\title{Automating Political Bias Prediction}
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2015} 
 
-% a short form should be given in case it is too long for the running head
-\titlerunning{Political Bias Prediction}
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2015}
 
-% the name(s) of the author(s) follow(s) next
-%
-% NB: Chinese authors should write their first names(s) in front of
-% their surnames. This ensures that the names appear correctly in
-% the running heads and the author index.
-%
-\author{
-Felix Biessmann
-\thanks{felix.biessmann@gmail.com}
-%
-\authorrunning{Political Bias Prediction}}
-% (feature abused for this document to repeat the title also on left hand pages)
 
-% the affiliations are given next; don't give your e-mail address
-% unless you accept that it will be published
-%\institute{
-%\mailsa\\
-%\mailsb\\
-%\mailsc\\
-%\url{http://www.springer.com/lncs}}
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Automating Political Bias Prediction}
 
-%
-% NB: a more complex sample for affiliations and the mapping to the
-% corresponding authors can be found in the file "llncs.dem"
-% (search for the string "\mainmatter" where a contribution starts).
-% "llncs.dem" accompanies the document class "llncs.cls".
-%
+\begin{document} 
 
-\toctitle{Political Bias Prediction}
-\tocauthor{}
-\maketitle
+\twocolumn[
+\icmltitle{Automating Political Bias Prediction}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2015
+% package.
+\icmlauthor{Felix Biessmann}{felix.biessmann@gmail.com}
+\icmladdress{}
+\icmlauthor{Pola Lehmann}{pola.lehmann@wzb.eu}
+\icmladdress{Wissenschaftszentrum Berlin}
+
+% You may provide any keywords that you 
+% find helpful for describing your paper; these are used to populate 
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{}
+
+\vskip 0.3in
+]
 
 \begin{abstract} 
 Every day media generate large amounts of text. An unbiased view on media reports requires an understanding of the political bias of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. This study proposes a simple statistical learning approach to predict political bias from text. Standard text features extracted from speeches and manifestos of political parties are used to predict political bias in terms of political party affiliation and in terms of political views. Results indicate that political bias can be predicted with above chance accuracy. Mistakes of the model can be interpreted with respect to changes of policies of political actors. Two approaches are presented to make the results more interpretable: a) discriminative text features are related to the political orientation of a party and b) sentiment features of texts are correlated with a measure of political power. Political power appears to be strongly correlated with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
@@ -96,18 +90,6 @@ Ideally one would choose for each topic a sample of reports from the entire poli
 When human experts determine political bias of texts they will take responsibility for what they say about a text, and they can explain their decisions. This is a key difference to many statistical learning approaches. Not only is the responsibility question problematic, it can also be difficult to interpret some of the decisions. In order to validate and explain the predictions of the models three strategies that allow for better interpretations of the models are proposed. First the model misclassifications are related to changes in party policies. Second univariate measures of correlation between text features and party affiliation allow to relate the predictions to the kind of information that political experts use for interpreting texts. Third sentiment analysis is used to investigate whether this aspect of language has discriminatory power. 
 
 In the following \autoref{sec:related} briefly surveys some related work, thereafter \autoref{sec:data} gives an overview of the data acquisition and preprocessing methods, \autoref{sec:model} presents the model, training and evaluation procedures; in \autoref{sec:results} the results are discussed and \autoref{sec:conclusion} concludes with some interpretations of the results and future research directions. 
-
-\section{Related Work}\label{sec:related}
-Throughout the last years automated content analyses for political texts have been conducted on a variety of text data sources (parliament data \, blogs, tweets, news articles, party manifestos) with a variety of methods, including sentiment analysis, stylistic analyses, standard bag-of-word (BOW) text feature classifiers and more advanced natural language processing tools. 
-While a complete overview is beyond the scope of this work, the following paragraphs list similarities and differences between this study and previous work. For a more complete overview we refer the reader to \cite{Grimmer2013,Kaal2014}. 
-
-A similar approach to the one presented here was taken in \cite{Yu2008}. The authors extracted BOW feature vectors and applied linear classifiers to predict political party affiliation of US congress speeches. They used data from the two chambers of the US congress, House and Senat, in order to assess generalization performance of a classifier trained on data from one chamber and tested on data from another. They found that accuracies of the model when trained on one domain and tested on another were significantly decreased. Generalization was also affected by the time difference between the political speeches used for training and those used for testing. 
-
-Other work has focused on developing dedicated methods for predicting political bias. Two popular methods are WordFish \cite{Slapin08ascaling} and WordScores \cite{Laver2003}, or improved versions thereof, see e.g. \cite{Lowe09scalingpolicy}. These approaches have been very valuable for {\em a posteriori} analysis of historical data but they do not seem to be used as much for analyses of new data in a predictive analytics setting. Moreover direct comparisons of the results obtained with these so called {\em scaling} methods with the results of the present study or those of studies as \cite{Yu2008} are difficult, due to the different modeling and evaluation approaches: Validations of WordFish/WordScore based analyses often compare parameter estimates of the different models rather than predictions of these models on held-out data with respect to the same type of labels used to train the models. 
-
-Finally Hirst et al conducted a large number of experiments on data from the Canadian parliament and the European parliament; these experiments can be directly compared to the present study both in terms of methodology but also with respect to their results \cite{Hirst2014}. The authors show that a linear classifier trained on parliament speeches uses language elements of defense and attack to classify speeches, rather than ideological vocabulary. The authors also argue that emotional content plays an important role in automatic analysis of political texts. Furthermore their results show a clear dependency between length of a political text and the accuracy with which it can be classified correctly. 
-
-Taken together, there is a large body of literature in this expanding field in which scientists from quantitative empirical disciplines as well as political science experts collaborate on the challenging topic of automated analysis of political texts. Except for few exceptions most previous work has focused on binary classification\footnote{Many parliaments only have two parties and many studies chose binary classification schemes within manually defined topics and generic schemes such as conservative vs liberal or left vs right.} or on assignment of a one dimensional policy position (mostly left vs right). Yet many applications require to take into account more subtle differences in political policies. This work focuses on more fine grained political view prediction: for one, the case of the german parliament is more diverse than two parliament systems, allowing for a distinction between more policies; second the political view labels considered are more fine grained than in previous studies. While previous studies used such labels only for partitioning training data \cite{Slapin08ascaling} (which is not possible at test time in real-world applications where these labels are not known) the experiments presented in this study directly predict these labels. Another important contribution of this work is that many existing studies are primarily concerned with {\em a posteriori} analysis of historical data. This work aims at prediction of political bias on out-of-domain data with a focus on the practical application of the model on new data, for which a prototypical web application is provided. The experiments on out-of-domain generalization complement the work of \cite{Yu2008, Hirst2014} with results from data of the german parliament and novel sentiment analyses. 
 
 \section{Data Sets and Feature Extraction}\label{sec:data}
 %
@@ -322,7 +304,7 @@ In order to investigate the errors the models made confusion matrices were extra
 \end{table}
 
 
-\begin{table}[t]
+\begin{table*}[t]
 \caption{
 \label{tab:results_binary_17}
 Classification performance on the binary prediction problem in the 17th legislative period, categorizing speeches into government (FDP/CDU/CSU) and opposition (Linke, Gr\"une, SPD).
@@ -340,9 +322,9 @@ avg / total   &    0.85 &     0.85 &     0.85  &    2279 & 0.65  &     0.63  &  
 %
 \end{tabular}
 \end{center}
-\end{table}
+\end{table*}
 
-\begin{table}[t]
+\begin{table*}[t]
 \caption{
 \label{tab:results_binary_18}
 Classification performance on the binary prediction problem in the 18th legislative period, categorizing speeches into government (SDP/CDU/CSU) and opposition (Linke, Gr\"une).
@@ -359,7 +341,7 @@ avg / total    &   0.88    &  0.88     & 0.87  &    1132 &  0.62   &   0.60    &
 %
 \end{tabular}
 \end{center}
-\end{table}
+\end{table*}
 
 
 \subsection{Predicting political views}
@@ -496,4 +478,16 @@ I would like to thank Friedrich Lindenberg for factoring out the \url{https://gi
 }
 
 
-\end{document}
+\end{document} 
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was
+% created by Lise Getoor and Tobias Scheffer, it was slightly modified  
+% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz, 
+% slightly modified from the 2009 version by Kiri Wagstaff and 
+% Sam Roweis's 2008 version, which is slightly modified from 
+% Prasad Tadepalli's 2007 version which is a lightly 
+% changed version of the previous year's version by Andrew Moore, 
+% which was in turn edited from those of Kristian Kersting and 
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.  
