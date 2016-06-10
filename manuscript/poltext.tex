@@ -12,7 +12,7 @@
 % For figures
 \usepackage{graphicx} % more modern
 %\usepackage{epsfig} % less modern
-\usepackage{subfigure} 
+\usepackage{subfigure}
 
 \usepackage{natbib}
 \usepackage{amsmath,amsfonts,amscd,amssymb}
@@ -40,7 +40,7 @@
 % Employ the following version of the ``usepackage'' statement for
 % submitting the draft version of the paper for review.  This will set
 % the note in the first column to ``Under review.  Do not distribute.''
-\usepackage{icml2015} 
+\usepackage{icml2015}
 
 % Employ this version of the ``usepackage'' statement after the paper has
 % been accepted, when creating the final version.  This will set the
@@ -52,7 +52,7 @@
 % Therefore, a short form for the running title is supplied here:
 \icmltitlerunning{Automating Political Bias Prediction}
 
-\begin{document} 
+\begin{document}
 
 \twocolumn[
 \icmltitle{Automating Political Bias Prediction}
@@ -66,51 +66,49 @@
 \icmlauthor{Pola Lehmann}{pola.lehmann@wzb.eu}
 \icmladdress{Wissenschaftszentrum Berlin}
 
-% You may provide any keywords that you 
-% find helpful for describing your paper; these are used to populate 
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
 % the "keywords" metadata in the PDF but will not be shown in the document
 \icmlkeywords{}
 
 \vskip 0.3in
 ]
 
-\begin{abstract} 
+\begin{abstract}
 Every day media generate large amounts of text. An unbiased view on media reports requires an understanding of the political bias of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. This study proposes a simple statistical learning approach to predict political bias from text. Standard text features extracted from speeches and manifestos of political parties are used to predict political bias in terms of political party affiliation and in terms of political views. Results indicate that political bias can be predicted with above chance accuracy. Mistakes of the model can be interpreted with respect to changes of policies of political actors. Two approaches are presented to make the results more interpretable: a) discriminative text features are related to the political orientation of a party and b) sentiment features of texts are correlated with a measure of political power. Political power appears to be strongly correlated with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
-\end{abstract} 
+\end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 %
-Modern media generate a large amount of content at an ever increasing rate. Keeping an unbiased view on what media report on requires to understand the political bias of texts. In many cases it is obvious which political bias an author has. In other cases some expertise is required to judge the political bias of a text. 
-%
-When dealing with large amounts of text however there are simply not enough experts to examine all possible sources and publications. Assistive technology can help in this context to try and obtain a more unbiased sample of information. 
+Analysis and classifications of political text is and has been a very important tool to generate political science data (Benoit et al. 2015). Traditionally such classifications are done by experts, who read and label the text of interest (see for example the Manifesto Project (Budge et al. 2001; Klingemann et al. 2006), the Comparative Agendas Project or Poltext (Pétry/Duval 2015)). This is, however, a very time consuming task and thus sets various limits to the possible amount of data that a few experts can analyze. The growing field of automated text analysis, that allows the analysis of much more text in less time, is therefore of great interest to political scientists. Additionally automated text analyses allow for a more objective and replicable analysis of political text then human coders could achieve (Benoit et al. 2009)
 
-Ideally one would choose for each topic a sample of reports from the entire political spectrum in order to form an unbiased opinion. But ordering media content with respect to the political spectrum at scale requires automated prediction of political bias. The aim of this study is to provide empirical evidence  indicating that leveraging open data sources of german texts, automated political bias prediction is possible with above chance accuracy. These experimental results  confirm and extend previous findings \cite{Yu2008, Hirst2014}; a novel contribution of this work is a proof of concept which applies this technology to sort news article recommendations according to their political bias. 
+One area which produces large amounts of text which are of high interest for political scientists is modern media. Standard newspapers, but also new forms as twitter, facebook or blogs produce an ever growing amount of text influencing political debate. These texts can be of interest to political scientist in various analyses. The question we will focus on in this analysis is the potential political bias that can be detected in these sources. In many cases it is obvious which political bias an author has. In other cases some expertise is required to judge the political bias of a text. Keeping an unbiased view on what media report on requires to understand the political bias of texts. Different newspaper outlets are, for example, often ascribed as favoring different positions on the political left-right axis. Data from the European Media Systems Survey show that experts clearly associate different media outlets with specific parties (http://www.mediasystemsineurope.org). However such expert surveys on the political bias of newspapers can normally only give us a very general tendency of a newspaper, they do not distinguish between different journalists or different sections. Assistive technology can help in this context to try and obtain a more unbiased sample of information. It gives us the possibility to get a more nuanced view of the spectrum of political positions favored in important news outlets in a country. In this paper we will test whether it is possible to automatically detect political bias in text and if such a model can be used on different kind of texts. The aim of this study is to provide some empirical evidence indicating that leveraging open data sources automated political bias prediction is possible with above chance accuracy. We will test our model on both in-domain and out-of-domain data. Prediction on out-of-domain data is less precise as on in-domain data, but still generating satisfying results.
 
-When human experts determine political bias of texts they will take responsibility for what they say about a text, and they can explain their decisions. This is a key difference to many statistical learning approaches. Not only is the responsibility question problematic, it can also be difficult to interpret some of the decisions. In order to validate and explain the predictions of the models three strategies that allow for better interpretations of the models are proposed. First the model misclassifications are related to changes in party policies. Second univariate measures of correlation between text features and party affiliation allow to relate the predictions to the kind of information that political experts use for interpreting texts. Third sentiment analysis is used to investigate whether this aspect of language has discriminatory power. 
+In order to validate and explain the predictions of the models three strategies that allow for better interpretations of the models are proposed. First the model misclassifications are related to changes in party policies. Second univariate measures of correlation between text features and party affiliation allow to relate the predictions to the kind of information that political experts use for interpreting texts. Third sentiment analysis is used to investigate whether this aspect of language has discriminatory power.
 
-In the following \autoref{sec:related} briefly surveys some related work, thereafter \autoref{sec:data} gives an overview of the data acquisition and preprocessing methods, \autoref{sec:model} presents the model, training and evaluation procedures; in \autoref{sec:results} the results are discussed and \autoref{sec:conclusion} concludes with some interpretations of the results and future research directions. 
+In the following \autoref{sec:data} gives an overview of the data acquisition and preprocessing methods, \autoref{sec:model} presents the model, training and evaluation procedures; in \autoref{sec:results} the results are discussed and \autoref{sec:conclusion} concludes with some interpretations of the results and future research directions.
 
 \section{Data Sets and Feature Extraction}\label{sec:data}
 %
-All experiments were run on publicly available data sets of german political texts and standard libraries for processing the text. The following sections describe the details of data acquisition and feature extraction. 
+All experiments were run on publicly available data sets of German political texts and standard libraries for processing the text. The following sections describe the details of data acquisition and feature extraction.
 
 \subsection{Data}
-Annotated political text data was obtained from two sources: a) the discussions and speeches held in the german parliament ({\em Bundestag}) and b) all manifesto texts of parties running for election in the german parliament in the current 18th and the last, 17th, legislation period.
+Annotated political text data was obtained from two sources: a) the discussions and speeches held in the German parliament ({\em Bundestag}) and b) all manifesto texts of parties winning seats in the election to the German parliament in the current 18th and the last, 17th, legislative period. For the 18th period we also added the manifesto data of three additional parties that did not win seats but nonetheless played a very important role in the political discourse in the run-up to the election.
 
-\paragraph{Parliament discussion data} Parliament texts are annotated with the respective party label, which we take here as a proxy for political bias. The texts of parliament protocols are available through the website of the german bundestag\footnote{\url{https://www.bundestag.de/protokolle}}; an open source API was used to query the data in a cleaned and structured format\footnote{\url{https://github.com/bundestag}}. In total 22784 speeches were extracted for the 17th legislative period and 11317 speeches for the 18th period, queried until March 2016. 
+\paragraph{Parliament discussion data} Parliament texts are annotated with the respective party label, which we take here as a proxy for political bias. The protocols of plenary debates are available through the website of the German Bundestag\footnote{\url{https://www.bundestag.de/protokolle}}; an open source API was used to query the data in a cleaned and structured format\footnote{\url{https://github.com/bundestag}}. In total 22784 speeches were extracted for the 17th legislative period and 11317 speeches for the 18th period, queried until March 2016.
 
 \paragraph{Party manifesto data}
-For party manifestos another openly accessible API was used, provided by the Wissenschaftszentrum Berlin (WZB). The API is released as part of the {\em Manifestoproject} \cite{manifesto}. The data released in this project comprises the complete manifestos for each party that ran for election enriched with annotations by political experts. Each sentence (in some cases also parts of sentences) is annotated with one of 56 political labels. Examples of these labels are {\em pro/contra protectionism, decentralism, centralism, pro/contra welfare}; for a complete list and detailed explanations on how the annotators were instructed see \cite{leftright}. The set of labels was developed by political scientists at the WZB and released for public use. All manifestos of parties that were running for election in this and the last legislative period were obtained. In total this resulted in 29451 political statements that had two types of labels: First the party affiliation of each political statement; this label was used to evaluate the party evaluation classifiers trained on the parliament speeches. For this purpose the data acquisition was constrained to only those parties that were elected into the parliament. Next to the party affiliation the political view labels were extracted. For the analyses based on political view labels all parties were considered, also those that did not make it into the parliament. 
+The party manifesto text was taken from the Manifesto Corpus (add citation). The Corpus is accessible through an publicly available API published by the {\em Manifesto Project} \cite{manifesto}. The data released in this project mainly comprises the complete manifestos of all parties that have won seats at a national election. Each quasi-sentence \footnote{A quasi-sentence has the length of an argument. It is never longer than one sentence.} is annotated with one of 56 policy goals. Examples for the policy categories are {\em welfare state expansion, welfare state limitation, democracy, equality}; for a complete list and detailed explanations on how the annotators were instructed see \cite{leftright}. In total the 12 manifestos from the 17th and 18th legislative period have been divided into 29451 quasi-sentences. Each observation has been added with two labels: the party affiliation and the manually assigned policy goal aimed at in each specific statement. The party affiliation was used to evaluate the party evaluation classifiers trained on the parliament speeches. For this purpose the data acquisition was constrained to only those parties that were elected into the parliament. For the analyses based on policy issues all parties were considered, also those three that did not make it into parliament.
 
-The length of each annotated statement in the party manifestos was rather short. The longest statement was 522 characters long, the 25\%/50\%/75\% percentiles were 63/95/135 characters. Measured in words the longest data point was 65 words and the 25\%/50\%/75\% percentiles were 8/12/17 words, respectively. This can be considered as a very valuable property of the data set, because it allows a fine grained resolution of party manifestos. However for a classifier (as well as for humans) such short sentences can be rather difficult to classify. In order to obtain less 'noisy' data points from each party -- for the party affiliation task only -- all statements were aggregated into political topics using the manifesto code labels. Each political view label is a three digit code, the first digit represents the political domain. In total there were eight political domains (topics): {\em External Relations, Freedom and Democracy, Political System, Economy, Welfare and Quality of Life, Fabric of Society, Social Groups} and a topic {\em undefined}, for a complete list see also \cite{leftright}. These 8 topics were used to aggregate all statements in each manifesto into topics. Most party manifestos covered all eight of them, some party manifestos in the 17th Bundestag only covered seven. 
+The length of each annotated statement in the party manifestos was rather short. The median length was 95 characters or 12 words. \footnote{The longest statement was 522 characters long, the 25\%/50\%/75\% percentiles were 63/95/135 characters. Measured in words the longest data point was 65 words and the 25\%/50\%/75\% percentiles were 8/12/17 words, respectively.} This can be considered as a very valuable property of the data set, because it allows a fine grained resolution of party manifestos and it a good test for media data, as some data like tweets, facebook texts etc. are often very short, too. However for a classifier (as well as for humans) such short sentences can be rather difficult to classify. Benoit et al. (2015), for example, found in an experiment where experts where differentiating whether specific sentences were dealing with economic or social policy only about 35\% agreement between all expert coders. In the Manifesto Project the human coders do not code these statements separately but within context. In order to obtain less 'noisy' data points from each party -- for the party affiliation task only -- all statements were aggregated into eight policy domains. Each of the 56 policy categories from the Manifesto Project belongs to one of seven policy domains. These were used to aggregate the data into topics. An eight topic is generated for all statements not belonging to any one the 56 policy issues: {\em External Relations, Freedom and Democracy, Political System, Economy, Welfare and Quality of Life, Fabric of Society, Social Groups} and a topic {\em undefined}, for a complete list see also \cite{leftright}. Most party manifestos covered all eight of them, some party manifestos in the 17th Bundestag only covered seven.
 
 \subsection{Bag-of-Words Vectorization}\label{sec:bow-vectorization}
-First each data set was segmented into semantic units; in the case of parliament discussions this were the speeches, in the case of the party manifesto data semantic units were the sentences or sentence parts associated with one of the 56 political view labels.  Parliament speeches were often interrupted; in this case each uninterrupted part of a speech was considered a semantic unit. Strings of each semantic unit were tokenised and transformed into bag-of-word vectors as implemented in scikit-learn \cite{scikit-learn}. The general idea of bag-of-words vectors is to simply count occurrences of words (or word sequences, also called {\em n-grams}) for each data point. A data point is usually a document, here it is the semantic units of parliament speeches and manifesto sentences, respectively. The text of each semantic unit is transformed into a vector $\vec{x}\in\mathds{R}^d$ where $d$ is the size of the dictionary; the $w$th entry of $\vec{x}$ contains the (normalized) count of the $w$th word (or sequence of words) in our dictionary. Several options for vectorizing the speeches were tried, including term-frequency-inverse-document-frequency normalisation, n-gram patterns up to size $n=3$ and several cutoffs for discarding too frequent and too infrequent words. All of these hyperparameters were subjected to hyperparameter optimization as explained in \autoref{sec:crossvalidation}. 
+First each data set was segmented into semantic units; in the case of the party manifesto data semantic units were the sentences or sentence parts associated with one of the 56 policy issues, in the case of parliament discussions this were the speeches. Parliament speeches were often interrupted; in this case each uninterrupted part of a speech was considered a semantic unit. Strings of each semantic unit were tokenised and transformed into bag-of-word vectors as implemented in scikit-learn \cite{scikit-learn}. The general idea of bag-of-words vectors is to simply count occurrences of words (or word sequences, also called {\em n-grams}) for each data point. A data point is usually a document, here it is the semantic units of parliament speeches and manifesto sentences, respectively. The text of each semantic unit is transformed into a vector $\vec{x}\in\mathds{R}^d$ where $d$ is the size of the dictionary; the $w$th entry of $\vec{x}$ contains the (normalized) count of the $w$th word (or sequence of words) in our dictionary. Several options for vectorizing the speeches were tried, including term-frequency-inverse-document-frequency normalisation, n-gram patterns up to size $n=3$ and several cutoffs for discarding too frequent and too infrequent words. All of these hyperparameters were subjected to hyperparameter optimization as explained in \autoref{sec:crossvalidation}.
 
 
 \section{Classification Model and Training Procedure}\label{sec:model}
-Bag-of-words feature vectors were used to train a multinomial logistic regression model. Let $y\in\{1,2,\dots,K\}$ be the true  label, where $K$ is the total number of labels and $\vec{W}=[\vec{w}_1,\dots,\vec{w}_K]\in\R^{d\times K}$ is the concatenation of the weight vectors $\vec{w}_k$ associated with the $k$th party then 
+Bag-of-words feature vectors were used to train a multinomial logistic regression model. Let $y\in\{1,2,\dots,K\}$ be the true  label, where $K$ is the total number of labels and $\vec{W}=[\vec{w}_1,\dots,\vec{w}_K]\in\R^{d\times K}$ is the concatenation of the weight vectors $\vec{w}_k$ associated with the $k$th party then
 \begin{eqnarray}\label{eq:logreg_multiclass}
 p(y=k|\vec{x},\vec{W}) = &\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}} \qquad \textrm{with }  z_k=&\vec{w}_k^{\top}\vec{x} \\\nonumber
 \end{eqnarray}
@@ -119,22 +117,22 @@ We estimated $\vec{W}$ using quasi-newton gradient descent. The optimization fun
 \begin{equation}\label{eq:objective}
 L(\vec{W}, \vec{x}, \gamma) = - \log{\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}}}+ \gamma \| \vec{W} \|_{F}
 \end{equation}
-Where $\|~\|_F$ denotes the Frobenius Norm and $\gamma$ is a regularization parameter controlling the complexity of the model. 
+Where $\|~\|_F$ denotes the Frobenius Norm and $\gamma$ is a regularization parameter controlling the complexity of the model.
 The regularization parameter was optimized on a log-scaled grid from $10^{-4,\dots,4}$. The performance of the model was optimized using the classification accuracy, but we also report all other standard measures, precision ($TP / (FP + TP$), recall ($TP / (TP + FN)$) and f1-score ($2\times (Prec. \times Rec) / (Prec + Rec.)$). \\
 
-Three different classification problems were considered: 
+Three different classification problems were considered:
 \begin{enumerate}
 \item {\bf Classification of party affiliation} (five class / four class problem)
 \item {\bf Classification of government membership} (binary problem)
-\item {\bf Classification of political views} (56 class problem)
+\item {\bf Classification of policy issues} (56 class problem)
 \end{enumerate}
 
-Party affiliation is a five class problem for the 17th legislation period, and a four class problem for the 18th legislation period. Political view classification is based on the labels of the manifesto project, see \autoref{sec:data} and \cite{leftright}. 
-For each of first two problems, party affiliation and government membership prediction, classifiers were trained on the parliament speeches. For the third problem classifiers were trained only on the manifesto data for which political view labels were available. 
+Party affiliation is a five class problem for the 17th legislation period, and a four class problem for the 18th legislation period. The policy issue classification is based on the categories of the Manifesto Project, see \autoref{sec:data} and \cite{leftright}.
+For both the party affiliation and the government membership prediction, classifiers were trained on the parliament speeches. For the third problem classifiers were trained only on the manifesto data for which policy issue labels were available.
 
 \subsection{Optimisation of Model Parameters}\label{sec:crossvalidation}
-The model pipeline contained a number of  hyperparameters that were optimised using cross-validation.  
-We first split the training data into a training data set that was used for optimisation of hyperparameters and an held-out test data set for evaluating how well the model performs on in-domain data; wherever possible the generalisation performance of the models was also evaluated on out-of domain data. Hyperparameters were optimised using grid search and 3-fold cross-validation within the training set only: A cross-validation split was made to obtain train/test data for the grid search and for each setting of hyperparameters the entire pipeline was trained and evaluated -- no data from the in-domain evaluation data or the out-of-domain evaluation data were used for hyperparameter optimisation. For the best setting of all hyperparameters the pipeline was trained again on all training data and evaluated on the evaluation data sets. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a given legislative period. Out-of-domain evaluation data were the texts from party manifestos. For the political view prediction setting there was no out-of-domain evaluation data, so all labeled manifesto sentences in both legislative periods were split into a training and evaluation set of 90\% (train) and 10\% (evaluation). 
+The model pipeline contained a number of  hyperparameters that were optimised using cross-validation.
+We first split the training data into a training data set that was used for optimisation of hyperparameters and an held-out test data set for evaluating how well the model performs on in-domain data; wherever possible the generalisation performance of the models was also evaluated on out-of domain data. Hyperparameters were optimised using grid search and 3-fold cross-validation within the training set only: A cross-validation split was made to obtain train/test data for the grid search and for each setting of hyperparameters the entire pipeline was trained and evaluated -- no data from the in-domain evaluation data or the out-of-domain evaluation data were used for hyperparameter optimisation. For the best setting of all hyperparameters the pipeline was trained again on all training data and evaluated on the evaluation data sets. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a given legislative period. Out-of-domain evaluation data were the texts from party manifestos. For the policy issue prediction setting there was no out-of-domain evaluation data, so all labeled manifesto sentences in both legislative periods were split into a training and evaluation set of 90\% (train) and 10\% (evaluation).
 
 \subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
 A publicly available key word list was used to extract sentiments \cite{remquahey2010}. A sentiment vector $\vec{s}\in\R^d$ was constructed from the sentiment polarity values in the sentiment dictionary. The sentiment index used for attributing positive or negative sentiment to a text was computed as the cosine similarity between BOW vectors $\vec{x}\in\R^d$ and $\vec{s}$
@@ -148,34 +146,35 @@ While interpretability of linear models is often propagated as one of their main
 
 \section{Results}\label{sec:results}
 
-The following sections give an overview of the results for all political bias prediction tasks. Some interpretations of the results are highlighted and a web application of the models is presented at the end of the section.
+The following section gives an overview of the results for all political bias prediction tasks. Some interpretations of the results are highlighted and a web application of the models is presented at the end of the section.
 
 \subsection{Predicting political party affiliation}
-The results for the political party affiliation prediction on held-out parliament data and on evaluation data are listed in \autoref{tab:results_17} for the 17th Bundestag and in \autoref{tab:results_18} for the 18th Bundestag, respectively. 
-Shown are the evaluation results for in-domain data (held-out parliament speech texts) as well as the out-of-domain data; the party manifesto out-of-domain predictions were made on the sentence level. 
+The results for the political party affiliation prediction on in-domain data (held-out parliamentary speech text) for the 17th and 18th Bundestag are listed in \autoref{tab:results_in-domain}.
+Shown are the evaluation results for in-domain data.
 
 When predicting party affiliation on text data from the same domain that was used for training the model, average precision and recall values of above 0.6 are obtained. These results are comparable to those of \cite{Hirst2014} who report a classification accuracy of 0.61 on a five class problem of prediction party affiliation in the European parliament; the accuracy for the 17th Bundestag is 0.63, results of the 18th Bundestag are difficult to compare as the number of parties is four and the legislation period is not finished yet.
-For out-of domain data the models yield significantly lower precision and recall values between 0.3 and 0.4.  This drop in out of domain prediction accuracy is in line with previous findings \cite{Yu2008}.
-A main factor that made the prediction on the out-of-domain prediction task particularly difficult is the short length of the strings to be classified, see also \autoref{sec:data}. In order to investigate whether this low out-of-domain prediction performance was due the domain difference (parliament speech vs manifesto data) or due to the short length of the data points, the manifesto data was aggregated based on the topic. The manifesto code political topics labels were used to concatenate texts of each party to one of eight topics, see \autoref{sec:data}. The topic level results are shown in \autoref{tab:results_topic} and \autoref{tab:confusion_topic} and demonstrate that when the texts to be classified are sufficiently long and the word count statistics are sufficiently dense the classification performance on out of domain data can achieve in the case of some parties reliably precision and recall values close to 1.0. This increase is in line with previous findings on the influence of text length on political bias prediction accuracy \cite{Hirst2014}.
+But as the main purpose of this paper is to generate a model that can be used to predict political bias on new data, like media outtakes, we are interested in the question if the model also produces satisfying results on out-of-domain data. We are therefore also predicting party affiliation on party manifesto text. For out-of domain data the models yield significantly lower precision and recall values between 0.3 and 0.4 \autoref{tab:results_out-of-domain}. This drop in out of domain prediction accuracy is in line with previous findings \cite{Yu2008}.
+A main factor that made the prediction on the out-of-domain prediction task particularly difficult is the short length of the strings to be classified, see also \autoref{sec:data}. In order to investigate whether this low out-of-domain prediction performance was due the domain difference (parliament speech vs manifesto data) or due to the short length of the data points, the manifesto data was aggregated based on the political domain into which each quasi-sentence was coded, see \autoref{sec:data}. The topic level results are shown in \autoref{tab:results_topic} and demonstrate that when the texts to be classified are sufficiently long and the word count statistics are sufficiently dense the classification performance on out of domain data can achieve in the case of some parties reliable precision and recall values close to 1.0. This increase is in line with previous findings on the influence of text length on political bias prediction accuracy \cite{Hirst2014}.
 
 
 \begin{table}[t]
 \caption{
-\label{tab:results_17}
-Classification performance on the party affiliation prediction problem for data from the 17th legislative period on test set and evaluation set, respectively. Predictions on the manifesto data was done on {\bf sentence level}; $N$ denotes number of data points in the evaluation set.
+\label{tab:results_in-domain}
+Classification performance on the party affiliation prediction problem for data from the 17th and 18th legislative period on in-domain data. $N$ denotes number of data points in the evaluation set.
 }
 \begin{center}
 \begin{tabular}{lcccccccc}
-& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Held-out parliament speeches}\\
+& \multicolumn{4}{c}{\bf 17th legislative period} & \multicolumn{4}{c}{\bf 18th legislative period}\\
     &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
 \hline \hline
-       cducsu   &    0.62  &    0.81  &    0.70  &     706&0.26    &  0.58   &   0.36    &  2030\\
-        fdp    &   0.70   &   0.37  &    0.49    &   331&0.38   &   0.28    &  0.33   &   2319\\
-     gruene &      0.59  &    0.40   &   0.48   &    298&0.47  &    0.20   &   0.28 &     3747\\
-      linke    &   0.71   &   0.61  &    0.65    &   338&0.30   &   0.47   &   0.37    &  1701\\
-        spd   &    0.60   &   0.69  &    0.65   &    606&0.26   &   0.16   &   0.20  &    2278\\
+       cducsu   &    0.62  &    0.81  &    0.70  &     706&0.66    &  0.82   &   0.73    &  456\\
+        fdp    &   0.70   &   0.37  &    0.49    &   331&   &      &     &   0\\
+     gruene &      0.59  &    0.40   &   0.48   &    298&0.68  &    0.54   &   0.60 &     173\\
+      linke    &   0.71   &   0.61  &    0.65    &   338&0.77   &   0.58   &   0.66    &  173\\
+        spd   &    0.60   &   0.69  &    0.65   &    606&0.60   &   0.54   &   0.57  &    330\\
 \hline
-avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.35    &  0.31 &     0.30   &  12075
+avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.66    &  0.66 &     0.30   &  1132
 %
 \end{tabular}
 \end{center}
@@ -183,20 +182,22 @@ avg / total &      0.64   &   0.63   &   0.62    &  2279 &0.35    &  0.31 &     
 
 \begin{table}[t]
 \caption{
-\label{tab:results_18}
+\label{tab:results_out-of-domain}
 Classification performance on the party affiliation prediction problem for data from the 18th legislative period on test set and evaluation set, respectively.  Predictions on the manifesto data was done on {\bf sentence level}.
 }
 \begin{center}
 \begin{tabular}{lcccccccc}
-& \multicolumn{4}{c}{\bf Held-out parliament speeches} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+& \multicolumn{4}{c}{\bf Party Manifestos} & \multicolumn{4}{c}{\bf Party Manifestos}\\
+& \multicolumn{4}{c}{\bf 17th legislative period} & \multicolumn{4}{c}{\bf 18th legislative period}\\
     &         precision    &recall &  f1-score  & N    &         precision    &recall &  f1-score  & N\\
 \hline \hline
-    cducsu    &   0.66   &   0.82   &   0.73    &   456 & 0.32  &    0.64  &    0.43    &  2983\\
-     gruene   &    0.68    &  0.54   &   0.60    &   173   &0.59   &   0.15   &   0.23   &   5674\\
-      linke     &  0.77  &    0.58    &  0.66    &   173 & 0.36   &   0.48   &   0.41   &   2555\\
-        spd     &  0.60  &    0.54   &   0.57    &   330 & 0.26 &     0.31   &   0.28     & 2989\\
+    cducsu    &   0.26   &   0.58   &   0.36    &   2030 & 0.32  &    0.64  &    0.43    &  2983\\
+    fdp    &   0.38   &   0.28   &   0.33    &   2319 &   &      &        &  0\\
+     gruene   &    0.47    &  0.20   &   0.28    &  3747   &0.59   &   0.15   &   0.23   &   5674\\
+      linke     &  0.30  &    0.47    &  0.37    &   1701 & 0.36   &   0.48   &   0.41   &   2555\\
+        spd     &  0.26  &    0.16   &   0.20    &   2278 & 0.26 &     0.31   &   0.28     & 2989\\
 \hline
-avg / total    &   0.66  &    0.66  &    0.65   &   1132&  0.42 &     0.34  &    0.32&     14201\\
+avg / total    &   0.35  &    0.31  &    0.30   &   12075 &  0.42 &     0.34  &    0.32&     14201\\
 %
 \end{tabular}
 \end{center}
@@ -209,6 +210,7 @@ avg / total    &   0.66  &    0.66  &    0.65   &   1132&  0.42 &     0.34  &   
 {\bf Topic level classification performance} on the party affiliation prediction problem for data from the evaluation set (manifesto texts) of the 17th legislative period. In contrast to single sentence level predictions (see \autoref{tab:results_17}, \autoref{tab:results_18}, \autoref{tab:confusion} for results and \autoref{sec:data} for topic definitions) the predictions made on topic level are reliable in many cases. Note that all manifesto topics of the green party in the 18th Bundestag are predicted to be from the parties of the governing coalition, CDU/CSU or SPD.}
 \begin{center}
 \begin{tabular}{lcccc}
+& \multicolumn{4}{c}{\bf Party Manifestos} \\
 & \multicolumn{4}{c}{\bf 17th Bundestag} \\
     &         precision    &recall &  f1-score  & N  \\
     \hline
@@ -223,6 +225,7 @@ cducsu     &  0.64  &    1.00  &    0.78    &     7\\
 \end{tabular}
 \quad
 \begin{tabular}{lcccc}
+& \multicolumn{4}{c}{\bf Party Manifestos} \\
 & \multicolumn{4}{c}{\bf 18th Bundestag} \\
     &         precision    &recall &  f1-score  & N  \\
     \hline
@@ -238,14 +241,13 @@ avg / total   &    0.51 &     0.62   &   0.55   &     32\\
 
 \end{table}
 
-In order to investigate the errors the models made confusion matrices were extracted for the predictions on the out-of-domain evaluation data for sentence level predictions (see \autoref{tab:confusion}) as well as topic level predictions (see \autoref{tab:confusion_topic}). One example illustrates that the mistakes the model makes can be associated with changes in the party policy. The green party has been promoting policies for renewable energy and against nuclear energy in their manifestos prior to both legislative periods. Yet the statements of the green party are more often predicted to be from the government parties than from the party that originally promoted these green ideas, reflecting the trend that these legislative periods governing parties took over policies from the green party. This effect is even more pronounced in the topic level predictions: a model trained on data from the 18th Bundestag predicts all manifesto topics of the green party to be from one of the parties of the governing coalition, CDU/CSU or SPD. \\
-
-\paragraph{Government membership prediction} Next to the party affiliation labels also government membership labels were used to train models that predict whether or not a text is from a party that belonged to a governing coalition of the Bundestag. In \autoref{tab:results_binary_17} and \autoref{tab:results_binary_18} the results are shown for the 17th and the 18th Bundestag, respectively. While the in-domain evaluation precision and recall values reach values close to 0.9, the out-of-domain evaluation drops again to values between 0.6 and 0.7. This is in line with the results on binary classification of political bias in the Canadian parliament \cite{Yu2008}. The authors report classification accuracies between 0.8 and 0.87, the accuracy in the 17th Bundestag was 0.85. While topic-level predictions were not performed in this binary setting, the party affiliation results in \autoref{tab:results_topic} suggest that a similar increase in out-of-domain prediction accuracy could be achieved when aggregating texts to longer segments. 
+In order to investigate the errors conducted by the models confusion matrices were extracted for the predictions on the out-of-domain evaluation data for sentence level predictions (see \autoref{tab:confusion}) as well as topic level predictions (see \autoref{tab:confusion_topic}). One example illustrates that the mistakes the model makes can be associated with changes in the party policy. The green party has been promoting policies for renewable energy and against nuclear energy in their manifestos prior to both legislative periods. Yet the statements of the green party are more often predicted to be from the government parties than from the party that originally promoted these green ideas, reflecting the trend that during the legislative period governing parties took over policies from the green party. This effect is even more pronounced in the topic level predictions: a model trained on data from the 18th Bundestag predicts all manifesto content of the green party to be from one of the parties of the governing coalition, CDU/CSU or SPD. \\
 
 % Confusion matrix sentence level
 \begin{table}[t]\label{tab:conf_mat_four_class}
 \caption{\label{tab:confusion} {\bf Confusion matrices (sentence level)} for predictions on evaluation data (party manifestos); classifiers were trained on parliament speeches for the 17th legislative period (left) and 18th legislative period (right); the most prominent effect is the high likelihood for a party to be taken as the strongest, governing party, cdu/csu. This can be interpreted as a change in policies of the conservative party cdu/csu towards the policies of the green party.}
 \begin{tabular}{lccccccc}
+ \multicolumn{8}{c}{\bf Party Manifestos}\\
  \multicolumn{8}{c}{\bf 17th Bundestag}\\
  \\
 &&& \multicolumn{5}{c}{Predicted}\\
@@ -259,6 +261,7 @@ In order to investigate the errors the models made confusion matrices were extra
 \end{tabular}
 \hfill
 \begin{tabular}{lcccccc}
+ \multicolumn{7}{c}{\bf Party Manifestos}\\
  \multicolumn{7}{c}{\bf 18th Bundestag}\\
  \vspace{1em}\\
 &&& \multicolumn{4}{c}{Predicted}\\
@@ -277,6 +280,7 @@ In order to investigate the errors the models made confusion matrices were extra
 \begin{table}[t]\label{tab:conf_mat_four_class}
 \caption{\label{tab:confusion_topic} {\bf Confusion matrices (topic level)} for predictions on evaluation data (party manifestos) for classifiers trained on parliament speeches for the 17th legislative period (left) and 18th legislative period (right).}
 \begin{tabular}{lccccccc}
+ \multicolumn{8}{c}{\bf Party Manifestos}\\
  \multicolumn{8}{c}{\bf 17th Bundestag}\\
  \\
 &&& \multicolumn{5}{c}{Predicted}\\
@@ -290,6 +294,7 @@ In order to investigate the errors the models made confusion matrices were extra
 \end{tabular}
 \hfill
 \begin{tabular}{lcccccc}
+ \multicolumn{7}{c}{\bf Party Manifestos}\\
  \multicolumn{7}{c}{\bf 18th Bundestag}\\
  \vspace{1em}\\
 &&& \multicolumn{4}{c}{Predicted}\\
@@ -345,8 +350,9 @@ avg / total    &   0.88    &  0.88     & 0.87  &    1132 &  0.62   &   0.60    &
 
 
 \subsection{Predicting political views}
-Parties change their policies and positions in the political spectrum. More reliable categories for political bias are party independent labels for political views, see \autoref{sec:data}. A separate suite of experiments was run to train and test the prediction performance of the text classifiers models described in \autoref{sec:model}. As there was no out-of-domain evaluation set available in this setting only evaluation error on in-domain data is reported. Note however that also in this experiment the evaluation data was never seen by any model during training time.
-In \autoref{tab:results_avg_political_view} results for the best and worst classes, in terms of predictability, are listed along with the average performance metrics on all classes. 
+%Dieser Absatz hat ja nicht wirklich was mit political bias zu tun. Wollen wir den also aus K\"uerzungsgr\"unden rausnehmen?
+Parties change their policies and positions in the political spectrum. More reliable categories for political bias are party independent labels for policy issues, see \autoref{sec:data}. A separate suite of experiments was run to train and test the prediction performance of the text classifiers models described in \autoref{sec:model}. As there was no out-of-domain evaluation set available in this setting only the evaluation error on in-domain data is reported. Note however that in this experiment too the evaluation data was never seen by any model during training time.
+In \autoref{tab:results_avg_political_view} results for the best and worst classes, in terms of predictability, are listed along with the average performance metrics on all classes.
 Precision and recall values of close to 0.5 on average can be considered rather high considering the large number of labels. \\
 
 \begin{table}[t]
@@ -378,26 +384,24 @@ avg / total  &  &  0.47    &  0.46 &     0.46 &     2946\\
 \end{table}
 
 \subsection{Correlations between words and parties}\label{sec:word_party_correlations}
-
-The 10 highest and lowest correlations between individual words and the party affiliation label are shown for each party in \autoref{fig:party_word_correlations}. Correlations were computed on the data from the current, 18th, legislative period. Some unspecific stopwords are excluded. 
-The following paragraphs highlight some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these results are problematic in that they neglect the context in which these words were mentioned some interesting patterns can be found and related to the actual policies the parties are promoting. 
+We now know that party affiliation can be predicted using our model. But which words are most important for the classification performed here? To get a more precise idea of what differentiates the parties from each other the 10 highest and lowest correlations between individual words and the party affiliation label are shown for each party in \autoref{fig:party_word_correlations}. Correlations were computed on the data from the current, 18th, legislative period. Some unspecific stopwords are excluded.
+The following paragraphs highlight some examples of words that appear to be preferentially used or avoided by each respective party. Even though interpretations of these results are problematic in that they neglect the context in which these words were mentioned some interesting patterns can be found and related to the actual policies the parties are promoting.
 \paragraph{\bf Left party (linke)}
-The left party mostly criticises measures that affect social welfare negatively, such as the {\em Hartz IV} program. Main actors that are blamed for decisions of the conservative governments by the left party are big companies ({\em konzerne}). Rarely the party addresses concerns related to security ({\em sicherheit}). 
+The Left party talks mainly about issues related to work ({\em Besch\"aftigten}) and unemployment ({\em Hartz IV, Erwerbslosen}). 
 \paragraph{\bf Green party (gruene)}
-The green party heavily criticised the secret negotiations about the TiSA agreement\footnote{\url{https://en.wikipedia.org/wiki/Trade_in_Services_Agreement}} and insists in formal inquiries that the representatives of the green party put forward in this matter ({\em fragen, anfragen}). They also often ask questions related to army projects ({\em R\"ustungsprojekte, Wehrbericht}) or the military development in east europe ({\em  Jalta}\footnote{Referring to the \url{https://en.wikipedia.org/wiki/Yalta_Conference}}).
-\paragraph{\bf Social democratic party (SPD)}
-The social democrats often use words related to rights of the working class, as reflected by the heavy use of the {\em International Labour Organisation} (ILO) or rights of employes ({\em Arbeitnehmerrechte}). They rarely talk about competition ({\em Wettbewerb}) or climate change ({\em klimapolitik}). 
+The Green party talks about the formal procedures available to opposition parties to question government policy ({\em fragen, anfragen}) and, interestingly, about the reform of the Germany army ({\em R\"ustungsprojekte, Wehrbericht}).
+\paragraph{\bf Social Democratic Party (SPD)}
+The SPD often uses words related to rights of the working class ({\em International Labour Organisation, Arbeitnehmerrechte}) and the governing coalition ({\em bundestagsfraktion, koalitionspartner}).
 
-\paragraph{\bf Conservative party (CDU/CSU)}
-The conservative christian party often uses words related to a pro-economy attitude, such as competitiveness or (economic) development ({\em Wettbewerbsf\"ahigkeit, Entwicklung}) and words related to security ({\em Sicherheit}). The latter could be related to the ongoing debates about whether or not the governments should be allowed to collect data and thus restrict fundamental civil rights in order to better secure the population. In contrast to the parties of the opposition, the conservatives rarely mention the word war ({\em krieg}) or related words.
-
+\paragraph{\bf Christian Democratic Union/Christian Social Union (CDU/CSU)}
+The CDU/CSU party often uses words related to a pro-economy attitude, such as competitiveness or (economic) development ({\em Wettbewerbsf\"ahigkeit, Entwicklung}) and words related to security ({\em Sicherheit}). 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=2.8cm]{images/party_word_correlations-linke-18.pdf} 
-\includegraphics[width=2.9cm]{images/party_word_correlations-gruene-18.pdf} 
-\includegraphics[width=3cm]{images/party_word_correlations-spd-18.pdf} 
-\includegraphics[width=3cm]{images/party_word_correlations-cducsu-18.pdf}
+\includegraphics[width=2.8cm]{images/party_word_correlations-linke-17.pdf}
+\includegraphics[width=2.9cm]{images/party_word_correlations-gruene-17.pdf}
+\includegraphics[width=3cm]{images/party_word_correlations-spd-17.pdf}
+\includegraphics[width=3cm]{images/party_word_correlations-cducsu-17.pdf}
 %
 \end{center}
 \caption{
@@ -406,17 +410,18 @@ Correlations between words and party affiliation label for parliament speeches c
 \end{figure}
 
 
-\subsection{Speech sentiment correlates with political power}\label{sec:sentiment_result}
-In order to investigate the features that give rise to the classifiers' performance the bag-of-words features were analysed with respect to their sentiment. The average sentiment of each political party is shown in \autoref{fig:party_sentiments}. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content. 
+\subsection{Predicting government status}\label{sec:sentiment_result}
+Next to the party affiliation labels also government membership labels were used to train models that predict whether or not a text is from a party that belonged to a governing coalition of the Bundestag. In \autoref{tab:results_binary_17} and \autoref{tab:results_binary_18} the results are shown for the 17th and the 18th Bundestag, respectively. While the in-domain evaluation precision and recall values reach values close to 0.9, the out-of-domain evaluation drops again to values between 0.6 and 0.7. This is in line with the results on binary classification of political bias in the Canadian parliament \cite{Yu2008}. The authors report classification accuracies between 0.8 and 0.87, the accuracy in the 17th Bundestag was 0.85. While topic-level predictions were not performed in this binary setting, the party affiliation results in \autoref{tab:results_topic} suggest that a similar increase in out-of-domain prediction accuracy could be achieved when aggregating texts to longer segments.
+\paragraph{Speech sentiment correlates with political power} In order to investigate the features that give rise to the classifiers' performance the bag-of-words features were analysed with respect to their sentiment. The average sentiment of each political party is shown in \autoref{fig:party_sentiments}. High values indicate more pronounced usage of positive words, whereas negative values indicate more pronounced usage of words associated with negative emotional content.
 
-The results show an interesting relationship between political power and sentiment. Political power was evaluated in two ways: a) in terms of the number of seats a party has and b) in terms of membership of the government. Correlating either of these two indicators of political power with the mean sentiment of a party shows a strong positive correlation between speech sentiment and political power. This pattern is evident from the data in \autoref{fig:party_sentiments} and in \autoref{tab:sentiments}: In the current Bundestag, government membership correlates with positive sentiment with a correlation coefficient of 0.98 and the number of seats correlates with 0.89. 
+The results show an interesting relationship between political power and sentiment. Political power was evaluated in terms of membership of the government. Correlating either of these two indicators of political power with the mean sentiment of a party shows a strong positive correlation between speech sentiment and political power. This pattern is evident from the data in \autoref{fig:party_sentiments} and in \autoref{tab:sentiments}: In the current Bundestag, government membership correlates with positive sentiment with a correlation coefficient of 0.98 and the number of seats correlates with 0.89.
 
-Note that there is one party, the social democrats (SPD), which has many seats and switched from opposition to government with the 18th Bundestag: With its participation in the government the average sentiment of this party switched sign from negative to positive, suggesting that positive sentiment is a strong indicator of government membership. 
+Note that there is one party, the social democrats (SPD), which has many seats and switched from opposition to government with the 18th Bundestag: With its participation in the government the average sentiment of this party switched sign from negative to positive, suggesting that positive sentiment is a strong indicator of government membership.
 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=6cm]{images/party-sentiments-17.pdf}  \hfill \includegraphics[width=5cm]{images/party-sentiments-18.pdf} 
+\includegraphics[width=6cm]{images/party-sentiments-17.pdf}  \hfill \includegraphics[width=5cm]{images/party-sentiments-18.pdf}
 %
 \end{center}
 \caption{
@@ -428,7 +433,7 @@ Speech sentiments computed for speeches of each party; parties are ordered accor
 \begin{table}[t]
 \caption{
 \label{tab:sentiments}
-Correlation coefficient between average sentiment of political speeches of a party in the german Bundestag with two indicators of political power, a) membership in the government and b) the number of seats a party occupies in the parliament. 
+Correlation coefficient between average sentiment of political speeches of a party in the german Bundestag with two indicators of political power, a) membership in the government and b) the number of seats a party occupies in the parliament.
 }
 \begin{center}
 \begin{tabular}{lcc}
@@ -445,10 +450,10 @@ Correlation coefficient between average sentiment of political speeches of a par
 
 
 \subsection{An example web application}
-To show an example use case of the above models a web application was implemented that downloads regularly all articles from some major german news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}} and applies some simple topic modelling to them. For each news article topic, headlines of articles are plotted along with the predictions of the political view of an article and two labels derived deterministically from the 56 class output, a left right index and the political domain of a text, see \cite{leftright}. Within each topic it is then possible to get an ordered (from left to right) overview of the articles on that topic. An example of one topic that emerged on March 31st is shown in \autoref{fig:fipi}. A preliminary demo is live at \cite{fipidemo} and the code is available on github\cite{fipi}.
+To show an example use case of the above models a web application was implemented that downloads regularly all articles from some major German news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}} and applies some simple topic modelling to them. For each news article topic, headlines of articles are plotted along with the predictions of the policy issue of an article and two labels derived deterministically from the 56 class output, a left right index and the political domain of a text, see \cite{leftright}. Within each topic it is then possible to get an ordered (from left to right) overview of the articles on that topic. An example of one topic that emerged on March 31st is shown in \autoref{fig:fipi}. A preliminary demo is live at \cite{fipidemo} and the code is available on github\cite{fipi}.
 \begin{figure}
 \begin{center}
-\includegraphics[width=10cm]{images/fipi-screenshot}
+%\includegraphics[width=10cm]{images/fipi-screenshot}
 %
 \end{center}
 \caption{
@@ -460,7 +465,7 @@ A screen shot of an example web application using the political view prediction 
 \section{Conclusions, Limitations and Outlook}\label{sec:conclusion}
 This study presents a simple approach for automated political bias prediction. The results of these experiments show that automated political bias prediction is possible with above chance accuracy in some cases. It is worth noting that even if the accuracies are not perfect, they are above chance and comparable with results of comparable studies \cite{Yu2008, Hirst2014}. While these results do not allow for usage in production systems for classification, it is well possible to use such a system as assistive technology for human annotators in an active learning setting.
 
-One of the main limiting factors of an automated political bias prediction system is the availability of training data. Most training data sets that are publicly available have an inherent bias as they are sampled from a different domain. This study tried to quantify the impact of this effect. 
+One of the main limiting factors of an automated political bias prediction system is the availability of training data. Most training data sets that are publicly available have an inherent bias as they are sampled from a different domain. This study tried to quantify the impact of this effect.
 For the cases in which evaluation data from two domains was available there was a pronounced drop in prediction accuracy between the in domain evaluation set and the out of domain evaluation set. This effect was reported previously for similar data, see e.g. \cite{Yu2008}. Also the finding that shorter texts are more difficult to classify than longer texts is in line with previous studies \cite{Hirst2014}. When considering texts of sufficient length (for instance by aggregating all texts of a given political topic) classification performance improved and in some cases reliable predictions could be obtained even beyond the training text domain.
 
 Some aspects of these analyses could be interesting for social science researchers; three of these are highlighted here.
@@ -470,24 +475,24 @@ First the misclassifications of a model can be related to the changes in policy 
 All data sets used in this study were publicly available, all code for experiments and the live web application can be found online \cite{fipi, fipidemo}.
 
 \subsection*{Acknowledgements}
-I would like to thank Friedrich Lindenberg for factoring out the \url{https://github.com/bundestag/plpr-scraper} from his bundestag project. Some backend configurations for the web application were taken from an earlier collaboration with Daniel Kirsch. Pola Lehmann and Michael Gaebler provided helpful feedback on an earlier version of the manuscript. Pola Lehman also helped with getting access to and documentation on the Manifestoproject data. 
+We would like to thank Friedrich Lindenberg for factoring out the \url{https://github.com/bundestag/plpr-scraper} from his Bundestag project. Some backend configurations for the web application were taken from an earlier collaboration with Daniel Kirsch. Michael Gaebler provided helpful feedback on an earlier version of the manuscript. 
 %
 \small{
 \bibliographystyle{plain}
-\bibliography{political_bias_prediction} 
+\bibliography{political_bias_prediction}
 }
 
 
-\end{document} 
+\end{document}
 
 
 % This document was modified from the file originally made available by
 % Pat Langley and Andrea Danyluk for ICML-2K. This version was
-% created by Lise Getoor and Tobias Scheffer, it was slightly modified  
-% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz, 
-% slightly modified from the 2009 version by Kiri Wagstaff and 
-% Sam Roweis's 2008 version, which is slightly modified from 
-% Prasad Tadepalli's 2007 version which is a lightly 
-% changed version of the previous year's version by Andrew Moore, 
-% which was in turn edited from those of Kristian Kersting and 
-% Codrina Lauth. Alex Smola contributed to the algorithmic style files.  
+% created by Lise Getoor and Tobias Scheffer, it was slightly modified
+% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz,
+% slightly modified from the 2009 version by Kiri Wagstaff and
+% Sam Roweis's 2008 version, which is slightly modified from
+% Prasad Tadepalli's 2007 version which is a lightly
+% changed version of the previous year's version by Andrew Moore,
+% which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
