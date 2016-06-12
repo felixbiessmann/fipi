@@ -1,0 +1,60 @@
+\begin{thebibliography}{10}
+
+\bibitem{leftright}
+Manifesto codebook\\
+  \url{https://manifesto-project.wzb.eu/information/documents?name=handbook_v4}.
+
+\bibitem{fipi}
+Github repository for political bias prediction code
+  \url{https://github.com/felixbiessmann/fipi}, 2016.
+
+\bibitem{fipidemo}
+A web demo of political bias prediction for german language
+  \url{http://fipi-dev.elasticbeanstalk.com}, 2016.
+
+\bibitem{Haufe2013}
+Stefan Haufe, Frank Meinecke, Kai G{\"o}rgen, Sven D\"ahne, John-Dylan Haynes,
+  Benjamin Blankertz, and Felix Biessmann.
+\newblock On the interpretation of weight vectors of linear models in
+  multivariate neuroimaging.
+\newblock {\em Neuroimage}, 87:96--110, 2014.
+
+\bibitem{Hirst2014}
+Graeme Hirst, Yaroslav Riabinin, Jory Graham, and Magali Boizot-Roche.
+\newblock Text to ideology or text to party status?
+\newblock In Isa~Maks Bertie~Kaal and Annemarie van Elfrinkhof, editors, {\em
+  From Text to Political Positions: Text analysis across disciplines}, pages
+  47--70, 2014.
+
+\bibitem{manifesto}
+Pola Lehmann, Theres Matthie{\ss}, Nicolas Merz, Sven Regel, and Annika Werner.
+\newblock {\em Manifesto Corpus}.
+\newblock WZB Berlin Social Science Center.,
+  https://manifestoproject.wzb.eu/information/documents/corpus, 2015.
+
+\bibitem{scikit-learn}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel,
+  M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos,
+  D.~Cournapeau, M.~Brucher, M.~Perrot, and E.~Duchesnay.
+\newblock Scikit-learn: Machine learning in {P}ython.
+\newblock {\em Journal of Machine Learning Research}, 12:2825--2830, 2011.
+
+\bibitem{remquahey2010}
+R.~Remus, U.~Quasthoff, and G.~Heyer.
+\newblock Sentiws -- a publicly available german-language resource for
+  sentiment analysis.
+\newblock In {\em Proceedings of the 7th International Language Resources and
+  Evaluation (LREC'10)}, 2010.
+
+\bibitem{Yu2008}
+Bei Yu, Stefan Kaufmann, and Daniel Diermeier.
+\newblock Classifying party affiliation from political speech.
+\newblock {\em Journal of Information Technology \& Politics}, 5(1):33--48,
+  2008.
+
+\bibitem{Zien2009}
+Alexander Zien, Nicole Kr{\"a}mer, S{\"o}ren Sonnenburg, and Gunnar R{\"a}tsch.
+\newblock The feature importance ranking measure.
+\newblock In {\em ECML/PKDD}, pages 694--709, 2009.
+
+\end{thebibliography}
