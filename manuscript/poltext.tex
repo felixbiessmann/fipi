@@ -61,7 +61,7 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\title{Automating Political Bias Prediction}
+\title{Predicting political party affiliation from text}
 
 \author{Felix Biessmann\\
   {\tt felix.biessmann@gmail.com} \\\And
@@ -76,7 +76,7 @@
 
 
 \begin{abstract}
-Every day media generate large amounts of text. An unbiased view on media reports requires an understanding of the political bias of media content. Assistive technology for estimating the political bias of texts can be helpful in this context. This study proposes a simple statistical learning approach to predict political bias from text. Standard text features extracted from speeches and manifestos of political parties are used to predict political bias in terms of political party affiliation and in terms of political views. Results indicate that political bias can be predicted with above chance accuracy. Mistakes of the model can be interpreted with respect to changes of policies of political actors. Two approaches are presented to make the results more interpretable: a) discriminative text features are related to the political orientation of a party and b) sentiment features of texts are correlated with a measure of political power. Political power appears to be strongly correlated with positive sentiment of a text. To highlight some potential use cases a web application shows how the model can be used for texts for which the political bias is not clear such as news articles.
+Every day large amounts of text are produced in public discourse. Some of this text is produced by actors whose political colour is very obvious, for example in the case of party elites. But there are also many actors raising their voices in the discourse, who cannot be clearly attributed to a political party, while their statements might actually by biased towards a specific party. Identifying such biases is crucial for political research as well as media consumers, especially when analysing the influence of the media on political discourse and vice versa. In this study we investigate to what extent political party affiliation can be predicted from textual content. Results indicate that automatic classification of political affiliation is possible with above chance accuracy also across text domains. We propose methods to better interpret these results and find that features not related to political policies, such as speech sentiment, can be discriminative and thus exploited by text analysis models. We present an example of a web application that combines topic modelling with automatic political affiliation analyses of news articles based on the proposed model.
 \end{abstract}
 
 \section{Introduction}
@@ -87,25 +87,12 @@ Analysis and classifications of political text is and has been a very important 
 One area which produces large amounts of text which are of high interest for political scientists is modern media. Standard newspapers, but also new forms as twitter, facebook or blogs produce an ever growing amount of text influencing political debate. These texts can be of interest to political scientist in various analyses. The question we will focus on in this analysis is the potential political bias that can be detected in these sources. In many cases it is obvious which political bias an author has. In other cases some expertise is required to judge the political bias of a text. Keeping an unbiased view on what media report on requires to understand the political bias of texts. Different newspaper outlets are, for example, often ascribed as favoring different positions on the political left-right axis. Data from the European Media Systems Survey show that experts clearly associate different media outlets with specific parties (http://www.mediasystemsineurope.org). However such expert surveys on the political bias of newspapers can normally only give us a very general tendency of a newspaper, they do not distinguish between different journalists or different sections. Assistive technology can help in this context to try and obtain a more unbiased sample of information. It gives us the possibility to get a more nuanced view of the spectrum of political positions favored in important news outlets in a country. In this paper we will test whether it is possible to automatically detect political bias in text and if such a model can be used on different kind of texts. The aim of this study is to provide some empirical evidence indicating that leveraging open data sources automated political bias prediction is possible with above chance accuracy. We will test our model on both in-domain and out-of-domain data; the different train and test data sets are summarized in \autoref{tab:classification_settings}. The classification tasks we considered as proxies for political bias prediction are 
 
 \begin{enumerate}
-\item {\bf Classification of party affiliation} (five class problem)
+\item {\bf Classification of party affiliation}\\ (five class problem for 17th Bundestag)
 \item {\bf Classification of government membership} (binary problem)
-\item {\bf Classification of policy issues} (56 class problem)
+\item {\bf Classification of policy issues}\\ (56 class problem)
 \end{enumerate}
 
 In order to validate and explain the predictions of the models three strategies that allow for better interpretations of the models are proposed. First the model misclassifications are related to changes in party policies. Second univariate measures of correlation between text features and party affiliation allow to relate the predictions to the kind of information that political experts use for interpreting texts. Third sentiment analysis is used to investigate whether this aspect of language has discriminatory power.
-
-% Confusion matrix topic level
-\begin{table}[t]\label{tab:classification_settings}
-\footnotesize
-\begin{tabular}{ccc}
-Training Set & \multicolumn{2}{c}{Test set} \\
-& In-domain&Out-of-domain\\
-\hline
-\hline
-Parliament ($90\%$) & Parliament ($10\%$)& Manifestos\\
-Manifestos ($90\%$)& Manifestos ($10\%$) & -\\
-\end{tabular}
-\end{table}
 
 In the following \autoref{sec:data} gives an overview of the data acquisition and preprocessing methods, \autoref{sec:model} presents the model, training and evaluation procedures; in \autoref{sec:results} the results are discussed and \autoref{sec:conclusion} concludes with some interpretations of the results and future research directions.
 
@@ -133,21 +120,29 @@ All text data was segmented into semantic units, quasi-sentences for manifesto d
 \section{Classification Model and Training}\label{sec:model}
 Bag-of-words feature vectors were used to train a multinomial logistic regression model. Let $y\in\{1,2,\dots,K\}$ be the true  label, where $K$ is the total number of labels and $\vec{W}=[\vec{w}_1,\dots,\vec{w}_K]\in\R^{d\times K}$ is the concatenation of the weight vectors $\vec{w}_k$ associated with the $k$th party then
 \begin{eqnarray}\label{eq:logreg_multiclass}
-p(y=k|\vec{x},\vec{W}) = &\frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}} \qquad \textrm{with }  z_k=&\vec{w}_k^{\top}\vec{x} \\\nonumber
+p(y=k|\vec{x},\vec{W}) = \frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}}  \textrm{ with }  z_k=\vec{w}_k^{\top}\vec{x}.
 \end{eqnarray}
-The performance of the model was optimized using the classification accuracy, but we also report all other standard measures, precision ($TP / (FP + TP$), recall ($TP / (TP + FN)$) and f1-score ($2\times (Prec. \times Rec) / (Prec + Rec.)$). \\
 
 \subsection{Optimisation of Model Parameters}\label{sec:crossvalidation}
 The model pipeline contained a number of  hyperparameters that were optimised using cross-validation.
-We first split the training data into a training data set that was used for optimisation of hyperparameters and an held-out test data set for evaluating how well the model performs on in-domain data. Hyperparameters were optimised using grid search and 3-fold cross-validation within the training set -- no data from the in-domain evaluation data or the out-of-domain evaluation data were used for hyperparameter optimisation. For the best setting of all hyperparameters the pipeline was trained again on all training data and evaluated on the evaluation data sets. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a given legislative period. Wherever possible the generalisation performance of the models was also evaluated on out-of domain texts, for which we used the texts from party manifestos. For the policy issue prediction setting there was no out-of-domain evaluation data, so all labeled manifesto sentences in both legislative periods were split into a training and evaluation set of 90\% (train) and 10\% (evaluation).
+We first split the training data into a training data set that was used for optimisation of hyperparameters and an held-out test data set for evaluating how well the model performs on in-domain data. Hyperparameters were optimised using grid search and 3-fold cross-validation within the training set -- no data from the in-domain evaluation data or the out-of-domain evaluation data were used for hyperparameter optimisation. For the best setting of all hyperparameters the pipeline was trained again on all training data and evaluated on the evaluation data sets. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a given legislative period. Wherever possible the generalisation performance of the models was also evaluated on out-of domain texts, for which we used the texts from party manifestos. For the policy issue prediction setting there was no out-of-domain evaluation data, so all labeled manifesto sentences in both legislative periods were split into a training and evaluation set of 90\% (train) and 10\% (evaluation). The train and test splits are summarized in \autoref{tab:classification_settings}.
 % Falls wir die Medien nochreinnehmen, muss das bei out-of-domain auch noch erwähnt werden.
+% 
+\begin{table}[t]\label{tab:classification_settings}
+\footnotesize
+\begin{tabular}{ccc}
+Training Set & \multicolumn{2}{c}{Test set} \\
+& In-domain&Out-of-domain\\
+\hline
+\hline
+Parliament ($90\%$) & Parliament ($10\%$)& Manifestos\\
+Manifestos ($90\%$)& Manifestos ($10\%$) & -\\
+\end{tabular}
+\end{table}
+
 
 \subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
-A publicly available key word list was used to extract sentiments \cite{remquahey2010}. A sentiment vector $\vec{s}\in\R^d$ was constructed from the sentiment polarity values in the sentiment dictionary. The sentiment index used for attributing positive or negative sentiment to a text was computed as the cosine similarity between BOW vectors $\vec{x}\in\R^d$ and $\vec{s}$
-
-\begin{align}
-\frac{\vec{s}^\top \vec{x}}{\|\vec{s}\|\|\vec{x}\|}
-\end{align}
+A publicly available key word list was used to extract sentiments \cite{remquahey2010}. A sentiment vector $\vec{s}\in\R^d$ was constructed from the sentiment polarity values in the sentiment dictionary. The sentiment index used for attributing positive or negative sentiment to a text was computed as the cosine similarity between BOW vectors and sentiment vectors.
 
 \subsection{Interpreting bag-of-words models}\label{sec:correlations_methods}
 Interpreting coefficients of linear models (independent of the regularizer used) implicitly assumes uncorrelated features; this assumption is violated by the text data used in this study. Thus direct interpretation of the model coefficients $\vec{W}$ is problematic, see also \cite{Zien2009, Haufe2013}. In order to allow for better interpretation of the predictions and to assess which features are discriminative correlation coefficients between each word and the party affiliation label were computed. The words corresponding to the top positive and negative correlations are shown in \autoref{sec:word_party_correlations}.
@@ -167,7 +162,7 @@ A main factor that made the prediction on the out-of-domain prediction task part
 \begin{table}[t]
 \caption{
 \label{tab:results_in-domain}
-Classification performance on the party affiliation prediction problem for data from the 17th legislative period on in-domain data. $N$ denotes number of data points in the evaluation set.
+{\bf In-domain classification performance} for data from the 17th legislative period on in-domain data. $N$ denotes number of data points in the evaluation set.
 }
 \begin{center}
 \begin{tabular}{lcccc}
@@ -188,7 +183,7 @@ avg / total &      0.64   &   0.63   &   0.62    &  2279
 \begin{table}[t]
 \caption{
 \label{tab:results_out-of-domain}
-Classification performance on the party affiliation prediction problem for data from the 17th legislative period on out-of-domain data.  Predictions are done on the {\bf sentence level}.\label{tab:confusion}
+{\bf Out-of-domain classification performance} (quasi-sentence level) of a classifier trained on speeches of the 17th legislative period of the Bundestag.
 }
 \begin{center}
 \begin{tabular}{lcccc}
@@ -210,7 +205,7 @@ avg / total    &   0.35  &    0.31  &    0.30   &   12075\\
 \begin{table}[t]
 \caption{
 \label{tab:results_topic}
-{\bf Topic level classification performance} on the party affiliation prediction problem for data from the evaluation set (manifesto texts) of the 17th legislative period. In contrast to single sentence level predictions (see  also \autoref{tab:confusion} for results and \autoref{sec:data} for topic definitions) the predictions made on topic level are reliable in many cases.}
+{\bf Out-of-domain classification performance} (topic level) on manifesto data of a classifier trained on the 17th legislative period of the Bundestag. Compared to quasi-sentence level predictions (\autoref{tab:results_out-of-domain}) the predictions made on topic level are more reliable.}
 \begin{center}
 \begin{tabular}{lcccc}
     &         precision    &recall &  f1-score  & N  \\
