@@ -20,6 +20,7 @@ import pandas as pd
 from scipy import random,unique,vstack,hstack,arange,array,mean,corrcoef
 import cPickle
 from sentiments import SentimentClassifier
+from fb import fbTraverserTop
 
 DATA_PATH = os.environ.get('DATA_PATH', 'data')
 TXT_DIR = os.path.join(DATA_PATH, 'txt')
@@ -200,6 +201,18 @@ def list_top_words(legis=17,topwhat=10):
 def newsFileTuple(nf):
     return [(x['text'],x['source']) for x in json.load(open(nf))]
 
+def get_raw_text_fb(folder="data/parteien-auf-fb", suffix=".json.gz"):
+    '''
+    Loads raw text and labels from news article files
+    (Downloaded using newsreader.get_daily_news())
+    '''
+    files = glob.glob(folder+"/*"+suffix)
+    return zip(*chain(*filter(None,map(fbFileTuple,files))))
+
+def fbFileTuple(fbf):
+    f = [ff[1] for ff in fbTraverserTop(fbf)]
+    return zip(f, [fbf.split("/")[-1].split(".")[0]] * len(f))
+
 def get_raw_text_news(folder="data", prefix="news-2016"):
     '''
     Loads raw text and labels from news article files
@@ -321,8 +334,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     parameters = {'vect__ngram_range': [(1,2)],\
            #'vect__stop_words':(None,stops),\
            #'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(1,5,1.)).tolist(),
-           'vect__max_df':[.3, .5, .75],
+           'clf__C': (10.**sp.arange(-4,4,2.)).tolist(),
+           'vect__max_df':[.5, .75],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -381,6 +394,11 @@ def classify_speeches_party_parliament(legislationPeriod = 18):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     evalData, evalLabels = get_raw_text(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-%d"%legislationPeriod)
+
+def classify_speeches_fb(legislationPeriod = 18):
+    evalData, evalLabels = get_raw_text_fb()
+    trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-test-%d"%legislationPeriod)
 
 def classify_speeches_party_manifesto(legislationPeriod = 18):
     evalData, evalLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
