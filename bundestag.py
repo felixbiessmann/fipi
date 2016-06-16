@@ -209,6 +209,16 @@ def get_raw_text_fb(folder="data/parteien-auf-fb", suffix=".json.gz"):
     files = glob.glob(folder+"/*"+suffix)
     return zip(*chain(*filter(None,map(fbFileTuple,files))))
 
+def get_raw_text_fb_balanced_words(nWords=1000,folder="data/parteien-auf-fb", suffix=".json.gz"):
+    data,labels = get_raw_text_fb(folder,suffix)
+    newData, newLabels = [], []
+    for p in sp.unique(labels):
+        alltext = " ".join([x[0] for x in zip(data,labels) if x[1]==p])
+        newTexts = map(lambda x: " ".join(x),zip(*[iter(alltext.split(" "))]*nWords))
+        newData.extend(newTexts)
+        newLabels.extend([p]*len(newTexts))
+    return newData,newLabels
+
 def fbFileTuple(fbf):
     f = [ff[1] for ff in fbTraverserTop(fbf)]
     return zip(f, [fbf.split("/")[-1].split(".")[0]] * len(f))
@@ -334,8 +344,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     parameters = {'vect__ngram_range': [(1,2)],\
            #'vect__stop_words':(None,stops),\
            #'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(-4,4,2.)).tolist(),
-           'vect__max_df':[.5, .75],
+           'clf__C': (10.**sp.arange(-2,3,1.)).tolist(),
+           'vect__max_df':[.5],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -396,7 +406,7 @@ def classify_speeches_party_parliament(legislationPeriod = 18):
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-%d"%legislationPeriod)
 
 def classify_speeches_fb(legislationPeriod = 18):
-    evalData, evalLabels = get_raw_text_fb()
+    evalData, evalLabels = get_raw_text_fb_balanced_words()
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-test-%d"%legislationPeriod)
 
