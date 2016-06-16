@@ -212,7 +212,8 @@ def get_raw_text_fb(folder="data/parteien-auf-fb", suffix=".json.gz"):
 def get_raw_text_fb_balanced_words(nWords=1000,folder="data/parteien-auf-fb", suffix=".json.gz"):
     data,labels = get_raw_text_fb(folder,suffix)
     newData, newLabels = [], []
-    for p in sp.unique(labels):
+    uparties, upcounts = sp.unique(labels,return_counts=True)
+    for p in uparties:
         alltext = " ".join([x[0] for x in zip(data,labels) if x[1]==p])
         newTexts = map(lambda x: " ".join(x),zip(*[iter(alltext.split(" "))]*nWords))
         newData.extend(newTexts)
@@ -405,8 +406,13 @@ def classify_speeches_party_parliament(legislationPeriod = 18):
     evalData, evalLabels = get_raw_text(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-%d"%legislationPeriod)
 
-def classify_speeches_fb(legislationPeriod = 18):
-    evalData, evalLabels = get_raw_text_fb_balanced_words()
+def classify_speeches_fb(legislationPeriod = 18, nsamples=50):
+    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=100)
+    uparties, upcounts = sp.unique(evalLabels,return_counts=True)
+    dd = zip(evalData,evalLabels)
+    sp.random.shuffle(dd)
+    hh = [[x for x in dd if x[1]==up] for up in uparties]
+    evalData,evalLabels = zip(*chain(*[h[:nsamples] for h in hh]))
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-test-%d"%legislationPeriod)
 

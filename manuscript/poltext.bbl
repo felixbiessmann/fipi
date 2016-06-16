@@ -4,6 +4,12 @@
 Manifesto codebook\\
   \url{https://manifesto-project.wzb.eu/information/documents?name=handbook_v4}.
 
+\bibitem{bundestag-github}
+\url{https://github.com/bundestag}.
+
+\bibitem{bundestag}
+\url{https://www.bundestag.de/protokolle}.
+
 \bibitem{fipi}
 Github repository for political bias prediction code
   \url{https://github.com/felixbiessmann/fipi}, 2016.

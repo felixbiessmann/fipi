@@ -64,7 +64,11 @@
 \title{Predicting political party affiliation from text}
 
 \author{Felix Biessmann\\
-  {\tt felix.biessmann@gmail.com} \\\And
+  {\tt felix.biessmann@gmail.com} \\ \And
+  Sebastian Schelter\\
+  Technische Universit\"at Berlin\\
+  {\tt sebastian.schelter@tu-berlin.de}\\
+  \And
  Pola Lehmann \\
   Wissenschaftszentrum Berlin \\
   {\tt pola.lehmann@wzb.eu} \\}
@@ -96,15 +100,14 @@ All experiments were run on publicly available data sets of German political tex
 \subsection{Data}
 Annotated political text data was obtained from two sources: a) the plenary debates held in the German parliament ({\em Bundestag}) and b) all manifesto texts of parties winning seats in the election to the German parliament in the the last, 17th, legislative period. 
 
-\paragraph{Parliament discussion data} Parliament texts are annotated with the respective party label, which we take here as a proxy for political bias. The protocols of plenary debates are available through the website of the German Bundestag\footnote{\url{https://www.bundestag.de/protokolle}}; an open source API was used to query the data in a cleaned and structured format\footnote{\url{https://github.com/bundestag}}. In total 22784 speeches were extracted for the 17th legislative period.
+\paragraph{Parliament discussion data} Parliament texts are annotated with the respective party label, which we take here as a proxy for political bias. The protocols of plenary debates are available through the website of the German Bundestag \cite{bundestag}; an open source API was used to query the data in a cleaned and structured format \cite{bundestag-github}. In total 22784 speeches were extracted for the 17th legislative period\footnote{Uninterrupted parts were treated as separate speech.}. 
 
 \paragraph{Party manifesto data}
-The party manifesto text was taken from the Manifesto Corpus  \cite{manifesto}. The data released in this project mainly comprises the complete manifestos of all parties that have won seats at a national election. Each quasi-sentence\footnote{A quasi-sentence has the length of an argument. It is never longer than one sentence.} is annotated with one of 56 policy issue categories. Examples for the policy categories are {\em welfare state expansion, welfare state limitation, democracy, equality}; for a complete list and detailed explanations on how the annotators were instructed see \cite{leftright}. Each quasi-sentence has  two types of labels: the party affiliation and the manually assigned policy issue aimed at in each specific statement. 
-
-The length of each annotated statement in the party manifestos is rather short. The median length is 95 characters or 12 words.\footnote{The longest statement is 522 characters (65 words) long, the 25\%/50\%/75\% percentiles are 63/95/135 characters or 8/12/17 words, respectively.} This can be considered as a very valuable property of the data set, because it allows a fine grained resolution of party manifestos and is a good test for media data, as some data like tweets, facebook texts etc. are often very short, too. However for a classifier (as well as for humans) such short sentences can be rather difficult to classify. Benoit et al. (2015), for example, found in an experiment where experts where differentiating whether specific sentences were dealing with economic or social policy only about 35\% agreement between all expert coders. In the Manifesto Project the human coders therefore do not code these statements separately but within context. In order to obtain less 'noisy' data points from each party -- for the party affiliation task only -- all statements were aggregated into eight policy domains using the 56 policy categories from the Manifesto Project. Within the Manifesto Project category scheme each of these belongs to one of seven policy domains. These were used to aggregate the data into the following topics: {\em External Relations, Freedom and Democracy, Political System, Economy, Welfare and Quality of Life, Fabric of Society, Social Groups}. An eight topic is generated for all statements not belonging to any one the 56 policy issues, for a complete list see also \cite{leftright}. Most party manifestos covered all eight topics, some party manifestos in the 17th Bundestag only covered seven.
+The party manifesto text was taken from the Manifesto Corpus  \cite{manifesto}. The data released in this project mainly comprises the complete manifestos of all parties that have won seats at a national election. Each quasi-sentence\footnote{A quasi-sentence has the length of an argument. It is never longer than one sentence.} is annotated with one of 56 policy issue categories. Examples for the policy categories are {\em welfare state expansion, welfare state limitation, democracy, equality}; for a complete list and detailed explanations on how the annotators were instructed see \cite{leftright}. Each quasi-sentence has  two types of labels: the party affiliation and the manually assigned policy issue aimed at in each quasi-sentence. The policy labels were used to aggregate the data into the following topics: {\em External Relations, Freedom and Democracy, Political System, Economy, Welfare and Quality of Life, Fabric of Society, Social Groups}. 
+The length of each annotated statement in the party manifestos is rather short. The median length is 95 characters or 12 words.\footnote{The longest statement is 522 characters (65 words) long, the 25\%/50\%/75\% percentiles are 63/95/135 characters or 8/12/17 words, respectively.} 
 
 \subsection{Bag-of-Words Vectorization}\label{sec:bow-vectorization}
-All text data was segmented into semantic units, quasi-sentences for manifesto data and (uninterrupted) speech parts for parliament speech data. Strings of each semantic unit were tokenised and transformed into bag-of-word (BOW) vectors as implemented in scikit-learn \cite{scikit-learn}. Several options for BOW vectorizations were tried, including term-frequency-inverse-document-frequency normalisation, n-gram patterns up to size $n=3$ and several cutoffs for discarding too frequent and too infrequent words. All of these hyperparameters were subjected to hyperparameter optimization as explained in \autoref{sec:crossvalidation}.
+All text data was tokenised and transformed into bag-of-word (BOW) vectors as implemented in scikit-learn \cite{scikit-learn}. Several options for BOW vectorizations were tried, including term-frequency-inverse-document-frequency normalisation, n-gram patterns up to size $n=3$ and several cutoffs for discarding too frequent and too infrequent words. All of these hyperparameters were subjected to hyperparameter optimization as explained in \autoref{sec:crossvalidation}.
 
 \section{Classification Model and Training}\label{sec:model}
 Bag-of-words feature vectors were used to train a multinomial logistic regression model. Let $y\in\{1,2,\dots,K\}$ be the true  label, where $K$ is the total number of labels and $\vec{W}=[\vec{w}_1,\dots,\vec{w}_K]\in\R^{d\times K}$ is the concatenation of the weight vectors $\vec{w}_k$ associated with the $k$th party then
@@ -113,20 +116,7 @@ p(y=k|\vec{x},\vec{W}) = \frac{e^{z_k}}{\sum_{j=1}^K e^{z_j}}  \textrm{ with }  
 \end{eqnarray}
 
 \subsection{Optimisation of Model Parameters}\label{sec:crossvalidation}
-The model pipeline contained a number of  hyperparameters that were optimised using cross-validation.
-We first split the training data into a training data set that was used for optimisation of hyperparameters and an held-out test data set for evaluating how well the model performs on in-domain data. Hyperparameters were optimised using grid search and 3-fold cross-validation within the training set -- no data from the in-domain evaluation data or the out-of-domain evaluation data were used for hyperparameter optimisation. For the best setting of all hyperparameters the pipeline was trained again on all training data and evaluated on the evaluation data sets. For party affiliation prediction and government membership prediction the training and test set were 90\% and 10\%, respectively, of all data in a given legislative period. Wherever possible the generalisation performance of the models was also evaluated on out-of domain texts, for which we used the texts from party manifestos. For the policy issue prediction setting there was no out-of-domain evaluation data, so all labeled manifesto sentences in both legislative periods were split into a training and evaluation set of 90\% (train) and 10\% (evaluation). The train and test splits are summarized in \autoref{tab:classification_settings}.
-% 
-\begin{table}[t]\label{tab:classification_settings}
-\footnotesize
-\begin{tabular}{ccc}
-Training Set & \multicolumn{2}{c}{Test set} \\
-& In-domain&Out-of-domain\\
-\hline
-\hline
-Parliament ($90\%$) & Parliament ($10\%$)& Manifestos\\
-Manifestos ($90\%$)& Manifestos ($10\%$) & -\\
-\end{tabular}
-\end{table}
+The model pipeline contained a number of  hyperparameters that were optimised using cross-validation. The parliament speech data was split into training and validation (for hyperparameter optimization) in a 90\%/10\% ratio. 
 %
 \subsection{Sentiment analysis}\label{sec:sentiment_analysis_methods}
 A publicly available key word list was used to extract sentiments \cite{remquahey2010}. A sentiment vector $\vec{s}\in\R^d$ was constructed from the sentiment polarity values in the sentiment dictionary. The sentiment index used for attributing positive or negative sentiment to a text was computed as the cosine similarity between BOW vectors and sentiment vectors.
