@@ -362,6 +362,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     labelsStr = [str(x) for x in test_clf.steps[-1][1].classes_]
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(y_test, predictedTest).tolist(): report += str(line)+"\n" 
+    report += "Accuracy: %0.2f\n"%metrics.accuracy_score(y_test,predictedTest)
     # train again on entire training set
     final_clf = text_clf.set_params(**best_clf.get_params()).fit(trainData, trainLabels)
     # dump classifier to pickle
@@ -372,6 +373,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     labelsStr = [str(x) for x in final_clf.steps[-1][1].classes_]
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
+    report += "Accuracy: %0.2f\n"%metrics.accuracy_score(evalLabels,predictedEval)
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
     return report
@@ -401,6 +403,15 @@ def classify_speeches_binary_parliament(legislationPeriod = 18):
     evalData, evalLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(evalDataParty,evalLabelsParty)])
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-%d"%legislationPeriod)
 
+
+def classify_speeches_binary_parliament_topics(legislationPeriod = 18):
+    trainDataParty, trainLabelsParty = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
+    evalDataParty, evalLabelsParty = get_raw_text_topics(legislationPeriod=legislationPeriod)
+    gov = bundestagGovernment[legislationPeriod]['government']
+    trainData, trainLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(trainDataParty,trainLabelsParty)])
+    evalData, evalLabels = zip(*[(x[0],'government') if x[1].split(":")[0] in gov else (x[0],'opposition') for x in zip(evalDataParty,evalLabelsParty)])
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-topics-%d"%legislationPeriod)
+
 def classify_speeches_party_parliament(legislationPeriod = 18):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     evalData, evalLabels = get_raw_text(legislationPeriod=legislationPeriod)
@@ -415,6 +426,19 @@ def classify_speeches_fb(legislationPeriod = 18, nsamples=50):
     evalData,evalLabels = zip(*chain(*[h[:nsamples] for h in hh]))
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-test-%d"%legislationPeriod)
+
+def classify_speeches_fb_binary(legislationPeriod = 18, nsamples=50):
+    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=100)
+    uparties, upcounts = sp.unique(evalLabels,return_counts=True)
+    dd = zip(evalData,evalLabels)
+    sp.random.shuffle(dd)
+    hh = [[x for x in dd if x[1]==up] for up in uparties]
+    evalData,evalLabels = zip(*chain(*[h[:nsamples] for h in hh]))
+    trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
+    gov = bundestagGovernment[legislationPeriod]['government']
+    trainData, trainLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(trainData,trainLabels)])
+    evalData, evalLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(evalData,evalLabels)])
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-binary-%d"%legislationPeriod)
 
 def classify_speeches_party_manifesto(legislationPeriod = 18):
     evalData, evalLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
