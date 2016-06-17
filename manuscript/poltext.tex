@@ -63,19 +63,15 @@
 
 \title{Predicting political party affiliation from text}
 
-\author{Felix Biessmann\\
-%  {\tt felix.biessmann@gmail.com} \\ 
+\author{Felix Biessmann\thanks{~\tt felix.biessmann@gmail.com}\\
   \And
-  Sebastian Schelter\\
-  Technische Universit\"at Berlin\\
-%  {\tt sebastian.schelter@tu-berlin.de}\\
+  Sebastian Schelter \thanks{~\tt sebastian.schelter@tu-berlin.de}\\ Technische Universit\"at Berlin
 \And 
 Daniel Kirsch
   \And
- Pola Lehmann \\
-  Wissenschaftszentrum Berlin \\
-%  {\tt pola.lehmann@wzb.eu} \\
-  }
+ Pola Lehmann\thanks{ ~{\tt pola.lehmann@wzb.eu} }\\
+  Wissenschaftszentrum Berlin\\
+}
 
 \date{}
 
@@ -84,7 +80,7 @@ Daniel Kirsch
 
 
 \begin{abstract}
-Every day large amounts of text are produced in public discourse. Some of this text is produced by actors whose political colour is very obvious, for example in the case of party elites. But there are also many actors raising their voices in the discourse, who cannot be clearly attributed to a political party, while their statements might actually by biased towards a specific party. Identifying such biases is crucial for political research as well as media consumers, especially when analysing the influence of the media on political discourse and vice versa. In this study we investigate to what extent political party affiliation can be predicted from textual content. Results indicate that automatic classification of political affiliation is possible with above chance accuracy also across text domains. We propose methods to better interpret these results and find that features not related to political policies, such as speech sentiment, can be discriminative and thus exploited by text analysis models. 
+Every day large amounts of text are produced in public discourse. Some of this text is produced by actors whose political colour is very obvious. But there are also many actors, who cannot be clearly attributed to a political party, while their statements might be biased towards a specific party. Identifying such biases is crucial for political research as well as media consumers, especially when analysing the influence of the media on political discourse and vice versa. In this study we investigate to what extent political party affiliation can be predicted from textual content. Results indicate that automatic classification of political affiliation is possible with above chance accuracy also across text domains. We propose methods to better interpret these results and find that features not related to political policies, such as speech sentiment, can be discriminative and thus exploited by text analysis models. 
 %We present an example of a web application that combines topic modelling with automatic political affiliation analyses of news articles based on the proposed model.
 \end{abstract}
 
@@ -137,8 +133,7 @@ Interpreting coefficients of linear models (independent of the regularizer used)
 \section{Results}\label{sec:results}
 
 The following section gives an overview of the results for all political bias prediction tasks. 
-%Some interpretations of the results are highlighted and a web application of the models is presented at the end of the section. 
-Due to space restrictions we only report results from the 17th legislative period. Results are similar for the 18th legislative period.
+Predictions compared with the manifesto data were done using models trained on texts from the 17th Bundestag, predictions obtained for facebook post texts were computed with models trained on the 18th Bundestag. 
 
 \subsection{Predicting political party affiliation}
 When predicting party affiliation on text data from the same domain that was used for training the model, average precision and recall values of above 0.6 are obtained. The evaluation results for the political party affiliation prediction on in-domain data (held-out parliamentary speech text) for the 17th Bundestag are listed in \autoref{tab:results_in-domain}.
@@ -199,7 +194,7 @@ total    &   0.35  &    0.31  &    0.30   &   12075\\
 \begin{table}[t]
 \caption{
 \label{tab:results_topic}
-{\bf Out-of-domain} classification performance (topic level) on {\bf manifesto data} of a classifier trained on the 17th legislative period of the Bundestag. Compared to quasi-sentence level predictions (\autoref{tab:results_out-of-domain}) the predictions made on topic level are more reliable.}
+{\bf Out-of-domain} classification performance (topic level) on {\bf manifesto data}. Compared to quasi-sentence level predictions (\autoref{tab:results_out-of-domain}) the predictions made on topic level are more reliable.}
 \begin{center}
 \begin{tabular}{lcccc}
     &         precision    &recall &  f1-score  & N  \\
@@ -244,7 +239,7 @@ Another explanation for misclassification could lie in the fact that parties cha
 
 % Confusion matrix topic level
 \begin{table}[t]\label{tab:conf_mat_four_class}
-\caption{\label{tab:confusion_topic} {\bf Topic level confusion matrices} on evaluation data (manifesto texts), classifiers were trained on speeches of 17th Bundestag.}
+\caption{\label{tab:confusion_topic} {\bf Topic level confusion matrices} of manifesto texts.}
 \vspace{0.5em}
 \begin{tabular}{lc|ccccc}
 && \multicolumn{5}{c}{\bf Predicted}\\
@@ -309,25 +304,8 @@ We quantified which words were preferentially used by each party by measuring th
 \paragraph{\bf Christian Democratic Union/Christian Social Union (CDU/CSU)}
 Often used words relate to a pro-economy attitude, such as competitiveness or (economic) development ({\em Wettbewerbsf\"ahigkeit, Entwicklung}) and words related to security ({\em Sicherheit, Stabilitaet}). 
 
-
-
-
-
-%\subsection{An example web application}
-%To show an example use case of the above models a web application was implemented that downloads regularly all articles from some major German news paper websites\footnote{\url{http://www.spiegel.de/politik}, \url{http://www.faz.net/aktuell/politik}, \url{http://www.welt.de/politik}, \url{http://www.sueddeutsche.de/politik}, \url{http://www.zeit.de/politik}} and applies some simple topic modelling to them. For each news article topic, headlines of articles are plotted along with the predictions of the policy issue of an article and two labels derived deterministically from the 56 class output, a left right index and the political domain of a text, see \cite{leftright}. Within each topic it is then possible to get an ordered (from left to right) overview of the articles on that topic. A preliminary demo is live at \cite{fipidemo} and the code is available on github\cite{fipi}.
-%\begin{figure}
-%\begin{center}
-%\includegraphics[width=10cm]{images/fipi-screenshot}
-%%
-%\end{center}
-%\caption{
-%\label{fig:fipi}
-%A screen shot of an example web application using the political view prediction combined with topic modelling to provide a heterogeneous overview of a topic. }
-%\end{figure}
-
-
 \section{Conclusions and Limitations}\label{sec:conclusion}
-Evaluating classifiers trained on parliament speeches we find that automated political bias prediction is possible with above chance accuracy in some cases even beyond the training text domain. These results encourage to use such systems as assistive technology for instance for human annotators in an active learning setting. 
+Evaluating classifiers trained on parliament speeches we find that automated political bias prediction is possible with above chance accuracy even beyond the training text domain. These results encourage to use such systems as assistive technology for instance for human annotators in an active learning setting. 
 
 We find a strong effect of text length and text domain on the generalization performance of the classifier, as also shown in other studies on similar data \cite{Yu2008, Hirst2014}. The first effect, longer texts are easier to classify, makes intuitive sense. Also humans are worse at judging the political bias of shorter texts out of context: Benoit et al. (2015), for example, found in an experiment where experts where differentiating whether specific sentences were dealing with economic or social policy only about 35\% agreement between all expert coders. However short texts are a realistic challenge for automated political bias prediction systems: Often political texts from social media data and other web media are indeed very short. But political education would benefit from automatic analyses of these data streams; these media have strong influence on public opinions yet are difficult to analyse with human annotators due to the large volume of data. \\
 The second effect, drop in generalization performance on out-of-domain data, can be alleviated by aggregating texts into longer segments. In the case of party affiliation prediction, the out-of-domain classification is on par or even better than the prediction accuracy on in-domain data. However in the binary classification setting (government membership), aggregating manifesto data, which was written without the knowledge of which party would be member of the government, into longer texts does not counteract the effect of out-of-domain classification. We attribute this effect in part to the fact that sentiment appears to be a discriminative feature for government membership. 
