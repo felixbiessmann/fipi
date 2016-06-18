@@ -418,7 +418,8 @@ def classify_speeches_party_parliament(legislationPeriod = 18):
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-%d"%legislationPeriod)
 
 def classify_speeches_fb(legislationPeriod = 18, nsamples=50):
-    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=100)
+    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=1000)
+    #evalData, evalLabels = get_raw_text_fb()
     uparties, upcounts = sp.unique(evalLabels,return_counts=True)
     dd = zip(evalData,evalLabels)
     sp.random.shuffle(dd)
@@ -428,7 +429,8 @@ def classify_speeches_fb(legislationPeriod = 18, nsamples=50):
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="fb-test-%d"%legislationPeriod)
 
 def classify_speeches_fb_binary(legislationPeriod = 18, nsamples=50):
-    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=100)
+    evalData, evalLabels = get_raw_text_fb_balanced_words(nWords=1000)
+    #evalData, evalLabels = get_raw_text_fb()
     uparties, upcounts = sp.unique(evalLabels,return_counts=True)
     dd = zip(evalData,evalLabels)
     sp.random.shuffle(dd)
