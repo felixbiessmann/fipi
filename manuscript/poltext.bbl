@@ -22,13 +22,18 @@ Manifesto codebook\\
 \bibitem{spd-fb}
 \url{https://www.facebook.com/SPD/}.
 
-\bibitem{fipi}
-Github repository for political bias prediction code
-  \url{https://github.com/felixbiessmann/fipi}, 2016.
+\bibitem{Benoit.Forthcoming}
+Kenneth Benoit, Drew Conway, Benjamin~E. Lauderdale, Michael Laver, and Slava
+  Mikhaylov.
+\newblock Crowd-sourced text analysis: reproducible and agile production of
+  political data.
+\newblock {\em American Political Science Rewview}, Forthcoming.
 
-\bibitem{fipidemo}
-A web demo of political bias prediction for german language
-  \url{http://fipi-dev.elasticbeanstalk.com}, 2016.
+\bibitem{Benoit.2}
+Kenneth Benoit, Michael Laver, and Slava Mikhaylov.
+\newblock Treating words as data with error: Uncertainty in text statements of
+  policy positions.
+\newblock {\em American Journal of Political Science}, 53:495--513, 2.
 
 \bibitem{Haufe2013}
 Stefan Haufe, Frank Meinecke, Kai G{\"o}rgen, Sven D\"ahne, John-Dylan Haynes,
@@ -48,7 +53,7 @@ Graeme Hirst, Yaroslav Riabinin, Jory Graham, and Magali Boizot-Roche.
 Pola Lehmann, Theres Matthie{\ss}, Nicolas Merz, Sven Regel, and Annika Werner.
 \newblock {\em Manifesto Corpus}.
 \newblock WZB Berlin Social Science Center.,
-  https://manifestoproject.wzb.eu/information/documents/corpus, 2015.
+  \url{https://manifestoproject.wzb.eu/information/documents/corpus}, 2015.
 
 \bibitem{scikit-learn}
 F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel,
@@ -63,6 +68,13 @@ R.~Remus, U.~Quasthoff, and G.~Heyer.
   sentiment analysis.
 \newblock In {\em Proceedings of the 7th International Language Resources and
   Evaluation (LREC'10)}, 2010.
+
+\bibitem{Slapin.2014}
+Jonathan~B. Slapin and Sven-Oliver Proksch.
+\newblock Word as data: Content analysis in legislative studies.
+\newblock In Shane Martin, Thomas Saalfeld, and Kaare~W. Str{\o}m, editors,
+  {\em The Oxford Handbook of Legislative Studies}, pages 126--144. {Oxford
+  University Press}, Oxford, 2014.
 
 \bibitem{Yu2008}
 Bei Yu, Stefan Kaufmann, and Daniel Diermeier.
