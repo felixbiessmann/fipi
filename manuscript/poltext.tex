@@ -90,9 +90,11 @@ Every day large amounts of text are produced in public discourse. Some of this t
 Analysis and classifications of political text is and has been a very important tool to generate political science data \cite{Benoit.Forthcoming}. Traditionally such classifications are done by experts, who read and label the text of interest.\footnote{See for example the Manifesto Project, the Comparative Agendas Project or Poltext.} This is, however, a very time consuming task and thus sets various limits to the possible amount of data that a few experts can analyze. The growing field of automated text analysis, that allows the analysis of much more text in less time, is therefore of great interest to political scientists. Additionally automated text analyses allow for a more objective and replicable analysis of political text then human coders could achieve \cite{Benoit.2}.
 
 A major problem with automated text analyses is generalisation to text domains other than that on which the system was trained \cite{Slapin.2014}. 
-%The political experts who judge and label political texts have read enough content of different domains to detect political bias in a variety of contexts and styles. 
+Traditionally text analysis is done by political experts, who are annotating political text having in mind many context factors. There has, however, always been discussion about the reliability of such annotations. Automated analysis can solve this problem, but they are more fragile in regard to validity questions. 
+%who judge and label political texts have read enough content of different domains to detect political bias in a variety of contexts and styles. 
 % Den vorangegangenen Satz würde ich streichen, weil ich mit der Aussage nicht übereinstimme. Das ist wahrscheinlich wieder der Unterschied der Disziplinen, ihr müsst rechtfertigen, warum Computer es können, wenn Menschen es können, wir müssen in der Regel rechtgertigen warum Menschen es können, wenn Computer es besser machen. 
 % Ich glaube, dass Computer es besser machen, wuerde niemand behaupten. Computer machen das genau so gut oder schlecht, wie die qualitaet der daten (die ja von menschen gelabeled oder selektiert werden) ihnen erlaubt. Der Algorithmus spiel auch ne rolle, aber das hauptproblem ist Daten und die koennen nur von Menschen kommen. Computer sind hilfreich als assistive technology, weil sie das ganze skalierbar machen. 
+% Ich versteh deinen Kommentar, aber wir mussten uns tatsächlich am Anfang des Projekts viel mit so Fragen rumschlagen, warum wir denn noch mit Menschen kodieren, wenn Computer das doch besser können. Eigentlich geht es da aber, glaube ich, um das Spannugnsgeflecht zwischen Reliabilität und Validität. Habe versucht das jetzt nochmal so umzuformulieren. 
 Machine learning algorithms are naturally prone to poor generalisation performance if the training data is biased towards one text domain. Unfortunately good unbiased training data is difficult to obtain. One of the best sources for automated political text analysis systems are plenary debates of the parliament: Many studies are based on this type of data as it is a large source of text that can be clearly associated with a party. Here we examine to what extent models trained on this data can be generalised to other text domains, such as party manifestos and texts from social media. 
 We discuss the effects of text length and domain shift of text data and investigate some potential reasons for the differences in classification performance. 
 
@@ -171,7 +173,8 @@ These results are comparable to those of \cite{Hirst2014} who report a classific
 \subsection{Out-of-domain predictions}
 % Validation on manifesto data hat mich hier irritiert, weil es in dem Absatz ja auch um die facebook Daten geht. 
 % Sorry, das war schlecht strukturiert - wollte validation als ueberschrift drinlassen, weil das von Dir war, Pola.
-For out-of domain data obtained from manifesto data the models yield significantly lower precision and recall values between 0.3 and 0.4, see \autoref{tab:results_out-of-domain}. For the facebook post data a similar effect was observed. The short texts resulted in poor prediction accuracies of 0.51 on average. In addition in this setting classes were highly unbalanced since some parties have an order of magnitude more posts than others. 
+For out-of domain data obtained from manifesto data the models yield significantly lower precision and recall values between 0.3 and 0.4, see \autoref{tab:results_out-of-domain}. For the facebook post data a similar effect was observed. The short texts resulted in poor prediction accuracies of 0.51 on average. In addition in this setting classes were highly unbalanced since some parties have an order of magnitude more posts than others.
+% Kann es sein, dass hier irgendwie zwei Worte zu viel drin sind? irgendwie verstehe ich den Satz jedenfalls gerade nicht ganz. 
 
 
 \begin{table}[t]
@@ -243,7 +246,7 @@ avg / total    &   0.73   &   0.71  &    0.66   &    200\\
 \end{table}
 
 
-\paragraph{Misclassifications and policy change}
+\subsection{Misclassifications and policy change}
 An explanation for misclassifications could be that parties change their policy positions. This requires inspecting the specific data points that were misclassified. The confusion matrix for the 17th Bundestag in \autoref{tab:confusion_topic} shows that on the topic level the SPD manifesto texts are often predicted as belonging to the CDU/CSU. A similar effect can be observed in the 18th Bundestag when predicting both manifesto texts as well as facebook posts (results not shown): texts of the Green party are often predicted to be from the CDU/CSU. One explanation for this misclassification could be policy changes. \\
 
 % Confusion matrix topic level
@@ -284,7 +287,7 @@ For a better comparison with other studies that predict party affiliation in a t
 
 \subsection{Discriminative features}
 \label{sec:discrim_effect}
-An important question is whether the difference between the features of each party relies on different policies or on on other aspects of the text. To get more insight into what aspects are discriminative for government membership and for parties we analysed, first, the effect of text sentiment and the text features most correlated with each party.
+An important question is whether the difference between the features of each party relies on different policies or on other aspects of the text. To get more insight into what aspects are discriminative for government membership and for parties we analysed, first, the effect of text sentiment and the text features most correlated with each party.
 
 % ich glaub der uebergang von dem sentiment in der letzten subsection passt ganz gut zu den sentiment analysen im naechsten
 % auch, weils beim sentiment noch um die binary classification geht, die gerade kam
