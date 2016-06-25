@@ -298,10 +298,10 @@ def news_experiment(trainData,trainLabels,evalData,evalLabels, folds=2, idstr='d
                             ('tfidf', TfidfTransformer()),
                             ('clf',LogisticRegression(class_weight='balanced'))])
     parameters = {'vect__ngram_range': [(1,2)],\
-           'vect__stop_words':(None,stops),\
-           'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(1,5,1.)).tolist(),
-           'vect__max_df':[.3, .5, .75],
+           #'vect__stop_words':(None,stops),\
+           #'tfidf__use_idf': (True,False),\
+           'clf__C': (10.**sp.arange(-2,5,1.)).tolist(),
+           'vect__max_df':[.1, .5, .75],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -345,8 +345,8 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     parameters = {'vect__ngram_range': [(1,2)],\
            #'vect__stop_words':(None,stops),\
            #'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(-2,3,1.)).tolist(),
-           'vect__max_df':[.5],
+           'clf__C': (10.**sp.arange(-2,5,.5)).tolist(),
+           'vect__max_df':[.1,.2,.5,7],
         }
     saveId = idstr+"-"+randid()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(trainData, trainLabels, test_size=0.1, random_state=0)
@@ -374,6 +374,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
     report += "Accuracy: %0.2f\n"%metrics.accuracy_score(evalLabels,predictedEval)
+    import pdb;pdb.set_trace()
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
     return report
@@ -404,13 +405,18 @@ def classify_speeches_binary_parliament(legislationPeriod = 18):
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-%d"%legislationPeriod)
 
 
+def classify_speeches_parliament_topics(legislationPeriod = 18):
+    trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
+    evalData, evalLabels = get_raw_text_topics(legislationPeriod=legislationPeriod)
+    optimize_hyperparams(trainData,trainLabels, evalData, [e.split(":")[0] for e in evalLabels],idstr="parliament-train-gov-topics-%d"%legislationPeriod)
+
 def classify_speeches_binary_parliament_topics(legislationPeriod = 18):
     trainDataParty, trainLabelsParty = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
     evalDataParty, evalLabelsParty = get_raw_text_topics(legislationPeriod=legislationPeriod)
     gov = bundestagGovernment[legislationPeriod]['government']
     trainData, trainLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(trainDataParty,trainLabelsParty)])
     evalData, evalLabels = zip(*[(x[0],'government') if x[1].split(":")[0] in gov else (x[0],'opposition') for x in zip(evalDataParty,evalLabelsParty)])
-    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-topics-%d"%legislationPeriod)
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-binary-topics-%d"%legislationPeriod)
 
 def classify_speeches_party_parliament(legislationPeriod = 18):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)

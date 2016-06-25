@@ -9,11 +9,25 @@ from sklearn import cross_validation,metrics
 import scipy as sp
 import re
 
-DDIR = '/Users/felix/Data/fb-politics/'
+DDIR = "/Users/felix/Code/Python/fipi/data/parteien-auf-fb"
 
 dat = [DDIR + x + ".json.gz" for x in ['afd','npd','pegida']]
 
 urlPat = r'(http://.*\.html)'
+
+def getUrlsAndUsers(post): 
+    urls = []
+    if post['message']: 
+        foundUrl = re.search(urlPat,post['message'])
+        if foundUrl:
+            name = ''
+            if post.has_key('name'):
+                name += post['name']
+            import pdb;pdb.set_trace()
+            urls.append((post['created'],post['id']+": "+name,foundUrl.groups(0)[0]))
+    if len(post['comments'])>0: 
+        urls += list(chain(*map(getUrls,post['comments'])))
+    return filter(lambda x: len(x)>0,urls)
 
 def getUrls(post): 
     urls = []
@@ -21,7 +35,6 @@ def getUrls(post):
         foundUrl = re.search(urlPat,post['message'])
         if foundUrl:
             name = ''
-            import pdb;pdb.set_trace()
             if post.has_key('name'):
                 name += post['name']
             urls.append((post['created'],post['id']+": "+name,foundUrl.groups(0)[0]))
@@ -121,5 +134,16 @@ class fbTraverserUrl(object):
             for line in fh:
                 yield getUrls(json.loads(line, strict=False))
                     
+
+class fbTraverserUrlUsers(object):
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __iter__(self):
+        with gzip.open(self.fn) as fh:
+            for line in fh:
+                yield getUrlsAndUsers(json.loads(line, strict=False))
+                    
+
 
 
