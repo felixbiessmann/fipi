@@ -8,6 +8,8 @@ from sklearn.grid_search import GridSearchCV
 from sklearn import cross_validation,metrics
 import scipy as sp
 import re
+import urllib
+from bs4 import BeautifulSoup
 
 DDIR = "/Users/felix/Code/Python/fipi/data/parteien-auf-fb"
 
@@ -15,7 +17,57 @@ dat = [DDIR + x + ".json.gz" for x in ['afd','npd','pegida']]
 
 urlPat = r'(http://.*\.html)'
 
-def getUrlsAndUsers(post): 
+def get_text_from_url(url):
+    html = urllib.urlopen(url).read()
+    soup = BeautifulSoup(html,"lxml")
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()    # rip it out
+    # get text
+    text = soup.get_text()
+    # break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # drop blank lines
+    text = '\n'.join(chunk for chunk in chunks if len(chunk.split(" "))>1)
+    return text.encode('utf-8')
+
+def getLikes(post):
+    likes = []
+    if post.has_key("likedBy"):
+        likes = [post['likedBy']]   
+    if len(post['comments'])>0: 
+        likes += map(getLikes,post['comments'])
+    return chain(*likes)
+    
+
+def getContent(post):
+    text,likes,urlText,name,url,content = "",[],"","","",{}
+    if post['message']: 
+        text = post['message']
+        foundUrl = re.search(urlPat,post['message'])
+        if foundUrl:
+            url = foundUrl.groups(0)[0]
+            urlText = get_text_from_url(url)
+        if post.has_key('name'): 
+            name = post['name']
+        if post.has_key("likedBy"):
+            likes = post['likedBy']    
+        content = {
+            "url":url,
+            "urlText":urlText,
+            "text":text,
+            "likes":likes,
+            "date":post['created'],
+            "id":post['id'] + ": "+name 
+            }
+    if len(post['comments'])>0: 
+        content['likes'] = list(getLikes(post)) + likes
+    return content
+
+
+def getContentFlatOld(post): 
     urls = []
     if post['message']: 
         foundUrl = re.search(urlPat,post['message'])
@@ -23,11 +75,30 @@ def getUrlsAndUsers(post):
             name = ''
             if post.has_key('name'):
                 name += post['name']
-            import pdb;pdb.set_trace()
-            urls.append((post['created'],post['id']+": "+name,foundUrl.groups(0)[0]))
+            if post.has_key("likedBy"):
+                usrs = post['likedBy']    
+            else: usrs = []
+            url = foundUrl.groups(0)[0]
+            urlText = get_text_from_url(url)
+            text = post['message']
+            content = {
+                "url":url,
+                "urlText":urlText,
+                "text":text,
+                "likes":usrs,
+                "date":post['created'],
+                "id":post['id'] + ": "+name 
+                }
+            urls.append(content)
     if len(post['comments'])>0: 
-        urls += list(chain(*map(getUrls,post['comments'])))
-    return filter(lambda x: len(x)>0,urls)
+        urls += list(chain(*map(getContentFlat,post['comments'])))
+    urls = filter(lambda x: len(x)>0,urls)
+    if len(urls)>1:
+        urls[0]['text'] = " ".join(u['text'] for u in urls)
+        urls[0]['urlText'] = " ".join(u['urlText'] for u in urls)
+        urls[0]['likes'].extend(chain(*[u['likes'] for u in urls if u['likes']]))
+        urls = [urls[0]]
+    return urls
 
 def getUrls(post): 
     urls = []
@@ -135,14 +206,14 @@ class fbTraverserUrl(object):
                 yield getUrls(json.loads(line, strict=False))
                     
 
-class fbTraverserUrlUsers(object):
+class fbTraverserContentFlat(object):
     def __init__(self, fn):
         self.fn = fn
 
     def __iter__(self):
         with gzip.open(self.fn) as fh:
             for line in fh:
-                yield getUrlsAndUsers(json.loads(line, strict=False))
+                yield getContent(json.loads(line, strict=False))
                     
 
 
