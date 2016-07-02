@@ -27,9 +27,9 @@ def fit_kcca(Ks,ncomp=1,gamma=1e-3):
     """
     Fits kernel CCA model
     INPUT:
-        X       list of data matrices (Dim-by-N)
+        Ks       list of kernel matrices (N-by-N)
         ncomp   number of hidden variables
-        kernel  [kernelfunction,[parameters]]
+        gamma  regularizer
     """
     N = Ks[0].shape[0]
     m = len(Ks)
