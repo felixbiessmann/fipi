@@ -23,7 +23,7 @@ dat = [DDIR + x + ".json.gz" for x in ['afd','npd','pegida']]
 
 urlPat = r'(http://.*\.html)'
 
-def fit_kcca(Ks,ncomp=1,gamma=1e-5):
+def fit_kcca(Ks,ncomp=1,gamma=1e-3):
     """
     Fits kernel CCA model
     INPUT:
@@ -70,11 +70,12 @@ def readPostWeek(fn,maxUsers,numComp=6):
 
 def getCointeractionGraph(fn,maxUsers,numComp):
     A = readPostWeek(fn,maxUsers)
+    timestamp = fn.split("/")[-1].split(".")[0]
     try:
         U,V = eigs(A.dot(A.T) + diags(sp.ones(A.shape[0])*1e-4),numComp,maxiter=100)
-        return csr_matrix(sp.diag(1./sp.sqrt(U)).dot(V.T)).dot(A)
+        return (timestamp,csr_matrix(sp.diag(1./sp.sqrt(U)).dot(V.T)).dot(A))
     except:
-        return A[:numComp,:]
+        return (timestamp,A[:numComp,:])
 
 def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
 
@@ -91,7 +92,7 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015']):
     cigs = p.map(getCointeractionGraphTuple,tpls)
     N = len(cigs)
     print("Found %d weeks"%N)
-    X = sp.sparse.vstack([sp.sparse.hstack([*c]) for c in cigs])
+    X = sp.sparse.vstack([sp.sparse.hstack([*c[1]]) for c in cigs])
     K = X.dot(X.T)
     return sp.array(sp.real(K.todense()))
 
@@ -111,29 +112,32 @@ def run_cointeraction(folder=DDIR,numComp=6,years=['2014','2015','2016'],testRat
     trainIdx = range(int(N * (1-testRatio)))
     testIdx = range(int(N * (1-testRatio)),N)
     
-    alphas = fit_kcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,)
+    alphas = fit_kcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,1e2)
 
-    yhat = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
-    
-    
+    yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks.values()])]
+    yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
+    plotTrends(Ks,yhatTrain,numComp,'train')
+    plotTrends(Ks,yhatTest,numComp,'test')
+   
+def plotTrends(Ks,yhat,numComp,teststr):   
     import pylab as pl
     for ic in range(numComp):
-        cors = zeros((len(Ks),len(Ks)))
+        cors = sp.zeros((len(Ks),len(Ks)))
         for x in range(len(Ks)):
             for y in range(x+1,len(Ks)):
-                cors[x,y] = corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0]
+                cors[x,y] = sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0]
         pl.figure()    
         pl.imshow(cors.T,interpolation='nearest',cmap='Oranges')
         pl.colorbar()
         pl.yticks(range(len(Ks)),Ks.keys())
         pl.xticks(range(len(Ks)),Ks.keys())
         pl.title("Canonical Correlation %d"%ic)
-        pl.savefig("ccs-%d.pdf"%ic)
+        pl.savefig("ccs-%d-%s.pdf"%(ic,teststr))
         pl.figure()
         icts = sp.vstack([yhat[x][ic,:] for x in range(len(Ks))])
         pl.plot(icts.T)
         pl.legend(Ks.keys())
         pl.title("Canonical Trend %d"%ic)
         pl.xlabel("Time [weeks]")
-        pl.savefig("cc-ts-%d.pdf"%ic)
+        pl.savefig("cc-ts-%d-%s.pdf"%(ic,teststr))
         pl.close('all')
