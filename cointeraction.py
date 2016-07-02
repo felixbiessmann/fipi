@@ -33,7 +33,7 @@ def fit_kcca(Ks,ncomp=1,gamma=1e-3):
     """
     N = Ks[0].shape[0]
     m = len(Ks)
-    Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
+    #Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
     # Generate Left-hand side of eigenvalue equation
     VK = sp.vstack(Ks)
     LH = VK.dot(VK.T)
@@ -106,19 +106,43 @@ def readAll(folder=DDIR,numComp=6,years=['2014','2015','2016']):
     ptpls = [(p[0],p[1],maxUser,numComp,years) for p in fs]
     return {ptpl[0]:getPartyKernelTupel(ptpl) for ptpl in ptpls}
 
+def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
+    alphas = fit_kcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,gamma)
+
+    yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks.values()])]
+    yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
+    return yhatTrain,yhatTest
+
 def run_cointeraction(folder=DDIR,numComp=6,years=['2014','2015','2016'],testRatio=.5):
     Ks = readAll(folder,numComp,years)
     N = Ks[list(Ks.keys())[0]].shape[0]    
     trainIdx = range(int(N * (1-testRatio)))
     testIdx = range(int(N * (1-testRatio)),N)
     
-    alphas = fit_kcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,1e2)
+    gammas = 10.**sp.arange(-2,4,.1)
+    cors = []
+    for ga in gammas:
+        yhatTrain, yhatTest = evaluateKCCA(Ks,trainIdx,testIdx,numComp,ga)        
+        cors.append(sum([getCorrs(yhatTest,len(Ks),ic).sum() for ic in range(numComp)]))
+    pl.figure()
+    pl.plot(cors)
+    ticks,labels = zip(*[(x,sp.log10(gammas[x-1])) for x in pl.xticks()[0]])
+    pl.xticks(ticks,labels)
+    pl.xlabel('log10(gamma)')
+    pl.ylabel('summed test correlation')
+    pl.savefig("model-selection.pdf")
 
-    yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks.values()])]
-    yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
+    yhatTrain, yhatTest = evaluateKCCA(Ks,trainIdx,testIdx,numComp,gammas[sp.argmax(cors)])
     plotTrends(Ks,yhatTrain,numComp,'train')
     plotTrends(Ks,yhatTest,numComp,'test')
-   
+
+def getCorrs(yhat,M,ic):
+    cors = sp.zeros((M,M))
+    for x in range(M):
+        for y in range(x+1,M):
+            cors[x,y] = sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0]
+    return cors
+
 def plotTrends(Ks,yhat,numComp,teststr):   
     import pylab as pl
     for ic in range(numComp):
