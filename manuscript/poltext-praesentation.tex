@@ -96,8 +96,9 @@ Daniel Kirsch\\
 \item In-domain held-out data
 \item Out-of-domain held-out-data
 \end{itemize}
-\item Detrimental effects on prediction accuracy
+\item Challenges of automated analyses
 \item Tools for better interpretability of models
+\item Conclusion
 \item Web applications of political bias prediction
 \end{itemize}
 \end{frame}
@@ -202,6 +203,9 @@ total    &   0.35  &    0.31  &    0.30   &   12075\\
 
 \end{frame}
 
+\section{Challenges}
+\subsection{}
+
 \begin{frame}\frametitle{Why is out-of-domain classification so bad?}
 \begin{itemize}
 \item Length of texts
@@ -236,7 +240,7 @@ total  &     0.88   &   0.86   &   0.86  &      36\\
 \begin{table}[t]
 \caption{
 \label{tab:results_fb}
- {\bf Facebook post predictions} (text length: 1000 words). }
+ {\bf Facebook post predictions} (text length: 1000 words).}
 \begin{center}
 \begin{tabular}{lcccc}
     &         precision    &recall &  f1-score  & N  \\
@@ -252,15 +256,80 @@ avg / total    &   0.73   &   0.71  &    0.66   &    200\\
 \end{center}
 \end{table}
 }
+\only<3>{
+\begin{itemize}
+\item Longer texts are easier to predict
+\item Intuitively makes sense
+\item In line with previous findings, see e.g. \cite{Hirst2014}
+\item But still, accuracies are far from perfect
+\end{itemize}
+}
+\only<4>{
+\centering
+What -- except length -- decreases generalization performance? 
+}
 \end{frame}
 
-\section{Sentiment vs. Power}
+\begin{frame}{Effect of Text Domain}
+\centering
+\only<1>{
+\begin{table}[t]
+\caption{
+\label{tab:results_binary_17}
+Classification texts into government and opposition (long texts).
+}
+\begin{tabular}{lccc}
+& {\bf In-Domain} & \multicolumn{2}{c}{{\bf Out-of-Domain}}\\
+& Parliament & Manifestos & Facebook Posts\\
+\hline
+Accuracy    &   0.88   &   0.60&      0.76\\
+%
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item Despite less noisy, longer texts:\\
+\bf Out-of-domain accuracy on manifesto data close to chance
+\item Recognized in previous work, see e.g. \cite{Yu2008}
+\end{itemize}
+}
+\only<2>{
+\begin{itemize}
+\item Every ML model is biased by its training data
+\item Generalization from biased data is {\em the} central problem of ML
+\item Potential strategies to ensure generalization
+\begin{itemize}
+\item Empirical risk minimization / Regularization
+\item More (heterogeneous) data
+\item Better models: \\ Cov. shift adaptation, transfer/semi-supervised learning,  \dots
+\item {\bf Domain knowledge}
+\end{itemize}
+\item[$\rightarrow$] Using domain knowledge requires interpretable models
+\end{itemize}
+}
+\end{frame}
+
+\section{Tools}
 \subsection{}
+
+\begin{frame}{Some ML Tools for Leveraging Domain Knowledge}
+\begin{itemize}
+\item Relation between misclassifications and party policy
+\item Covariation Text Features and Party labels
+\item Explicit tests of domain knowledge: Sentiment and Power
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Sentiment correlates with political power}
 \begin{center}
-\only<1>{\includegraphics[width=0.7\textwidth]{images/party-sentiments-17}}
-\only<2>{\includegraphics[width=0.7\textwidth]{images/party-sentiments-18}}
+\only<1>{
+17th Bundestag\\
+\includegraphics[width=0.7\textwidth]{images/party-sentiments-17}\\
+}
+\only<2>{
+18th Bundestag\\
+\includegraphics[width=0.7\textwidth]{images/party-sentiments-18}\\
+}
 \only<3>{
 \begin{table}[t]
 \caption{
@@ -278,6 +347,61 @@ Correlation coefficient between average sentiment with government membership and
 }
 \end{center}
 \end{frame}
+
+\begin{frame}\frametitle{Finding Discriminative Features}
+\centering
+\only<1>{\includegraphics[width=0.4\textwidth]{images/party_word_correlations-cducsu-18}}
+\only<2>{\includegraphics[width=0.4\textwidth]{images/party_word_correlations-spd-18}}
+\only<3>{\includegraphics[width=0.4\textwidth]{images/party_word_correlations-gruene-18}}
+\only<4>{\includegraphics[width=0.4\textwidth]{images/party_word_correlations-linke-18}}
+\end{frame}
+
+\begin{frame}\frametitle{Misclassifications and Policy Change}
+\centering
+Confusion Matrix 17th Bundestag\\
+\vspace{1em}
+\begin{tabular}{lc|ccccc}
+&& \multicolumn{5}{c}{\bf Predicted}\\
+&& cducsu & fdp& gruene& linke& spd\\
+\hline
+\multirow{5}{*}{\rotatebox{90}{\pbox{2cm}{\centering {\bf True}}}} &cducsu &7& 0& 0& 0& 0\\
+&fdp&0& 7& 0& 0& 0\\
+&gruene&0& 0& 6& 0& 1\\
+&linke&0& 0& 0& 7& 0\\
+&spd&4& 0& 0& 0& 4\\
+\end{tabular}
+\end{frame}
+
+\section{Conclusion}
+\subsection{}
+
+
+\begin{frame}\frametitle{Conclusion}
+\begin{itemize}
+\item Out-of-domain prediction of political bias possible
+\item Challenges
+\begin{itemize}
+\item Text length, see also \cite{Hirst2014}
+\item Domain transfer, see also \cite{Hirst2014, Yu2008}
+\end{itemize}
+\item Generalization should leverage domain knowledge
+\item Tools for leveraging domain knowledge
+\begin{itemize}
+\item Relating misclassifications to policy changes
+\item Interpreting discriminative features
+\item Testing human experts' hypotheses explicitly
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Some Web Applications}
+\centering
+\only<1>{\includegraphics[width=0.8\textwidth]{images/linksrechts-screenshot-1}}
+\only<2>{\includegraphics[width=0.8\textwidth]{images/linksrechts-screenshot-2}}
+\only<3>{\includegraphics[width=0.8\textwidth]{images/fipi-screenshot-2}}
+\only<4>{\includegraphics[width=0.8\textwidth]{images/fipi-screenshot}}
+\end{frame}
+
 
 %
 \begin{frame}\frametitle{References}
