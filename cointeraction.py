@@ -70,7 +70,7 @@ def randomWalkGraphKernelApprox(UA,LA,UB,LB,qA,qB,pA,pB,c=0.5):
     # compute inverse in eigenspace of product graph
     Lambda = 1./(1./sp.hstack([LB * la for la in LA]) - c)
     L = sp.kron(qA.dot(UA),qB.dot(UB))
-    R = sp.kron(UA.dot(pA),UB.dot(pB))
+    R = sp.kron(UA.T.dot(pA),UB.T.dot(pB))
     return qA.T.dot(pA) * qB.T.dot(pB) + c*L.dot(sp.diag(Lambda)).dot(R)
 
 def readPostLine(line):
@@ -112,15 +112,16 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016']):
     p = Pool(4)
     cigs = p.map(getCointeractionGraphTuple,tpls)
     N = len(cigs)
-    K = sp.zeros((N,N))
     print("Found %d weeks"%N)
+    K = sp.zeros((N,N))
     p = sp.ones(maxUser)/maxUser
     for x in range(N):
         for y in range(x+1,N):
             K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],p,p,p,p,c=0.5) 
     #X = sp.sparse.vstack([sp.sparse.hstack([*c[1]]) for c in cigs])
     #K = X.dot(X.T)
-    return sp.array(sp.real(K.todense()))
+    #return sp.array(sp.real(K.todense()))
+    return K
 
 def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
 
