@@ -114,14 +114,14 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016']):
     N = len(cigs)
     print("Found %d weeks"%N)
     K = sp.zeros((N,N))
-    p = sp.ones(maxUser)/maxUser
+    prob = sp.ones(maxUser)/maxUser
     for x in range(N):
-        for y in range(x+1,N):
-            K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],p,p,p,p,c=0.5) 
+        for y in range(x,N):
+            K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],prob,prob,prob,prob,c=0.5) 
     #X = sp.sparse.vstack([sp.sparse.hstack([*c[1]]) for c in cigs])
     #K = X.dot(X.T)
     #return sp.array(sp.real(K.todense()))
-    return K
+    return K + K.T
 
 def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
 
