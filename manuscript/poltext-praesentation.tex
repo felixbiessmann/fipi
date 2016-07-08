@@ -46,8 +46,6 @@
 %\logo{\pgfimage[width=.8cm,height=.8cm]{../KU_logo}}
 \title[]{
 {
-\vspace{1em}
-\small
 Predicting political party affiliation from text
 }}
 \author{
@@ -84,7 +82,6 @@ Daniel Kirsch\\
 \begin{frame}\frametitle{Overview}
 \small
 \begin{itemize}[<+->]
-\item Motivation
 \item Methods 
 \begin{itemize}
 \item Data
@@ -97,7 +94,7 @@ Daniel Kirsch\\
 \item Out-of-domain held-out-data
 \end{itemize}
 \item Challenges of automated analyses
-\item Tools for better interpretability of models
+\item Tools for better interpretability / leveraging domain knowledge
 \item Conclusion
 \item Web applications of political bias prediction
 \end{itemize}
@@ -289,13 +286,14 @@ Accuracy    &   0.88   &   0.60&      0.76\\
 
 \begin{itemize}
 \item Despite less noisy, longer texts:\\
-\bf Out-of-domain accuracy on manifesto data close to chance
+{\bf Accuracy on manifesto data close to chance}
 \item Recognized in previous work, see e.g. \cite{Yu2008}
 \end{itemize}
 }
 \only<2>{
 \begin{itemize}
 \item Every ML model is biased by its training data
+\item Political scientists have less of a problem with varying domains
 \item Generalization from biased data is {\em the} central problem of ML
 \item Potential strategies to ensure generalization
 \begin{itemize}
@@ -304,7 +302,10 @@ Accuracy    &   0.88   &   0.60&      0.76\\
 \item Better models: \\ Cov. shift adaptation, transfer/semi-supervised learning,  \dots
 \item {\bf Domain knowledge}
 \end{itemize}
-\item[$\rightarrow$] Using domain knowledge requires interpretable models
+\vspace{1em}
+\item[$\rightarrow$] 
+\centering
+How can political scientists leverage domain knowledge for automatic text analysis models?
 \end{itemize}
 }
 \end{frame}
@@ -334,6 +335,7 @@ Accuracy    &   0.88   &   0.60&      0.76\\
 \begin{table}[t]
 \caption{
 \label{tab:sentiments}
+\centering
 Correlation coefficient between average sentiment with government membership and number of seats in the parliament.
 }
 \begin{tabular}{lcc}

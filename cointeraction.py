@@ -56,9 +56,29 @@ def normAdjMat(A):
     '''
     Normalizes columns of adjecency matrix
     '''
-    norm = adj_mat.sum(axis=0)
-    norm[norm == 0] = 1
-    return adj_mat / norm
+    norm = A.sum(axis=0)
+    norm[norm == 0] = 1.0
+    return A / sp.double(norm)
+
+def testRandomWalk():
+    A = sp.array([[0,1,1],[1,0,1],[1,1,0]])
+    B = sp.array([[0,1,0],[1,0,1],[0,1,0]])
+    q = sp.ones(A.shape[0])/A.shape[0]
+    k = randomWalkGraphKernel(A,B,q,q,q,q)    
+    LA,UA = eig(A)
+    LB,UB = eig(B)
+    q = csr_matrix(q)
+    r = 2
+    khat = randomWalkGraphKernelApprox(csr_matrix(UA[:,:r]),csr_matrix(LA[:r]),csr_matrix(UB[:,:r]),csr_matrix(LB[:r]),q,q,q,q)
+
+def randomWalkGraphKernel(UA,UB,qA,qB,pA,pB,c=0.5):
+    '''
+    Computes random walk graph kernel 
+    '''
+    W = sp.kron(normAdjMat(UA),normAdjMat(UB))
+    q = sp.kron(qA,qB)
+    p = sp.kron(pB,pB)
+    return q.dot(sp.linalg.inv(sp.eye(W.shape[0]) - c*W)).dot(p)
 
 def randomWalkGraphKernelApprox(UA,LA,UB,LB,qA,qB,pA,pB,c=0.5):
     '''
@@ -68,10 +88,12 @@ def randomWalkGraphKernelApprox(UA,LA,UB,LB,qA,qB,pA,pB,c=0.5):
     of A for each graph
     '''
     # compute inverse in eigenspace of product graph
-    Lambda = 1./(1./sp.hstack([LB * la for la in LA]) - c)
-    L = sp.kron(qA.dot(UA),qB.dot(UB))
-    R = sp.kron(UA.T.dot(pA),UB.T.dot(pB))
-    return qA.T.dot(pA) * qB.T.dot(pB) + c*L.dot(sp.diag(Lambda)).dot(R)
+    o = csr_matrix(sp.ones(UA.shape[1]*UB.shape[1]))
+    Lambda = csr_matrix(o/((o/sp.sparse.kron(LA,LB)) - c))
+    L = sp.sparse.kron(UA.T.dot(qA),UB.T.dot(qB))
+    R = sp.sparse.kron(UA.T.dot(pA),UB.T.dot(pB))
+    k = qA.T.dot(pA) * qB.T.dot(pB) + c*L.T.dot(Lambda.multiply(R.T).T)
+    return k.data[0]
 
 def readPostLine(line):
     c = line.decode('utf-8').split("\t")
@@ -96,6 +118,7 @@ def getCointeractionGraph(fn,maxUsers,numComp,k=3):
         U,S,V = svds(A,numComp)
         return (S,V.T)
     except:
+        import pdb;pdb.set_trace()
         return (sp.ones(numComp),A[:numComp,:])
 
 def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
