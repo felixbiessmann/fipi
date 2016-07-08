@@ -61,15 +61,17 @@ def normAdjMat(A):
     return A / sp.double(norm)
 
 def testRandomWalk():
-    A = sp.array([[0,1,1],[1,0,1],[1,1,0]])
-    B = sp.array([[0,1,0],[1,0,1],[0,1,0]])
+    A = sp.array([[0,1,1,0],[1,0,1,1],[1,1,0,1],[0,1,1,0]])
+    B = sp.array([[0,1,0,0],[1,0,1,1],[0,1,0,1],[0,1,1,0]])
     q = sp.ones(A.shape[0])/A.shape[0]
     k = randomWalkGraphKernel(A,B,q,q,q,q)    
-    LA,UA = eig(A)
-    LB,UB = eig(B)
-    q = csr_matrix(q)
+    LA,UA = sp.linalg.eig(A)
+    LB,UB = sp.linalg.eig(B)
+    q = csr_matrix(q).T
     r = 2
     khat = randomWalkGraphKernelApprox(csr_matrix(UA[:,:r]),csr_matrix(LA[:r]),csr_matrix(UB[:,:r]),csr_matrix(LB[:r]),q,q,q,q)
+    print("k: %f"%k)
+    print("khat: %f"%khat)
 
 def randomWalkGraphKernel(UA,UB,qA,qB,pA,pB,c=0.5):
     '''
