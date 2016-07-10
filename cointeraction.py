@@ -33,7 +33,7 @@ def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     N = Ks[0].shape[0]
     m = len(Ks)
-    #Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
+    Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
     # Generate Left-hand side of eigenvalue equation
     VK = sp.vstack(Ks)
     LH = VK.dot(VK.T)
@@ -61,13 +61,13 @@ def normAdjMat(A):
     return A / sp.double(norm)
 
 def testRandomWalk():
-    A = sp.array([[0,1,1,0],[1,0,1,1],[1,1,0,1],[0,1,1,0]])
-    B = sp.array([[0,1,0,0],[1,0,1,1],[0,1,0,1],[0,1,1,0]])
-    q = sp.ones(A.shape[0])/A.shape[0]
-    k = randomWalkGraphKernel(A,B,q,q,q,q)    
+    A = normAdjMat(sp.array([[0,1,1,0],[1,0,1,1],[1,1,0,1],[0,1,1,0]]))
+    B = normAdjMat(sp.array([[0,1,0,0],[1,0,1,1],[0,1,0,1],[0,1,1,0]]))
+    qd = sp.ones(A.shape[0])/A.shape[0]
+    k = randomWalkGraphKernel(A,B,qd,qd,qd,qd)    
     LA,UA = sp.linalg.eig(A)
     LB,UB = sp.linalg.eig(B)
-    q = csr_matrix(q).T
+    q = csr_matrix(qd).T
     r = 2
     khat = randomWalkGraphKernelApprox(csr_matrix(UA[:,:r]),csr_matrix(LA[:r]),csr_matrix(UB[:,:r]),csr_matrix(LB[:r]),q,q,q,q)
     print("k: %f"%k)
@@ -91,11 +91,15 @@ def randomWalkGraphKernelApprox(UA,LA,UB,LB,qA,qB,pA,pB,c=0.5):
     '''
     # compute inverse in eigenspace of product graph
     o = csr_matrix(sp.ones(UA.shape[1]*UB.shape[1]))
-    Lambda = csr_matrix(o/((o/sp.sparse.kron(LA,LB)) - c))
+    Lambda = csr_matrix(o/((o/sp.kron(LA.flatten(),LB.flatten())) - c))
     L = sp.sparse.kron(UA.T.dot(qA),UB.T.dot(qB))
     R = sp.sparse.kron(UA.T.dot(pA),UB.T.dot(pB))
-    k = qA.T.dot(pA) * qB.T.dot(pB) + c*L.T.dot(Lambda.multiply(R.T).T)
+    k = qA.T.dot(pA) * qB.T.dot(pB) + c*Lambda.multiply(R.T).dot(L)
     return k.data[0]
+
+def randomWalkGraphKernelApproxTuple(tpl):
+    p = csr_matrix(sp.ones(tpl[0].shape[0])/tpl[0].shape[0]).T
+    return (tpl[-2],tpl[-1],randomWalkGraphKernelApprox(tpl[0],tpl[1],tpl[2],tpl[3],p,p,p,p,0.99))
 
 def readPostLine(line):
     c = line.decode('utf-8').split("\t")
@@ -117,11 +121,18 @@ def getCointeractionGraph(fn,maxUsers,numComp,k=3):
     A = readPostWeek(fn,maxUsers)
     timestamp = fn.split("/")[-1].split(".")[0]
     try:
+        #AAt = A.T.dot(A)
+        #AAtsum = sp.array(AAt.sum(axis=0)).flatten()
+        #AAtsum[AAtsum == 0] = 1.
+        #AAt = AAt.dot(diags(1./AAtsum))
+        #L,U = eigs(AAt,numComp)
+        # normalizing diagonal matrix
+        #N = A.T.dot(csr_matrix(A.sum(axis=1)))
+        #A.dot(diags(sp.array(( N /).todense()).flatten()))
         U,S,V = svds(A,numComp)
-        return (S,V.T)
+        return (S**2,csr_matrix(V.T))
     except:
-        import pdb;pdb.set_trace()
-        return (sp.ones(numComp),A[:numComp,:])
+        return (sp.ones(numComp),A[:numComp,:].T)
 
 def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
 
@@ -138,11 +149,14 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016']):
     cigs = p.map(getCointeractionGraphTuple,tpls)
     N = len(cigs)
     print("Found %d weeks"%N)
+    prob = csr_matrix(sp.ones(maxUser)/maxUser).T
+    ktpls = chain(*[[(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],x,y) for y in range(x,N)] for x in range(N)])
+    ks = map(randomWalkGraphKernelApproxTuple,ktpls)
     K = sp.zeros((N,N))
-    prob = sp.ones(maxUser)/maxUser
-    for x in range(N):
-        for y in range(x,N):
-            K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],prob,prob,prob,prob,c=0.5) 
+    for k in ks: K[k[0],k[1]] = k[2] 
+    #for x in range(N):
+    #    for y in range(x,N):
+    #        K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],prob,prob,prob,prob,c=0.5) 
     #X = sp.sparse.vstack([sp.sparse.hstack([*c[1]]) for c in cigs])
     #K = X.dot(X.T)
     #return sp.array(sp.real(K.todense()))
@@ -159,7 +173,7 @@ def readAll(folder=DDIR,numComp=6,years=['2014','2015','2016']):
     return {ptpl[0]:getPartyKernelTupel(ptpl) for ptpl in ptpls}
 
 def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
-    alphas = fit_kcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,gamma)
+    alphas = fitKcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,gamma)
 
     yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks.values()])]
     yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
