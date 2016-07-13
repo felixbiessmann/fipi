@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import cPickle
+import pickle
 from scipy import ones,hstack,arange,reshape,zeros,random
 import json
 import os
@@ -96,10 +96,10 @@ class PartyClassifier:
         '''
         # if there is no classifier file or training is invoked
         if (not os.path.isfile('party_classifier.pickle')) or train:
-            print 'Training party classifier'
+            print('Training party classifier')
             self.train(text, data, text_clf=text_clf, parameters=parameters)
-        print 'Loading party classifier'
-        self.clf = cPickle.load(open('party_classifier.pickle'))['clf']
+        print('Loading party classifier')
+        self.clf = pickle.load(open('party_classifier.pickle'))['clf']
 
     def predict(self,text):
         '''
@@ -146,6 +146,6 @@ class PartyClassifier:
         gs_clf = GridSearchCV(text_clf, parameters, cv=StratifiedKFold(labels, folds), n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},\
+        pickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},\
             open('party_classifier.pickle','wb'),-1)
 

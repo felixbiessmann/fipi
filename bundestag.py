@@ -18,7 +18,7 @@ from itertools import chain
 from sklearn.cross_validation import StratifiedKFold
 import pandas as pd
 from scipy import random,unique,vstack,hstack,arange,array,mean,corrcoef
-import cPickle
+import pickle
 from sentiments import SentimentClassifier
 from fb import fbTraverserTop
 
@@ -134,21 +134,21 @@ def get_sentiments(legis=17):
     # correlation between sentiment and government membership
     member = hstack([vstack([sentiments[p],[1.0] * len(sentiments[p])]) if p in gov else vstack([sentiments[p],[-1.0] * len(sentiments[p])]) for p in sentiments.keys()])
     corMember = corrcoef(member[0,:],member[1,:])
-    print "Corr sentiment vs government membership: %0.2f"%corMember[0,1]
+    print("Corr sentiment vs government membership: %0.2f"%corMember[0,1])
     meanSentiment,govMember =zip(*[(mean(sentiments[p]),1.0) if p in gov else (mean(sentiments[p]), -1.0) for p in sentiments.keys()])
-    print "Corr Mean Sentiment vs gov membership: %0.2f"%corrcoef(meanSentiment,govMember)[0,1]
+    print("Corr Mean Sentiment vs gov membership: %0.2f"%corrcoef(meanSentiment,govMember)[0,1])
     # correlation between sentiment and party seats
     seats = hstack([vstack([sentiments[p],[bundestagSeats[legis][p]] * len(sentiments[p])]) for p in sentiments.keys()])
     corSeats = corrcoef(seats[0,:],seats[1,:])
-    print "Corr sentiment vs seats: %0.2f"%corSeats[0,1]
+    print("Corr sentiment vs seats: %0.2f"%corSeats[0,1])
     # mean of parties
     meanSentiment,seats=zip(*[(mean(sentiments[p]),bundestagSeats[legis][p]) for p in sentiments.keys()])
-    print "Corr Mean Sentiment vs seats: %0.2f"%corrcoef(meanSentiment,seats)[0,1]
+    print("Corr Mean Sentiment vs seats: %0.2f"%corrcoef(meanSentiment,seats)[0,1])
 
 def get_stops(legislationPeriod=17,includenames=True):
     # generic stopwords
     stopwords = codecs.open("data/stopwords.txt", "r", "utf-8").readlines()[7:]
-    stops = map(lambda x:x.lower().strip(),stopwords)
+    stops = [x.lower().strip() for x in stopwords]
     names = []
     if includenames:
         # names of abgeordnete
@@ -166,7 +166,7 @@ def get_word_correlations(legis=17):
     for pa in bundestagParties[legis]:
         party = [1.0 if x==pa else -1.0 for x in trainLabels]
         partyLabel = vstack(party)
-        print "Calculating correlations for %s"%pa
+        print("Calculating correlations for %s"%pa)
         #co = cosine_similarity(X.T,partyLabel.T - mean(partyLabel))
         #import pdb;pdb.set_trace()
         co = array([corrcoef(X[:,wo].todense().flatten(),partyLabel.flatten())[0,1] for wo in range(X.shape[-1])])
@@ -257,6 +257,19 @@ def get_raw_text(folder="data", legislationPeriod=18):
     files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
     return zip(*chain(*filter(None,map(csv2DataTuple,files))))
 
+def get_raw_text_topics_all_parties(folder="data", legislationPeriod=18):
+    '''
+    Loads raw text and labels from manifestoproject csv files
+    (Downloaded from https://visuals.manifesto-project.wzb.eu)
+    '''
+    parties = bundestagParties[legislationPeriod]
+    partyIds = [str(partyManifestoMap[p]) for p in parties]
+    year = '2013'
+    if legislationPeriod==17:year='2009'
+    files = glob.glob(folder+"/[0-9]*_%s.csv"%year)
+    files = filter(lambda x: x.split('/')[-1].split('_')[0] in partyIds,files)
+    return zip(*chain(*filter(None,map(csv2DataTupleTopicsAllParties,files))))
+
 def get_raw_text_topics(folder="data", legislationPeriod=18):
     '''
     Loads raw text and labels from manifestoproject csv files
@@ -279,6 +292,16 @@ def csv2DataTuple(f):
     partyId = f.split('/')[-1].split('_')[0]
     party = [k for (k,v) in partyManifestoMap.items() if str(v) == partyId]
     return zip(df['content'].tolist(), party * len(df))
+
+def csv2DataTupleTopicsAllParties(f):
+    '''
+    Extracts list of tuples of (text,label) for each manifestoproject file
+    '''
+    df = pd.read_csv(f)
+    df['content'] = df['content'].astype('str')
+    df['topic'] = ((df['cmp_code'].dropna()) / 100).apply(lambda x: int(x))
+    df = df.dropna()
+    return zip(df['content'].tolist(), df['topic'].tolist())
 
 def csv2DataTupleTopics(f):
     '''
@@ -366,7 +389,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     # train again on entire training set
     final_clf = text_clf.set_params(**best_clf.get_params()).fit(trainData, trainLabels)
     # dump classifier to pickle
-    cPickle.dump(final_clf,open(OUT_DIR+'/pipeline-'+saveId+'.pickle','wb'))
+    pickle.dump(final_clf,open(OUT_DIR+'/pipeline-'+saveId+'.pickle','wb'))
     # test on evaluation data ste
     predictedEval = final_clf.predict(evalData)
     report += "*** Evaluation Set ***\n" + metrics.classification_report(evalLabels, predictedEval)
@@ -376,7 +399,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     report += "Accuracy: %0.2f\n"%metrics.accuracy_score(evalLabels,predictedEval)
     import pdb;pdb.set_trace()
     # dump report
-    open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report)
+    open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report.encode('utf-8'))
     return report
 
 def randid(N=10):
@@ -404,6 +427,11 @@ def classify_speeches_binary_parliament(legislationPeriod = 18):
     evalData, evalLabels = zip(*[(x[0],'government') if x[1] in gov else (x[0],'opposition') for x in zip(evalDataParty,evalLabelsParty)])
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="parliament-train-gov-%d"%legislationPeriod)
 
+
+def classify_manifesto_topics_all_parties():
+    trainData, trainLabels = get_raw_text_topics_all_parties(legislationPeriod=17)
+    evalData, evalLabels = get_raw_text_topics_all_parties(legislationPeriod=18)
+    optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="topics-all-parties")
 
 def classify_speeches_parliament_topics(legislationPeriod = 18):
     trainData, trainLabels = get_raw_text_bundestag(legislationPeriod=legislationPeriod)
@@ -499,7 +527,7 @@ def classify_speeches_party(legislationPeriod = 18):
     trueParty = []
     for f in glob.glob(OUT_DIR+'/17*.json'):
         speeches = json.load(open(f))
-        print "processing %d speeches in %s"%(len(speeches),f)
+        print("processing %d speeches in %s"%(len(speeches),f))
         for speech in speeches:
             if speech['type']=='speech' and \
             speech['speaker_party'] is not None and \
@@ -552,7 +580,7 @@ def get_party_predictions():
             }
     for f in glob.glob(OUT_DIR+'/17*.json'):
         speeches = json.load(open(f))
-        print "processing %d speeches in %s"%(len(speeches),f)
+        print("processing %d speeches in %s"%(len(speeches),f))
         for speech in speeches:
             if speech['type']=='speech' and \
             speech['speaker_party'] is not None and \
@@ -583,7 +611,7 @@ def get_party_predictions_daily():
                 'linke': {'leftright':{},'manifestocode':{}}
                 }
         speeches = json.load(open(f))
-        print "processing %d speeches in %s"%(len(speeches),f)
+        print("processing %d speeches in %s"%(len(speeches),f))
         for speech in speeches:
             if speech['type']=='speech' and \
             speech['speaker_party'] is not None and \
@@ -634,7 +662,7 @@ def parse_transcript_json(filename):
         'sitzung': session,
         'wahlperiode': wp
     }
-    print "Loading transcript: %s/%.3d, from %s" % (wp, session, filename)
+    print("Loading transcript: %s/%.3d, from %s" % (wp, session, filename))
     seq = 0
     parser = SpeechParser(text.split('\n'))
 

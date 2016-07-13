@@ -11,6 +11,7 @@ from sklearn.externals.joblib import Parallel,delayed
 import glob
 from multiprocessing import Pool
 from sklearn import cross_validation,metrics
+import pylab as pl
 import scipy as sp
 import os  
 import re
@@ -178,7 +179,7 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016'], kern
 
 def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
 
-def readAll(folder=DDIR,numComp=6,years=['2014','2015','2016']):
+def readAll(folder=DDIR,numComp=3,years=['2014','2015','2016']):
     fs = [(d,os.listdir(DDIR+"/"+d)) for d in os.listdir(DDIR) if os.path.isdir(DDIR+"/"+d)]
     print("Found %d parties in %s"%(len(fs),folder))
     maxUser = 1+max([max([readMaxUser(os.path.join(DDIR,fss[0],ff)) for ff in fss[1]]) for fss in fs])
@@ -193,7 +194,7 @@ def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
     yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
     return yhatTrain,yhatTest
 
-def run_cointeraction(folder=DDIR,numComp=6,years=['2014','2015','2016'],testRatio=.5):
+def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRatio=.5):
     Ks = readAll(folder,numComp,years)
     N = Ks[list(Ks.keys())[0]].shape[0]    
     trainIdx = range(int(N * (1-testRatio)))
@@ -224,7 +225,6 @@ def getCorrs(yhat,M,ic):
     return cors
 
 def plotTrends(Ks,yhat,numComp,teststr):   
-    import pylab as pl
     for ic in range(numComp):
         cors = sp.zeros((len(Ks),len(Ks)))
         for x in range(len(Ks)):

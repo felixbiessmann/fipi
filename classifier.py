@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import cPickle
+import pickle
 from scipy import ones,hstack,arange,reshape,zeros,setdiff1d
 import json
 import os
@@ -133,10 +133,10 @@ class Classifier:
         '''
         # if there is no classifier file or training is invoked
         if (not os.path.isfile('classifier.pickle')) or train:
-            print 'Training classifier'
+            print('Training classifier')
             self.train(text_clf=text_clf,parameters=parameters)
-        print 'Loading classifier'
-        self.clf = cPickle.load(open('classifier.pickle'))['clf']
+        print('Loading classifier')
+        self.clf = pickle.load(open('classifier.pickle'))['clf']
 
     def predict(self,text):
         '''
@@ -191,5 +191,5 @@ class Classifier:
         gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},open('classifier.pickle','wb'),-1)
+        pickle.dump({'clf':gs_clf.best_estimator_,'score':gs_clf.best_score_},open('classifier.pickle','wb'),-1)
 
