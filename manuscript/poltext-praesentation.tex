@@ -62,43 +62,48 @@ Daniel Kirsch\\
 \titlepage 
 \end{frame}	
 
-
-\section{Intro}
-\subsection{}
+%
+%\section{Intro}
+%\subsection{}
 
 \begin{frame}\frametitle{Disclaimers}
 \small
 \begin{itemize}[<+->]
 \item (For me) This is just a hobby -- it has nothing to do with my job
 \item I did not know a lot of literature in the field 
-\begin{itemize}
+%\begin{itemize}
 \item Some of this might sound naive (like the title)
-\item I hope nobody (who has been active in the field for years) takes this personal
-\end{itemize}
+%\item I hope nobody (who has been active in the field for years) takes this personal
+%\end{itemize}
 \end{itemize}
 \end{frame}
 
+%\begin{frame}\frametitle{Motivation}
+%\begin{itemize}[<+->]
+%\item Media generate
+%\end{itemize}
+%\end{frame}
 
-\begin{frame}\frametitle{Overview}
-\small
-\begin{itemize}[<+->]
-\item Methods 
-\begin{itemize}
-\item Data
-\item Preprocessing
-\item Classification Model
-\end{itemize}
-\item Results
-\begin{itemize}
-\item In-domain held-out data
-\item Out-of-domain held-out-data
-\end{itemize}
-\item Challenges of automated analyses
-\item Tools for better interpretability / leveraging domain knowledge
-\item Conclusion
-\item Web applications of political bias prediction
-\end{itemize}
-\end{frame}
+%\begin{frame}\frametitle{Overview}
+%\small
+%\begin{itemize}[<+->]
+%\item Methods 
+%\begin{itemize}
+%\item Data
+%\item Preprocessing
+%\item Classification Model
+%\end{itemize}
+%\item Results
+%\begin{itemize}
+%\item In-domain held-out data
+%\item Out-of-domain held-out-data
+%\end{itemize}
+%\item Challenges of automated analyses
+%\item Tools for better interpretability / leveraging domain knowledge
+%\item Conclusion
+%\item Web applications of political bias prediction
+%\end{itemize}
+%\end{frame}
 
 \section{Methods}
 \subsection{}
@@ -287,15 +292,15 @@ Accuracy    &   0.88   &   0.60&      0.76\\
 \begin{itemize}
 \item Despite less noisy, longer texts:\\
 {\bf Accuracy on manifesto data close to chance}
-\item Recognized in previous work, see e.g. \cite{Yu2008}
 \end{itemize}
 }
 \only<2>{
 \begin{itemize}
+\item Recognized in previous work, see e.g. \cite{Yu2008}
 \item Every ML model is biased by its training data
-\item Political scientists have less of a problem with varying domains
+%\item Political scientists have less of a problem with varying domains
 \item Generalization from biased data is {\em the} central problem of ML
-\item Potential strategies to ensure generalization
+\item Strategies to improve generalization
 \begin{itemize}
 \item Empirical risk minimization / Regularization
 \item More (heterogeneous) data
@@ -316,7 +321,7 @@ How can political scientists leverage domain knowledge for automatic text analys
 \begin{frame}{Some ML Tools for Leveraging Domain Knowledge}
 \begin{itemize}
 \item Relation between misclassifications and party policy
-\item Covariation Text Features and Party labels \\({\bf not model coefficients!})
+\item Covariation Text Features and Party labels \\({\bf not model coefficients!}) \cite{Haufe2013}
 \item Explicit tests of domain knowledge: Sentiment and Power
 \end{itemize}
 \end{frame}
@@ -398,10 +403,10 @@ Confusion Matrix 17th Bundestag\\
 
 \begin{frame}\frametitle{Some Web Applications}
 \centering
-\only<1>{\includegraphics[width=0.8\textwidth]{images/linksrechts-screenshot-1}}
-\only<2>{\includegraphics[width=0.8\textwidth]{images/linksrechts-screenshot-2}}
-\only<3>{\includegraphics[width=0.8\textwidth]{images/fipi-screenshot-2}}
-\only<4->{\includegraphics[width=0.8\textwidth]{images/fipi-screenshot}}
+\only<1>{\includegraphics[width=0.7\textwidth]{images/linksrechts-screenshot-1}}
+\only<2>{\includegraphics[width=0.7\textwidth]{images/linksrechts-screenshot-2}}
+\only<3>{\includegraphics[width=0.7\textwidth]{images/fipi-screenshot-2}}
+\only<4->{\includegraphics[width=0.7\textwidth]{images/fipi-screenshot}}
 \end{frame}
 
 \begin{frame}\frametitle{PyData Hackathon 2016 Berlin}

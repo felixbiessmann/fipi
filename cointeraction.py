@@ -23,6 +23,17 @@ dat = [DDIR + x + ".json.gz" for x in ['afd','npd','pegida']]
 
 urlPat = r'(http://.*\.html)'
 
+def embed(X,tau):
+    '''
+    Temporal embedding for scipy.sparse matrices
+    '''
+    T,D = X.shape
+    startInd = max(0,-tau.min())
+    stopInd = min(T,T-tau.max())
+    Xt = sp.sparse.hstack([X[startInd+t:stopInd+t,:] for t in tau])
+    return Xt
+    
+
 def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     Fits kernel CCA model
@@ -33,7 +44,7 @@ def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     N = Ks[0].shape[0]
     m = len(Ks)
-    Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
+    #Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
     # Generate Left-hand side of eigenvalue equation
     VK = sp.vstack(Ks)
     LH = VK.dot(VK.T)
@@ -99,7 +110,7 @@ def randomWalkGraphKernelApprox(UA,LA,UB,LB,qA,qB,pA,pB,c=0.5):
 
 def randomWalkGraphKernelApproxTuple(tpl):
     p = csr_matrix(sp.ones(tpl[0].shape[0])/tpl[0].shape[0]).T
-    return (tpl[-2],tpl[-1],randomWalkGraphKernelApprox(tpl[0],tpl[1],tpl[2],tpl[3],p,p,p,p,0.99))
+    return (tpl[-2],tpl[-1],randomWalkGraphKernelApprox(tpl[0],tpl[1],tpl[2],tpl[3],p,p,p,p,0.00001))
 
 def readPostLine(line):
     c = line.decode('utf-8').split("\t")
@@ -130,7 +141,7 @@ def getCointeractionGraph(fn,maxUsers,numComp,k=3):
         #N = A.T.dot(csr_matrix(A.sum(axis=1)))
         #A.dot(diags(sp.array(( N /).todense()).flatten()))
         U,S,V = svds(A,numComp)
-        return (S**2,csr_matrix(V.T))
+        return (S**2,csr_matrix(V).T)
     except:
         return (sp.ones(numComp),A[:numComp,:].T)
 
@@ -141,7 +152,7 @@ def graphKernelDummy(A,B):
 
 def sortDates(x):return int(x.split(".")[0].split("-")[-1])
 
-def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016']):
+def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016'], kernelType='linear'):
     print("Reading %s"%party)
     fns = chain(*map(lambda y: sorted(filter(lambda x: y in x,fns),key=sortDates),years))
     tpls = [(os.path.join(DDIR,party,fn),maxUser,numComp) for fn in fns]
@@ -149,18 +160,21 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016']):
     cigs = p.map(getCointeractionGraphTuple,tpls)
     N = len(cigs)
     print("Found %d weeks"%N)
-    prob = csr_matrix(sp.ones(maxUser)/maxUser).T
-    ktpls = chain(*[[(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],x,y) for y in range(x,N)] for x in range(N)])
-    ks = map(randomWalkGraphKernelApproxTuple,ktpls)
-    K = sp.zeros((N,N))
-    for k in ks: K[k[0],k[1]] = k[2] 
-    #for x in range(N):
-    #    for y in range(x,N):
-    #        K[x,y] = randomWalkGraphKernelApprox(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],prob,prob,prob,prob,c=0.5) 
-    #X = sp.sparse.vstack([sp.sparse.hstack([*c[1]]) for c in cigs])
-    #K = X.dot(X.T)
-    #return sp.array(sp.real(K.todense()))
-    return K + K.T
+    if kernelType == 'randomWalkApprox':
+        prob = csr_matrix(sp.ones(maxUser)/maxUser).T
+        ktpls = chain(*[[(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],x,y) for y in range(x,N)] for x in range(N)])
+        ks = map(randomWalkGraphKernelApproxTuple,ktpls)
+        K = sp.zeros((N,N))
+        for k in ks: 
+            K[k[0],k[1]] = k[2] 
+            K[k[1],k[0]] = k[2]
+    elif kernelType == 'linear':
+        tau = sp.array([-2,-1,0])
+        X = csr_matrix(sp.sparse.vstack([sp.sparse.hstack([*c[1].T]) for c in cigs]))
+        X = embed(X,tau)
+        K = sp.array(sp.real(X.dot(X.T).todense()))
+    del cigs
+    return K
 
 def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
 
@@ -206,7 +220,7 @@ def getCorrs(yhat,M,ic):
     cors = sp.zeros((M,M))
     for x in range(M):
         for y in range(x+1,M):
-            cors[x,y] = sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0]
+            cors[x,y] = abs(sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0])
     return cors
 
 def plotTrends(Ks,yhat,numComp,teststr):   
