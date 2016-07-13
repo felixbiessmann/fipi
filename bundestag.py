@@ -300,7 +300,7 @@ def csv2DataTupleTopicsAllParties(f):
     df = pd.read_csv(f)
     df['content'] = df['content'].astype('str')
     df['topic'] = ((df['cmp_code'].dropna()) / 100).apply(lambda x: int(x))
-    df = df.dropna()
+    df = df.ix[df['topic'] > 0].dropna()
     return zip(df['content'].tolist(), df['topic'].tolist())
 
 def csv2DataTupleTopics(f):
@@ -397,7 +397,6 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     report += '\nConfusion Matrix (rows=true, cols=predicted)\n'+', '.join(labelsStr)+'\n'
     for line in metrics.confusion_matrix(evalLabels, predictedEval).tolist(): report += str(line)+"\n" 
     report += "Accuracy: %0.2f\n"%metrics.accuracy_score(evalLabels,predictedEval)
-    import pdb;pdb.set_trace()
     # dump report
     open(OUT_DIR+'/report-'+saveId+'.txt','wb').write(report.encode('utf-8'))
     return report
