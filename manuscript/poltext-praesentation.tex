@@ -63,8 +63,8 @@ Daniel Kirsch\\
 \end{frame}	
 
 %
-%\section{Intro}
-%\subsection{}
+\section{Intro}
+\subsection{}
 
 \begin{frame}\frametitle{Disclaimers}
 \small
@@ -78,32 +78,38 @@ Daniel Kirsch\\
 \end{itemize}
 \end{frame}
 
-%\begin{frame}\frametitle{Motivation}
-%\begin{itemize}[<+->]
-%\item Media generate
-%\end{itemize}
-%\end{frame}
+\begin{frame}\frametitle{Motivation}
+\begin{itemize}[<+->]
+\item Media generate loads of data
+\item Too much text to handle by humans
+\item[$\rightarrow$] Automated political bias prediction required for 
+\begin{itemize}
+\item Political scientists
+\item Political education of average media consumer
+\end{itemize}
+\end{itemize}
+\end{frame}
 
-%\begin{frame}\frametitle{Overview}
-%\small
-%\begin{itemize}[<+->]
-%\item Methods 
-%\begin{itemize}
-%\item Data
-%\item Preprocessing
-%\item Classification Model
-%\end{itemize}
-%\item Results
-%\begin{itemize}
-%\item In-domain held-out data
-%\item Out-of-domain held-out-data
-%\end{itemize}
-%\item Challenges of automated analyses
-%\item Tools for better interpretability / leveraging domain knowledge
-%\item Conclusion
-%\item Web applications of political bias prediction
-%\end{itemize}
-%\end{frame}
+\begin{frame}\frametitle{Overview}
+\small
+\begin{itemize}
+\item Methods 
+\begin{itemize}
+\item Data
+\item Preprocessing
+\item Classification Model
+\end{itemize}
+\item Results
+\begin{itemize}
+\item In-domain held-out data
+\item Out-of-domain held-out-data
+\end{itemize}
+\item Challenges of automated analyses
+\item Tools for better interpretability / leveraging domain knowledge
+\item Conclusion
+\item Web applications of political bias prediction
+\end{itemize}
+\end{frame}
 
 \section{Methods}
 \subsection{}
@@ -141,13 +147,14 @@ With
 \begin{itemize}
 \item Labels $y\in\{1,2,\dots,K\}$ (true party affiliation)\\ 
 \item $\vec{w}_1,\dots,\vec{w}_K\in\R^{d}$ weight vectors of $k$th party\\ 
+\item $L_2$ norm regularization of weights
 \end{itemize}
 \end{frame}
 
 \begin{frame}\frametitle{Model Selection}
 \begin{block}{}
 \centering
-All hyperparameters optimised with nested cross-validation.
+All hyperparameters optimised with nested cross-validation.\footnote{This is not a technical detail. It's a crucial requirement for any ML system.}
 \end{block}
 \end{frame}
 
@@ -171,7 +178,7 @@ All hyperparameters optimised with nested cross-validation.
       linke    &   0.71   &   0.61  &    0.65    &   338\\
         spd   &    0.60   &   0.69  &    0.65   &    606\\
 \hline
- total &      0.64   &   0.63   &   0.62    &  2279 
+ total &      0.64   &   0.63   &   {\bf 0.62}    &  2279 
 %
 \end{tabular}
 \end{center}
@@ -196,7 +203,7 @@ All hyperparameters optimised with nested cross-validation.
       linke     &  0.30  &    0.47    &  0.37    &   1701\\
         spd     &  0.26  &    0.16   &   0.20    &   2278\\
 \hline
-total    &   0.35  &    0.31  &    0.30   &   12075\\
+total    &   0.35  &    0.31  &    {\bf 0.30}   &   12075\\
 %
 \end{tabular}
 \end{center}
@@ -233,7 +240,7 @@ cducsu     &  0.64  &    1.00  &    0.78    &     7\\
      linke    &   1.00   &   1.00     & 1.00    &     7\\
        spd   &    0.80   &   0.50    &  0.62     &    8\\
     \hline
-total  &     0.88   &   0.86   &   0.86  &      36\\
+total  &     0.88   &   0.86   &   {\bf 0.86}  &      36\\
 \end{tabular}
 \end{center}
 \end{table}
@@ -253,7 +260,7 @@ total  &     0.88   &   0.86   &   0.86  &      36\\
       linke       &0.60    &  0.82    &  0.69    &    50\\
         spd       &1.00 &     0.92   &   0.96    &    50\\
 \hline
-avg / total    &   0.73   &   0.71  &    0.66   &    200\\
+avg / total    &   0.73   &   0.71  &    {\bf 0.66}   &    200\\
 \end{tabular}
 \end{center}
 \end{table}
