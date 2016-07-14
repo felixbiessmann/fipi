@@ -33,7 +33,16 @@ def embed(X,tau):
     stopInd = min(T,T-tau.max())
     Xt = sp.sparse.hstack([X[startInd+t:stopInd+t,:] for t in tau])
     return Xt
-    
+
+def centerKernel(K):
+    # K is of dimension N x N
+    N = K.shape[0]
+    # D is a row vector storing the column averages of K
+    D = K.sum(axis=0)/N
+    # E is the average of all the entries of K
+    E = K.sum() / N
+    J = sp.outer(sp.ones(N),D)
+    return K - J - J.T + E * sp.ones((N, N))
 
 def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
@@ -45,6 +54,7 @@ def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     N = Ks[0].shape[0]
     m = len(Ks)
+    Ks = [centerKernel(k) for k in Ks]
     #Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
     # Generate Left-hand side of eigenvalue equation
     VK = sp.vstack(Ks)
@@ -141,8 +151,11 @@ def getCointeractionGraph(fn,maxUsers,numComp,k=3):
         # normalizing diagonal matrix
         #N = A.T.dot(csr_matrix(A.sum(axis=1)))
         #A.dot(diags(sp.array(( N /).todense()).flatten()))
-        U,S,V = svds(A,numComp)
-        return (S**2,csr_matrix(V).T)
+        ####### 
+        #U,S,V = svds(A,numComp)
+        #return (S**2,csr_matrix(V).T)
+        a = csr_matrix(A.sum(axis=0))
+        return csr_matrix(a/a)
     except:
         return (sp.ones(numComp),A[:numComp,:].T)
 
@@ -170,7 +183,7 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016'], kern
             K[k[0],k[1]] = k[2] 
             K[k[1],k[0]] = k[2]
     elif kernelType == 'linear':
-        tau = sp.array([-2,-1,0])
+        tau = sp.array([-1,0])
         X = csr_matrix(sp.sparse.vstack([sp.sparse.hstack([*c[1].T]) for c in cigs]))
         X = embed(X,tau)
         K = sp.array(sp.real(X.dot(X.T).todense()))
@@ -195,12 +208,12 @@ def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
     return yhatTrain,yhatTest
 
 def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRatio=.5):
-    Ks = readAll(folder,numComp,years)
+    Ks = {k:centerKernel(v) for k,v in readAll(folder,numComp,years).items()}
     N = Ks[list(Ks.keys())[0]].shape[0]    
     trainIdx = range(int(N * (1-testRatio)))
     testIdx = range(int(N * (1-testRatio)),N)
     
-    gammas = 10.**sp.arange(-4,4,.1)
+    gammas = 10.**sp.arange(-5,5,.1)
     cors = []
     for ga in gammas:
         yhatTrain, yhatTest = evaluateKCCA(Ks,trainIdx,testIdx,numComp,ga)        
