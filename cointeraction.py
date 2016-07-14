@@ -2,6 +2,7 @@ import json,gzip
 import pandas as pd
 from scipy.sparse import csr_matrix,diags
 from scipy.sparse.linalg import eigs,svds
+from scipy.stats import zscore
 from itertools import chain
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline import Pipeline
@@ -54,7 +55,7 @@ def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     N = Ks[0].shape[0]
     m = len(Ks)
-    Ks = [centerKernel(k) for k in Ks]
+    #Ks = [centerKernel(k) for k in Ks]
     #Ks = [k/sp.linalg.eigh(k)[0].max() for k in Ks]
     # Generate Left-hand side of eigenvalue equation
     VK = sp.vstack(Ks)
@@ -141,24 +142,10 @@ def readPostWeek(fn,maxUsers,numComp=6):
 
 def getCointeractionGraph(fn,maxUsers,numComp,k=3):
     A = readPostWeek(fn,maxUsers)
-    timestamp = fn.split("/")[-1].split(".")[0]
-    try:
-        #AAt = A.T.dot(A)
-        #AAtsum = sp.array(AAt.sum(axis=0)).flatten()
-        #AAtsum[AAtsum == 0] = 1.
-        #AAt = AAt.dot(diags(1./AAtsum))
-        #L,U = eigs(AAt,numComp)
-        # normalizing diagonal matrix
-        #N = A.T.dot(csr_matrix(A.sum(axis=1)))
-        #A.dot(diags(sp.array(( N /).todense()).flatten()))
-        ####### 
-        #U,S,V = svds(A,numComp)
-        #return (S**2,csr_matrix(V).T)
-        a = csr_matrix(A.sum(axis=0))
-        return csr_matrix(a/a)
-    except:
-        return (sp.ones(numComp),A[:numComp,:].T)
-
+    a = csr_matrix(A.sum(axis=0))
+    a.data = a.data/a.data
+    return a
+    
 def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
 
 def graphKernelDummy(A,B):
@@ -183,11 +170,11 @@ def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016'], kern
             K[k[0],k[1]] = k[2] 
             K[k[1],k[0]] = k[2]
     elif kernelType == 'linear':
-        tau = sp.array([-1,0])
-        X = csr_matrix(sp.sparse.vstack([sp.sparse.hstack([*c[1].T]) for c in cigs]))
+        tau = sp.array([0])
+        #X = csr_matrix(sp.sparse.vstack([sp.sparse.hstack([*c[1].T]) for c in cigs]))
+        X = sp.sparse.vstack(cigs)
         X = embed(X,tau)
         K = sp.array(sp.real(X.dot(X.T).todense()))
-    del cigs
     return K
 
 def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
@@ -198,7 +185,7 @@ def readAll(folder=DDIR,numComp=3,years=['2014','2015','2016']):
     maxUser = 1+max([max([readMaxUser(os.path.join(DDIR,fss[0],ff)) for ff in fss[1]]) for fss in fs])
     print("Found %d users"%maxUser)
     ptpls = [(p[0],p[1],maxUser,numComp,years) for p in fs]
-    return {ptpl[0]:getPartyKernelTupel(ptpl) for ptpl in ptpls}
+    return {ptpl[0]:centerKernel(getPartyKernelTupel(ptpl)) for ptpl in ptpls}
 
 def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
     alphas = fitKcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,gamma)
@@ -208,7 +195,7 @@ def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
     return yhatTrain,yhatTest
 
 def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRatio=.5):
-    Ks = {k:centerKernel(v) for k,v in readAll(folder,numComp,years).items()}
+    Ks = readAll(folder,numComp,years)
     N = Ks[list(Ks.keys())[0]].shape[0]    
     trainIdx = range(int(N * (1-testRatio)))
     testIdx = range(int(N * (1-testRatio)),N)
@@ -251,7 +238,7 @@ def plotTrends(Ks,yhat,numComp,teststr):
         pl.title("Canonical Correlation %d"%ic)
         pl.savefig("ccs-%d-%s.pdf"%(ic,teststr))
         pl.figure()
-        icts = sp.vstack([yhat[x][ic,:] for x in range(len(Ks))])
+        icts = sp.vstack([zscore(yhat[x][ic,:]) for x in range(len(Ks))])
         pl.plot(icts.T)
         pl.legend(Ks.keys())
         pl.title("Canonical Trend %d"%ic)
