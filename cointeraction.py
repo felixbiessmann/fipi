@@ -36,6 +36,9 @@ def embed(X,tau):
     return Xt
 
 def centerKernel(K):
+    '''
+    Centers a Kernel matrix
+    '''
     # K is of dimension N x N
     N = K.shape[0]
     # D is a row vector storing the column averages of K
@@ -48,6 +51,7 @@ def centerKernel(K):
 def fitKcca(Ks,ncomp=1,gamma=1e-3):
     """
     Fits kernel CCA model
+    Assumes centered kernel matrices
     INPUT:
         Ks       list of kernel matrices (N-by-N)
         ncomp   number of hidden variables
@@ -140,63 +144,52 @@ def readPostWeek(fn,maxUsers,numComp=6):
     rows,cols = zip(*chain(*map(enumerate,likes)))
     return csr_matrix((sp.ones(len(rows)),(rows,cols)),(sp.maximum(len(rows),numComp),maxUsers))
 
-def getCointeractionGraph(fn,maxUsers,numComp,k=3):
+def getUserInteraction(fn,maxUsers):
     A = readPostWeek(fn,maxUsers)
     a = csr_matrix(A.sum(axis=0))
     a.data = a.data/a.data
-    return a
+    ts = "-".join(fn.split(".")[0].split("/")[-1].split("-")[1:])
+    return (a,ts)
     
-def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
-
-def graphKernelDummy(A,B):
-    return sp.real(A.dot(B.T).sum()).flatten()[0]
+def getUserInteractionTuple(x): return getUserInteraction(*x)
 
 def sortDates(x):return int(x.split(".")[0].split("-")[-1])
 
-def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015','2016'], kernelType='linear'):
+def getPartyData(party, fns, maxUser, years=['2014','2015','2016']):
     print("Reading %s"%party)
     fns = chain(*map(lambda y: sorted(filter(lambda x: y in x,fns),key=sortDates),years))
-    tpls = [(os.path.join(DDIR,party,fn),maxUser,numComp) for fn in fns]
+    tpls = [(os.path.join(DDIR,party,fn),maxUser) for fn in fns]
     p = Pool(4)
-    cigs = p.map(getCointeractionGraphTuple,tpls)
-    N = len(cigs)
-    print("Found %d weeks"%N)
-    if kernelType == 'randomWalkApprox':
-        prob = csr_matrix(sp.ones(maxUser)/maxUser).T
-        ktpls = chain(*[[(cigs[x][1],cigs[x][0],cigs[y][1],cigs[y][0],x,y) for y in range(x,N)] for x in range(N)])
-        ks = map(randomWalkGraphKernelApproxTuple,ktpls)
-        K = sp.zeros((N,N))
-        for k in ks: 
-            K[k[0],k[1]] = k[2] 
-            K[k[1],k[0]] = k[2]
-    elif kernelType == 'linear':
-        tau = sp.array([0])
-        #X = csr_matrix(sp.sparse.vstack([sp.sparse.hstack([*c[1].T]) for c in cigs]))
-        X = sp.sparse.vstack(cigs)
-        X = embed(X,tau)
-        K = sp.array(sp.real(X.dot(X.T).todense()))
-    return K
+    data,ts = zip(*p.map(getUserInteractionTuple,tpls))
+    return ts,sp.sparse.vstack(data)
 
-def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
+def getPartyDataTuple(tpl): return getPartyData(*tpl)
 
-def readAll(folder=DDIR,numComp=3,years=['2014','2015','2016']):
+def computeKernel(X):
+    return centerKernel(X.dot(X.T).toarray())
+
+def readAll(folder=DDIR,years=['2014','2015','2016']):
     fs = [(d,os.listdir(DDIR+"/"+d)) for d in os.listdir(DDIR) if os.path.isdir(DDIR+"/"+d)]
     print("Found %d parties in %s"%(len(fs),folder))
     maxUser = 1+max([max([readMaxUser(os.path.join(DDIR,fss[0],ff)) for ff in fss[1]]) for fss in fs])
     print("Found %d users"%maxUser)
-    ptpls = [(p[0],p[1],maxUser,numComp,years) for p in fs]
-    return {ptpl[0]:centerKernel(getPartyKernelTupel(ptpl)) for ptpl in ptpls}
+    ptpls = [(p[0],p[1],maxUser,years) for p in fs]
+    data = {ptpl[0]:getPartyDataTuple(ptpl) for ptpl in ptpls}
+    return data
 
 def evaluateKCCA(Ks,trainIdx,testIdx,numComp,gamma):
-    alphas = fitKcca([k[trainIdx,:][:,trainIdx] for k in Ks.values()],numComp,gamma)
+    alphas = fitKcca([k[trainIdx,:][:,trainIdx] for k in Ks],numComp,gamma)
 
-    yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks.values()])]
-    yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks.values()])]
+    yhatTrain = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,trainIdx] for k in Ks])]
+    yhatTest = [a[0].T.dot(a[1]) for a in zip(alphas,[k[trainIdx,:][:,testIdx] for k in Ks])]
     return yhatTrain,yhatTest
 
-def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRatio=.5):
-    Ks = readAll(folder,numComp,years)
-    N = Ks[list(Ks.keys())[0]].shape[0]    
+def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRatio=.5,tau=sp.array([-2,-1,0])):
+    data = readAll(folder,years)
+    parties = data.keys()
+    N = data[parties[0]].shape[0]
+    eData = [embed(data[p][1],tau) for p in parties]
+    Ks = [computeKernel(d) for d in eData]
     trainIdx = range(int(N * (1-testRatio)))
     testIdx = range(int(N * (1-testRatio)),N)
     
@@ -214,8 +207,10 @@ def run_cointeraction(folder=DDIR,numComp=2,years=['2014','2015','2016'],testRat
     pl.savefig("model-selection.pdf")
 
     yhatTrain, yhatTest = evaluateKCCA(Ks,trainIdx,testIdx,numComp,gammas[sp.argmax(cors)])
-    plotTrends(Ks,yhatTrain,numComp,'train')
-    plotTrends(Ks,yhatTest,numComp,'test')
+    userPatters = [eData[p].T.dot(yhatTrain[p]) for p in range(len(parties))]
+    #import pdb;pdb.set_trace()
+    #plotTrends(Ks,yhatTrain,userPatterns,'train')
+    #plotTrends(Ks,yhatTest,data,'test')
 
 def getCorrs(yhat,M,ic):
     cors = sp.zeros((M,M))
@@ -224,11 +219,50 @@ def getCorrs(yhat,M,ic):
             cors[x,y] = abs(sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0])
     return cors
 
-def plotTrends(Ks,yhat,numComp,teststr):   
+def plotUserOverlapTimeSeries(x,y,tsLabels,plotStr):
+    ovP = []
+    for it in range(x.shape[0]):
+        ovP.append(len(set(x[it,:].nonzero()[1]).intersection(set(y[it,:].nonzero()[1]))))
+    pl.figure()
+    pl.plot(ovP)
+    xt,_ = pl.xticks()
+    pl.xticks(xt,[tsLabels[int(x)] for x in xt[:-1]])
+    pl.xlabel('weeks')
+    pl.ylabel("overlap")
+    pl.title(plotStr)
+    pl.savefig(plotStr+".pdf")   
+
+def plotUserOverlap(data):
+    nParties = len(data)
+    parties = list(data.keys())
+    N,maxUsers = data[parties[0]][1].shape
+    # plot correlations of user patterns
+    ov = sp.zeros((nParties,nParties))
+    for x in range(nParties):
+        for y in range(x+1,nParties):
+            ovP = []
+            px = data[parties[x]][1]
+            py = data[parties[y]][1]
+            for it in range(N):
+                ovP.append(len(set(px[it,:].nonzero()[1]).intersection(set(py[it,:].nonzero()[1]))))
+            ov[x,y] = sp.median(ovP)
+    pl.figure()    
+    pl.imshow(ov.T,interpolation='nearest',cmap='Oranges')
+    pl.colorbar()
+    pl.yticks(range(nParties),parties)
+    pl.xticks(range(nParties),parties)
+    pl.title("Median User Overlap")
+    pl.savefig("median-user-overlap.pdf") 
+
+def plotTrends(parties,yhat,data,userPatterns,teststr):   
+    numComp = yhat.shape[0]
+    nParties = len(parties)
     for ic in range(numComp):
-        cors = sp.zeros((len(Ks),len(Ks)))
-        for x in range(len(Ks)):
-            for y in range(x+1,len(Ks)):
+        # plot correlations over time of canonical component ic
+        # for each pair of parties 
+        cors = sp.zeros((nParties,nParties))
+        for x in range(nParties):
+            for y in range(x+1,nParties):
                 cors[x,y] = sp.corrcoef(yhat[x][ic,:],yhat[y][ic,:])[1,0]
         pl.figure()    
         pl.imshow(cors.T,interpolation='nearest',cmap='Oranges')
@@ -237,6 +271,7 @@ def plotTrends(Ks,yhat,numComp,teststr):
         pl.xticks(range(len(Ks)),Ks.keys())
         pl.title("Canonical Correlation %d"%ic)
         pl.savefig("ccs-%d-%s.pdf"%(ic,teststr))
+        
         pl.figure()
         icts = sp.vstack([zscore(yhat[x][ic,:]) for x in range(len(Ks))])
         pl.plot(icts.T)
