@@ -223,7 +223,7 @@ def plotUserOverlapTimeSeries(x,y,tsLabels,plotStr):
     ovP = []
     for it in range(x.shape[0]):
         ovP.append(len(set(x[it,:].nonzero()[1]).intersection(set(y[it,:].nonzero()[1]))))
-    pl.figure()
+    pl.figure(figsize=(10,4))
     pl.plot(ovP)
     xt,_ = pl.xticks()
     pl.xticks(xt,[tsLabels[int(x)] for x in xt[:-1]])
@@ -231,6 +231,9 @@ def plotUserOverlapTimeSeries(x,y,tsLabels,plotStr):
     pl.ylabel("overlap")
     pl.title(plotStr)
     pl.savefig(plotStr+".pdf")   
+
+data = readAll()
+
 
 def plotUserOverlap(data):
     nParties = len(data)

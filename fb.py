@@ -17,7 +17,7 @@ import re
 import urllib
 from bs4 import BeautifulSoup
 
-DDIR = "/Users/felix/Code/Python/fipi/data/cointeractions"
+DDIR = "/Users/felix/Code/Python/fipi/data/parteien-auf-fb/"
 
 dat = [DDIR + x + ".json.gz" for x in ['afd','npd','pegida']]
 
@@ -78,57 +78,6 @@ def readPostLine(line):
     c = line.decode('utf-8').split("\t")
     postId, postType, usrLikes = c[0], c[1], [int(i) for i in c[2:]]
     return postType,postId,usrLikes
-
-def readMaxUser(fn):
-    lines = gzip.open(fn).readlines()
-    return max(map(lambda x: max(x[2]),map(readPostLine,lines)))
-
-def readPostWeek(fn,maxUsers,numComp=6):
-    lines = gzip.open(fn).readlines()
-    df = pd.DataFrame(list(map(readPostLine,lines)),columns=['postType','postId','usrLikes'])
-    likes = df.groupby("postId")['usrLikes'].agg(sum).values
-    rows,cols = zip(*chain(*map(enumerate,likes)))
-    return csr_matrix((sp.ones(len(rows)),(rows,cols)),(sp.maximum(len(rows),numComp),maxUsers))
-
-def getCointeractionGraph(fn,maxUsers,numComp):
-    A = readPostWeek(fn,maxUsers)
-    try:
-        U,V = eigs(A.dot(A.T) + diags(sp.ones(A.shape[0])*1e-4),numComp,maxiter=100)
-        return csr_matrix(sp.diag(1./sp.sqrt(U)).dot(V.T)).dot(A)
-    except:
-        return A[:numComp,:]
-
-def getCointeractionGraphTuple(x): return getCointeractionGraph(*x)
-
-def graphKernelDummy(A,B):
-    return sp.real(A.dot(B.T).sum()).flatten()[0]
-
-def sortDates(x):return int(x.split(".")[0].split("-")[-1])
-
-def getPartyKernel(party,fns,maxUser,numComp, years=['2014','2015']):
-    print("Reading %s"%party)
-    fns = chain(*map(lambda y: sorted(filter(lambda x: y in x,fns),key=sortDates),years))
-    tpls = [(os.path.join(DDIR,party,fn),maxUser,numComp) for fn in fns]
-    p = Pool(4)
-    cigs = p.map(getCointeractionGraphTuple,tpls)
-    #cigs = Parallel(-1)(delayed(getCointeractionGraphTuple)(t) for t in tpls)
-    #cigs = [getCointeractionGraphTuple(t) for t in tpls]
-    N = len(cigs)
-    print("Found %d weeks"%N)
-    X = sp.sparse.vstack([sp.sparse.hstack([*c]) for c in cigs])
-    K = X.dot(X.T)
-    return (party, sp.array(sp.real(K.todense())),fns)
-
-def getPartyKernelTupel(tpl):return getPartyKernel(*tpl)
-
-def readAll(folder=DDIR,numComp=6):
-    fs = [(d,os.listdir(DDIR+"/"+d)) for d in os.listdir(DDIR) if os.path.isdir(DDIR+"/"+d)]
-    print("Found %d parties in %s"%(len(fs),folder))
-    maxUser = 1+max([max([readMaxUser(os.path.join(DDIR,fss[0],ff)) for ff in fss[1]]) for fss in fs])
-    print("Found %d users"%maxUser)
-    ptpls = [(p[0],p[1],maxUser,numComp) for p in fs]
-    return {ptpl[0]:getPartyKernelTupel(ptpl) for ptpl in ptpls}
-
 
 def getContentFlatOld(post): 
     urls = []
