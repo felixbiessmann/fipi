@@ -37,7 +37,7 @@ RUN pip3 install --upgrade \
 COPY . /app
 WORKDIR /app
 
-RUN wget https://raw.githubusercontent.com/bundestag/plpr-scraper/master/scraper.py
-
 EXPOSE 5000
+ENTRYPOINT ["python3"]
+CMD ["api.py"]
 

@@ -7,7 +7,6 @@ import json
 import re
 import datetime
 import os
-import cPickle
 import codecs
 import itertools
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -28,7 +27,7 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
     import classifier
     from bs4 import BeautifulSoup
     from api import fetch_url
-    import urllib2
+    import urllib
     
     articles = []
     
@@ -40,62 +39,61 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
         if source is 'spiegel':
             # fetching articles from sueddeutsche.de/politik
             url = 'http://www.spiegel.de/politik'
-            site = BeautifulSoup(urllib2.urlopen(url).read())
+            site = BeautifulSoup(urllib.request.urlopen(url).read(),"lxml")
             titles = site.findAll("div", { "class" : "teaser" })
             urls = ['http://www.spiegel.de'+a.findNext('a')['href'] for a in titles]
          
         if source is 'faz':
             # fetching articles from sueddeutsche.de/politik
             url = 'http://www.faz.net/aktuell/politik'
-            site = BeautifulSoup(urllib2.urlopen(url).read())
+            site = BeautifulSoup(urllib.request.urlopen(url).read(),"lxml")
             titles = site.findAll("a", { "class" : "TeaserHeadLink" })
             urls = ['http://www.faz.net'+a['href'] for a in titles]
          
         if source is 'welt':
             # fetching articles from sueddeutsche.de/politik
             url = 'http://www.welt.de/politik'
-            site = BeautifulSoup(urllib2.urlopen(url).read())
+            site = BeautifulSoup(urllib.request.urlopen(url).read(),"lxml")
             titles = site.findAll("a", { "class" : "as_teaser-kicker" })
             urls = [a['href'] for a in titles]
          
         if source is 'sz-without-readability':
             # fetching articles from sueddeutsche.de/politik
             url = 'http://www.sueddeutsche.de/politik'
-            site = BeautifulSoup(urllib2.urlopen(url).read())
+            site = BeautifulSoup(urllib.request.urlopen(url).read(),"lxml")
             titles = site.findAll("div", { "class" : "teaser" })
             urls = [a.findNext('a')['href'] for a in titles]
        
         if source is 'zeit':
             # fetching articles from zeit.de/politik
             url = 'http://www.zeit.de/politik'
-            site = BeautifulSoup(urllib2.urlopen(url).read())
+            site = BeautifulSoup(urllib.request.urlopen(url).read(),"lxml")
             urls = [a['href'] for a in site.findAll("a", { "class" : "teaser-small__combined-link" })]
 
-        print "Found %d articles on %s"%(len(urls),url)
+        print("Found %d articles on %s"%(len(urls),url))
          
         # predict party from url for this source
-        print "Predicting %s"%source
+        print("Predicting %s"%source)
         for url in urls:
             try:
-                title,text = fetch_url(url)
+                text = fetch_url(url)
                 prediction = clf.predict(text)
                 prediction['url'] = url
                 prediction['source'] = source
-                articles.append((title,prediction))
+                articles.append((url,prediction))
             except:
                 print('Could not get text from %s'%url)
                 pass
 
     # do some topic modeling
     topics = kpca_cluster(map(lambda x: x[1]['text'][0], articles))
-  
     # remove original article text for faster web-frontend
     for a in articles:
         a[1]['text'] = 'deleted'
 
     # store current news and topics
-    json.dump(articles,open('news.json','wb'))
-    json.dump(topics,open('topics.json','wb'))
+    json.dump(articles,open('news.json','w'))
+    json.dump(topics,open('topics.json','w'))
 
 def load_sentiment(negative='SentiWS_v1.8c/SentiWS_v1.8c_Negative.txt',\
         positive='SentiWS_v1.8c/SentiWS_v1.8c_Positive.txt'):
@@ -162,9 +160,9 @@ def kpca_cluster(data,nclusters=20,topwhat=10):
 
     clusters = []
     for icluster in range(nclusters):
-        nmembers = (km.labels_==icluster).sum()
+        nmembers = int((km.labels_==icluster).sum())
         if nmembers > 1: # only group clusters big enough but not too big
-            members = (km.labels_==icluster).nonzero()[0]
+            members = [int(m) for m in (km.labels_==icluster).nonzero()[0]]
             topwordidx = km.cluster_centers_[icluster,:].argsort()[-topwhat:][::-1]
             topwords = ' '.join([idx2word[wi] for wi in topwordidx])
             #print u'Cluster %d'%icluster + u' %d members'%nmembers + u'\n\t'+topwords

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import cPickle
 from scipy import ones,hstack,arange,reshape,zeros,setdiff1d
+import pickle
 import json
 import os
 import glob
@@ -41,16 +41,16 @@ def saveLabelSchema(folder = ""):
         open(folder+"/schema.json","wb"),\
         sort_keys=True, indent=2,separators=(',', ': '))
 
-def nullPrediction(folder = "data"):
+def nullPrediction(folder = "data/manifesto"):
     return json.load(open(folder+"/nullPrediction.json"))
 
-def manifestolabels(folder = "data"):
+def manifestolabels(folder = "data/manifesto"):
     lines = open(folder+"/manifestolabels.txt").readlines()
     return dict(map(lambda x: (int(x[3:6]), x[8:-2]),lines))
 
 mc = manifestolabels()
 
-def get_raw_text(folder="data"):
+def get_raw_text(folder="data/manifesto"):
     '''
     Loads raw text and labels from manifestoproject csv files 
     (Downloaded from https://visuals.manifesto-project.wzb.eu)
@@ -126,10 +126,10 @@ class Classifier:
         '''
         # if there is no classifier file or training is invoked
         if (not os.path.isfile('classifier.pickle')) or train:
-            print 'Training classifier'
+            print('Training classifier')
             self.train()
-        print 'Loading classifier'
-        self.clf = cPickle.load(open('classifier.pickle'))
+        print('Loading classifier')
+        self.clf = pickle.load(open('classifier.pickle','rb'))
 
     def predict(self,text):
         '''
@@ -144,8 +144,6 @@ class Classifier:
             return nullPrediction()
         # make it a list, if it is a string
         if not type(text) is list: text = [text]
-        # remove digits
-        text = map(lambda y: filter(lambda x: not x.isdigit(),y),text)
         # predict probabilities
         probabilities = self.clf.predict_proba(text).flatten()
         predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
@@ -175,7 +173,7 @@ class Classifier:
         # the scikit learn pipeline for vectorizing, normalizing and classifying text 
         text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='auto',dual=True))])
+                            ('clf',LogisticRegression(class_weight='balanced',dual=True))])
         parameters = {'vect__ngram_range': [(1, 1)],\
                'tfidf__use_idf': (True,False),\
                'clf__C': (10.**arange(4,5,1.)).tolist()}  
@@ -183,5 +181,5 @@ class Classifier:
         gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
-        cPickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'),-1)
+        pickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'))
 

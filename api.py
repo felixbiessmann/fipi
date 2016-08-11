@@ -2,11 +2,10 @@
 import flask
 from flask import Flask, request, jsonify, render_template
 import os
+import urllib
 from classifier import Classifier
 from retrying import retry
-import urllib2
 from bs4 import BeautifulSoup
-from readability.readability import Document
 from newsreader import get_news
 from apscheduler.schedulers.background import BackgroundScheduler
 import json
@@ -17,21 +16,29 @@ DEBUG = os.environ.get('DEBUG') != None
 VERSION = 0.1
 
 # Schedules news reader to be run at 00:00
-scheduler = BackgroundScheduler()
-scheduler.add_job(get_news, 'interval', minutes=360)
-scheduler.start()
+#scheduler = BackgroundScheduler()
+#scheduler.add_job(get_news, 'interval', minutes=360)
+#scheduler.start()
 
 @retry(stop_max_attempt_number=5)
 def fetch_url(url):
     '''
     get url with readability
     '''
-    html = urllib2.urlopen(url).read()
-    readable_article = Document(html).summary()
-    title = Document(html).short_title()
-    text = BeautifulSoup(readable_article).get_text()
-
-    return title,text
+    html = urllib.request.urlopen(url).read()
+    soup = BeautifulSoup(html,"lxml")
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()    # rip it out
+    # get text
+    text = soup.get_text()
+    # break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # drop blank lines
+    text = '\n'.join(chunk for chunk in chunks if len(chunk.split(" "))>1)
+    return text.encode('utf-8')
 
 ### API
 @app.route("/api/newstopics")
