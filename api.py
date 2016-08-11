@@ -55,7 +55,7 @@ def api():
 
 @app.route("/api/predict", methods=['POST'])
 def predict():
-    if request.form.has_key('url'):
+    if 'url' in request.form:
         url = request.form['url']
         title,text = fetch_url(url)
         return jsonify(classifier.predict(text))

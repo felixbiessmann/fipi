@@ -127,7 +127,7 @@ def get_sentiments(data):
     words = load_sentiment()
     sentiment_vec = zeros(X.shape[1])
     for key in words.keys():
-        if bow.vocabulary_.has_key(key):
+        if key in bow.vocabulary_:
             sentiment_vec[bow.vocabulary_[key]] = words[key]
     
     # compute sentiments 
