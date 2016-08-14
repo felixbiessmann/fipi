@@ -76,11 +76,11 @@ def get_news(sources=['spiegel','faz','welt','zeit']):
         print("Predicting %s"%source)
         for url in urls:
             try:
-                text = fetch_url(url)
+                title,text = fetch_url(url)
                 prediction = clf.predict(text)
                 prediction['url'] = url
                 prediction['source'] = source
-                articles.append((url,prediction))
+                articles.append((title,prediction))
             except:
                 print('Could not get text from %s'%url)
                 pass
