@@ -29,8 +29,8 @@ def fetch_url(url):
     html = urllib.request.urlopen(url).read()
     readable_article = Document(html).summary()
     title = Document(html).short_title()
-    text = BeautifulSoup(readable_article).get_text()
-    return title.encode("utf-8"),text.encode('utf-8')
+    text = BeautifulSoup(readable_article,"lxml").get_text()
+    return title,text
 
 ### API
 @app.route("/api/newstopics")
@@ -71,7 +71,7 @@ def static_proxy(path):
 
 if __name__ == "__main__":
     port = 5000
-    classifier = Classifier(train=True)
+    classifier = Classifier()
     get_news()
     # Open a web browser pointing at the app.
     os.system("open http://localhost:{0}/".format(port))

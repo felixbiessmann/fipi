@@ -33,6 +33,7 @@ RUN pip3 install --upgrade \
     normality requests dataset \
     git+https://github.com/bundestag/normdatei
 
+RUN pip3 install readability-lxml
 
 COPY . /app
 WORKDIR /app
