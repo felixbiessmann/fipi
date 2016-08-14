@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from scipy import ones,hstack,arange,reshape,zeros,setdiff1d
+from scipy import ones,hstack,arange,reshape,zeros,setdiff1d,floor
 import pickle
 import json
 import os
@@ -102,7 +102,7 @@ def mapPredictions2Domain(pred):
     to domain label (probabilistic)
     '''
     domainPred = {label[0]:\
-    sum(map(lambda y: y[1],filter(lambda x: x[0]/100 == label[1],pred.items()))) \
+    sum(map(lambda y: y[1],filter(lambda x: floor(x[0]/100) == label[1],pred.items()))) \
             for label in label2domain.items()}
     normalizer = sum(domainPred.values())
     if normalizer == 0:
