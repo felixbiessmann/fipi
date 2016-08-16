@@ -3,7 +3,7 @@ import json
 
 BASEURL = "https://manifesto-project.wzb.eu/tools/"
 VERSION = "MPDS2016a"
-APIKEY  = AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api
+APIKEY  = AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api 
 COUNTRY = "Germany"
 
 def get_url(url):
@@ -56,7 +56,8 @@ def api_get_texts(country=COUNTRY):
     # get all tuples of party/date corresponding to a manifesto text in this country
     textKeys = api_get_text_keys(country)
     # get the texts
-    texts = {t[1]:api_get_text(t[1]+"_"+t[0]) for t in textKeys}
-    print("Downloaded %d/%d annotated texts"%(len(textKeys),len(texts)))
+    texts = {t[1]+"_"+t[0]:api_get_text(t[1]+"_"+t[0]) for t in textKeys}
+    texts = {k: v for k, v in texts.items() if v}
+    print("Downloaded %d/%d annotated texts"%(len(texts),len(textKeys)))
     return texts
 
