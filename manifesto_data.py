@@ -10,11 +10,11 @@ COUNTRY = "Germany"
 def get_url(url):
     return urllib.request.urlopen(url).read().decode()
 
-def api_get_latest_text_version(text_id):
+def api_get_latest_version():
     '''
-    Get the latest version id of this text
+    Get the latest version id of the Corpus
     '''
-    versionsUrl = BASEURL+"api_list_metadata_versions.json?keys[]="+text_id+"&api_key="+APIKEY
+    versionsUrl = BASEURL+"api_list_metadata_versions.json?&api_key="+APIKEY
     versions = json.loads(get_url(versionsUrl))
     return versions['versions'][-1]
 
@@ -43,7 +43,7 @@ def api_get_text(text_id):
     Retrieves the latest version of the manifesto text with corresponding labels
     '''
     # get the latest version of this text
-    version = api_get_latest_text_version(text_id)
+    version = api_get_latest_version()
     # get the text metadata and manifesto ID
     manifestoId = api_get_manifesto_id(text_id,version) 
     textUrl = BASEURL + "api_texts_and_annotations.json?keys[]="+manifestoId+"&version="+version+"&api_key="+APIKEY
