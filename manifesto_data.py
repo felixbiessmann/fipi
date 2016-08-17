@@ -49,7 +49,7 @@ def api_get_text(text_id):
     textUrl = BASEURL + "api_texts_and_annotations.json?keys[]="+manifestoId+"&version="+version+"&api_key="+APIKEY
     textData = json.loads(get_url(textUrl))
     try:
-        return [(t['cmp_code'],t['content']) for t in textData['items'][0]['items']]
+        return [(t['cmp_code'],t['text']) for t in textData['items'][0]['items']]
     except: 
         print('Could not get text %s'%text_id)
     
