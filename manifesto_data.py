@@ -1,4 +1,5 @@
 import urllib
+import urllib.request
 import json
 
 BASEURL = "https://manifesto-project.wzb.eu/tools/"
