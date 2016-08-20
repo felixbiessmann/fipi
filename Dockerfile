@@ -29,9 +29,12 @@ RUN apt-get update && apt-get install -y -q \
 RUN pip3 install --upgrade \
     setuptools pip ipython \
     Flask pandas apscheduler scipy scikit-learn \
-    retrying pyicu polyglot \   
+    retrying pyicu morfessor polyglot \   
     normality requests dataset \
     git+https://github.com/bundestag/normdatei
+
+RUN git clone http://github.com/abosamoor/pycld2.git; \
+    cd pycld2;python3 ./setup.py install
 
 RUN pip3 install readability-lxml
 
