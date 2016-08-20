@@ -1,5 +1,6 @@
 import urllib
 import urllib.request
+import itertools
 import json
 
 BASEURL = "https://manifesto-project.wzb.eu/tools/"
@@ -53,7 +54,7 @@ def api_get_text(text_id):
     except: 
         print('Could not get text %s'%text_id)
     
-def api_get_texts(country=COUNTRY):
+def api_get_texts_per_party(country=COUNTRY):
     # get all tuples of party/date corresponding to a manifesto text in this country
     textKeys = api_get_text_keys(country)
     # get the texts
@@ -62,3 +63,6 @@ def api_get_texts(country=COUNTRY):
     print("Downloaded %d/%d annotated texts"%(len(texts),len(textKeys)))
     return texts
 
+def api_get_texts(country=COUNTRY):
+    texts = api_get_texts_per_party(country)
+    return [x for x in list(itertools.chain(*texts.values())) if x[0]!='NA' and x[0]!='0']

@@ -39,6 +39,6 @@ COPY . /app
 WORKDIR /app
 
 EXPOSE 5000
-ENTRYPOINT ["python3"]
-CMD ["api.py"]
+#ENTRYPOINT ["python3"]
+#CMD ["api.py"]
 

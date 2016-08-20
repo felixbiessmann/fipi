@@ -145,6 +145,7 @@ class Classifier:
         # make it a list, if it is a string
         if not type(text) is list: text = [text]
         # predict probabilities
+        text = ["".join([x for x in t if not x.isdigit()]) for t in text]
         probabilities = self.clf.predict_proba(text).flatten()
         predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
         
