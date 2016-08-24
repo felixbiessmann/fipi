@@ -50,7 +50,7 @@ def predict():
     if 'url' in request.form:
         url = request.form['url']
         title,text = fetch_url(url)
-        prediction = classifier.predict(url)
+        prediction = classifier.predict(text)
         del prediction['text']
         return jsonify(prediction)
     else:
