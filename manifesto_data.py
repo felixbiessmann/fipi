@@ -47,9 +47,9 @@ def api_get_text(text_id):
     version = api_get_latest_version()
     # get the text metadata and manifesto ID
     manifestoId = api_get_manifesto_id(text_id,version) 
-    textUrl = BASEURL + "api_texts_and_annotations.json?keys[]="+manifestoId+"&version="+version+"&api_key="+APIKEY
-    textData = json.loads(get_url(textUrl))
     try:
+        textUrl = BASEURL + "api_texts_and_annotations.json?keys[]="+manifestoId+"&version="+version+"&api_key="+APIKEY
+        textData = json.loads(get_url(textUrl))
         return [(t['cmp_code'],t['text']) for t in textData['items'][0]['items']]
     except: 
         print('Could not get text %s'%text_id)
@@ -66,3 +66,8 @@ def api_get_texts_per_party(country=COUNTRY):
 def api_get_texts(country=COUNTRY):
     texts = api_get_texts_per_party(country)
     return [x for x in list(itertools.chain(*texts.values())) if x[0]!='NA' and x[0]!='0']
+
+def api_download_country(country=COUNTRY):
+    texts = api_get_texts(country)
+    with open(country.replace(" ","_")+".csv",'w') as fh:
+        [fh.write("\""+l[1].replace("\"","")+"\","+l[0]+",NA\n") for l in texts]
