@@ -5,7 +5,7 @@ import json
 
 BASEURL = "https://manifesto-project.wzb.eu/tools/"
 VERSION = "MPDS2016a"
-APIKEY  = "50e679fffb30157c50e28b8d4dda1baf"#AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api
+APIKEY  = ""#AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api
 COUNTRY = "Germany"
 
 def get_url(url):
