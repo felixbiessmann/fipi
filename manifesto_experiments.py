@@ -8,6 +8,7 @@ import scipy as sp
 from classifier import Classifier
 from party_classifier import PartyClassifier
 from sklearn import metrics, cross_validation
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import HashingVectorizer,CountVectorizer,TfidfTransformer,TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.grid_search import GridSearchCV
@@ -371,11 +372,12 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     #stops = get_stops()
     text_clf = Pipeline([('vect', CountVectorizer()),
                             ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='balanced'))])
+                            ('clf',RandomForestClassifier())])
     parameters = {'vect__ngram_range': [(1,2)],\
            #'vect__stop_words':(None,stops),\
            #'tfidf__use_idf': (True,False),\
-           'clf__C': (10.**sp.arange(-2,5,1)).tolist(),
+           'clf__n_estimators': [10,20,40],
+           #'clf__max_features': [100,1000,1e4],
            'vect__max_df':[.1,.2,.5,7],
         }
     saveId = idstr+"-"+randid()
@@ -385,6 +387,7 @@ def optimize_hyperparams(trainData,trainLabels,evalData,evalLabels, folds=2, ids
     # train on training set
     best_clf = gs_clf.fit(X_train, y_train).best_estimator_
     # test on test set
+    print(best_clf.get_params)
     test_clf = text_clf.set_params(**best_clf.get_params()).fit(X_train,y_train)
     predictedTest = test_clf.predict(X_test)
     # dump report on training held out data with CV
@@ -412,13 +415,13 @@ def randid(N=10):
     return "".join(map(lambda x: str(x),random.randint(0,9,N).tolist()))
 
 def classify_manifesto_codes_topics():
-    data, labels = get_raw_text_manifesto_whole_country('data/UK/United_Kingdom.csv')
+    data, labels = get_raw_text_manifesto_whole_country('data/DE/Germany.csv')
     labels = [round(l/100) for l in labels]
     trainData, evalData, trainLabels, evalLabels = cross_validation.train_test_split(data, labels, test_size=0.1, random_state=0)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="manifesto_codes_topics")
 
 def classify_manifesto_codes():
-    data, labels = get_raw_text_manifesto_whole_country('data/UK/United_Kingdom.csv')
+    data, labels = get_raw_text_manifesto_whole_country('data/DE/Germany.csv')
     #data, labels = get_raw_text_manifesto()
     trainData, evalData, trainLabels, evalLabels = cross_validation.train_test_split(data, labels, test_size=0.1, random_state=0)
     optimize_hyperparams(trainData,trainLabels, evalData, evalLabels,idstr="manifesto_codes")
