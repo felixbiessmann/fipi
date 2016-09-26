@@ -6,7 +6,6 @@ RUN conda config --add channels https://conda.binstar.org/travis \
 RUN pip install --upgrade pip
 COPY . /app
 WORKDIR /app
-RUN cat requirements.txt | grep 'scipy\|cchardet\|numpy\|^lxml\|scikit-learn\|pandas' > conda.txt
 RUN conda install --yes --file conda.txt
 RUN pip install -r requirements.txt
 EXPOSE 5000
