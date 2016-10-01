@@ -34,6 +34,10 @@ In the project root folder then build the docker image and start it with:
 
 Open a browser window and navigate to [IP-of-docker-container]:5000.
 
+## Testing prediction API in commandline with curl
+    
+    curl --data "text=Sicherheit" 192.168.99.100:5000/api/predict
+
 ## Deploy with AWS Elasticbeanstalk
 
 Install EB CLI
