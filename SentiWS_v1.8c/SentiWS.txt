@@ -1,0 +1,77 @@
+SentiWS
+~~~~~~~
+
+SentimentWortschatz, or SentiWS for short, is a publicly available German-language resource for sentiment analysis, opinion mining etc. It lists positive and negative polarity bearing words weighted within the interval of [-1; 1] plus their part of speech tag, and if applicable, their inflections. The current version of SentiWS (v1.8b) contains 1,650 positive and 1,818 negative words, which sum up to 15,649 positive and 15,632 negative word forms incl. their inflections, respectively. It not only contains adjectives and adverbs explicitly expressing a sentiment, but also nouns and verbs implicitly containing one.
+
+
+License
+~~~~~~~
+
+SentiWS is licensed under a Creative Commons Attribution-Noncommercial-Share Alike 3.0 Unported License (http://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+
+Obtain a Copy
+~~~~~~~~~~~~~
+The latest version of SentiWS can be found at http://wortschatz.informatik.uni-leipzig.de/download/.
+
+
+Data Format
+~~~~~~~~~~~
+SentiWS is organised in two utf8-encoded text files structured the following way:
+
+<Word>|<POS tag> \t <Polarity weight> \t <Infl_1>,...,<Infl_k> \n
+
+where \t denotes a tab, and \n denotes a new line.
+
+
+Citation
+~~~~~~~~
+
+If you use SentiWS in your work we kindly ask you to cite
+
+R. Remus, U. Quasthoff & G. Heyer: SentiWS - a Publicly Available German-language Resource for Sentiment Analysis.
+In: Proceedings of the 7th International Language Ressources and Evaluation (LREC'10), 2010
+
+or use the following BibTeX-code snippet:
+
+@INPROCEEDINGS{remquahey2010,
+title = {SentiWS -- a Publicly Available German-language Resource for Sentiment Analysis},
+booktitle = {Proceedings of the 7th International Language Resources and Evaluation (LREC'10)},
+author = {Remus, R. and Quasthoff, U. and Heyer, G.},
+year = {2010}
+}
+
+
+Version History
+~~~~~~~~~~~~~~~
+
+SentiWS is "work in progress" and hence far from being fully-fledged and error-free. It will be continuously refined by adding missing words and word forms and removing ambiguous ones.
+
+v1.8b, 2010-05-19: First publicly available version as described in Remus et al. (2010).
+v1.8c, 2012-03-21: Second publicly available version in which some POS tags were corrected.
+
+
+Corrections
+~~~~~~~~~~~
+
+Unfortunately, there were some typos and errors in Table 2 of our LREC'10 paper. Here is a corrected version:
+
+				Positive	Negative
+Adjectives	Baseforms	784		11,101
+		Inflections	698		9,992
+Adverbs		Baseforms	6		4
+		Inflections	0		0
+Nouns		Baseforms	548		686
+		Inflections	649		979
+Verbs		Baseforms	312		430
+		Inflections	2,249		2,843
+All		Baseforms	1,650		1,818
+		Inflections	13,999		13,814
+
+		Total		15,649		15,632
+
+Table 2: Overview of the dictionary's content
+
+
+
+SentiWS.txt was last updated on 2012-03-21.

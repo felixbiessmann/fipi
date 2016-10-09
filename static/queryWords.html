@@ -26,7 +26,6 @@
             <h1 class="brand-title"><a href="index.html" style="color: inherit;">FIPI</a></h1>
             <h2 class="brand-tagline"><a href="index.html" style="color: inherit;">Für Ihre Politische Information</a></h2>
 
-
             <nav class="nav">
                 <ul class="nav-list">
                     <li class="nav-item">
@@ -38,6 +37,8 @@
 					<li class="nav-item">
                         <a class="pure-button" href="news.html">Nachrichten</a>
                     </li>
+
+                </ul>
                 </ul>
             </nav>
         </div>
@@ -46,11 +47,47 @@
     <div class="content pure-u-1 pure-u-md-3-4" style="vertical-align:middle;text-align:center;">
 
 
-        <div id=news>
-<h1 class="content-head">Die Nachrichten</h1>
-        </div>
+        <div>
+            <!-- A wrapper for all the blog posts -->
+         <div class="posts">
+                <h1 class="content-subhead">Analysiere Text</h1>
+		<label for="option-two" class="pure-radio">
+		<input id="AfD" type="radio" name="partyRadio" value="AfD">
+		AfD
+		</label>
+		<label for="option-two" class="pure-radio">
+		<input id="NPD" type="radio" name="partyRadio" value="NPD">
+				NPD
+		</label>
+		<label for="option-two" class="pure-radio">
+		<input id="CDU" type="radio" name="partyRadio" value="CDU" checked>
+				CDU
+		</label>
+		<label for="option-two" class="pure-radio">
+		<input id="DieGruenen" type="radio" name="partyRadio" value="DieGruenen">
+				Gruene
+		</label>
+		<label for="option-two" class="pure-radio">
+		<input id="SPD" type="radio" name="partyRadio" value="SPD">
+				SPD
+		</label>
+		<label for="option-two" class="pure-radio">
+		<input id="DieLinke" type="radio" name="partyRadio" value="DieLinke">
+				Linke
+		</label>
+        <input class="pure-form pure-u-md-3-5" type="text" id="textBox" value="Sicherheit">
 
-         <div class="footer">
+
+        <button class="pure-button" onclick="queryPosts(textBox)">Suche</button>
+        <p id=result></p>
+
+            </div>
+            <div id=news>
+                <h1 class="content-head">Posts</h1>
+            </div>
+
+
+            <div class="footer">
                 <div class="pure-menu pure-menu-horizontal">
                     <ul>
                         <li class="pure-menu-item"><a href="http://purecss.io/" class="pure-menu-link">Layout</a></li>
@@ -59,6 +96,7 @@
                     </ul>
                 </div>
             </div>
+        </div>
     </div>
 
 </div>
@@ -72,7 +110,8 @@
 
 
 <script type="text/javascript" src="javascript/d3.js"></script>
-<script type="text/javascript" src="javascript/news.js"></script>
+<script type="text/javascript" src="javascript/words.js"></script>
+
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -84,5 +123,3 @@ pageTracker._trackPageview();
 } catch(err) {}</script>
 
 </html>
-
-

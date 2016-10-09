@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import flask
+import flask,json,os,urllib
 from flask import Flask, request, jsonify, render_template
-import os
+import os,re
 import urllib
 from classifier import Classifier
 from readability.readability import Document
@@ -9,7 +9,8 @@ from retrying import retry
 from bs4 import BeautifulSoup
 from newsreader import get_news
 from apscheduler.schedulers.background import BackgroundScheduler
-import json
+from coocSentiment import getTextByPartyAND,getPartyTextsDF
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -33,6 +34,16 @@ def fetch_url(url):
     return title,text
 
 ### API
+@app.route("/api/postquery", methods=['POST'])
+def postquery():
+    wordlist = re.sub('[\s,]'," ",request.form['wordlist']).split(" ")
+    words = [re.sub('\W+','', w.lower()) for w in wordlist]
+    party = request.form['partyRadio']
+    print("querying %s for [%s]"%(party,", ".join(words)))
+    textdf = getTextByPartyAND(fbtextdf,words,party)
+    print("Found %d texts"%len(textdf))
+    return jsonify([{"text":t} for t in textdf['text'].values])
+
 @app.route("/api/newstopics")
 def newstopics():
     return open('topics.json').read()
@@ -59,7 +70,7 @@ def predict():
         del prediction['text']
         return jsonify(prediction)
 
-# static files 
+# static files
 @app.route('/')
 def root():
   return app.send_static_file('index.html')
@@ -72,7 +83,8 @@ def static_proxy(path):
 if __name__ == "__main__":
     port = 5000
     classifier = Classifier()
-    get_news()
+    #get_news()
+    fbtextdf = getPartyTextsDF()
     # Open a web browser pointing at the app.
     os.system("open http://localhost:{0}/".format(port))
     app.run(host='0.0.0.0', port = port, debug = DEBUG)
