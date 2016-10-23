@@ -36,7 +36,7 @@ def fetch_url(url):
 ### API
 @app.route("/api/postquery", methods=['POST'])
 def postquery():
-    wordlist = re.sub('[\s,]'," ",request.form['wordlist']).split(" ")
+    wordlist = re.sub('[\s,]+'," ",request.form['wordlist']).split(" ")
     words = [re.sub('\W+','', w.lower()) for w in wordlist]
     party = request.form['partyRadio']
     print("querying %s for [%s]"%(party,", ".join(words)))

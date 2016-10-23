@@ -9,6 +9,8 @@ function queryPosts(queryTextElement){
       var postContainers = d3.select("#news")
       .selectAll("div.posts").remove()
 
+      d3.select("h1.content-head").text("Found " + postTexts.length + " texts")
+
       var words = wordlist.replace(","," ").split(" ")
 
       postContainers
@@ -29,6 +31,8 @@ function queryPosts(queryTextElement){
             + "</div>"
             return content
         })
+        
+        postContainers.exit.remove()
 
 
   })
