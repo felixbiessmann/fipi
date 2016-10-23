@@ -1,108 +1,95 @@
-exit()
-python
-
 # -*- coding: utf8 -*-
-
 import json
+import os
 import gzip
-import hashlib
-import re
-import datetime
-import time
-from sqlalchemy_wrapper import SQLAlchemy
+import glob
+from models import PartyPost, PostLabel, DB_FILE, db, categories
+from flask_script import Command, Manager, Option
 
-with open("CDU-enriched.json.gzip", "r") as f:
-    d = f.read()
+class SetupDatabase(Command):
 
-posts = "[" + d.replace("}{", "},{") + "]"
-posts = json.loads(posts)
-p = posts[0]
+    def __init__(self, path_to_data='../fb_pol_data/raw_data/*-enriched.json.gz', test_load='2'):
+        self.path_to_data = path_to_data
+        self.test_load = test_load
 
-def convert_from_unix_time(unix_time):
-    # if string is desired then | .strftime('%Y-%m-%d %H:%M:%S')
-    return datetime.datetime.fromtimestamp(int(unix_time))
+    def get_options(self):
+        return [
+            Option('-p', '--path_to_data', dest='path_to_data', default=self.path_to_data),
+            Option('-t', '--test_load', dest='test_load', default=self.test_load),
+        ]
 
-def hash_id(*args):
-    some_args = "".join(str(args))
-    id_hash = hashlib.md5(some_args).hexdigest()
-    return id_hash
+    def run(self, path_to_data, test_load):
+        backup_sqlite_db()
+        db.drop_all()
+        db.create_all()
+        files_to_load = glob.glob(path_to_data)
 
-db = SQLAlchemy('sqlite:///:test_fb:')
+        if test_load.lower() == 'false':
+            print("\n\tFULL LOAD:\tAll posts for each file. This may take a few minutes...\n")
+            test_load = False
+        else:
+            try:
+                test_load = int(test_load)
+                print("\n\tTEST LOAD:\t{} posts for each file\n".format(test_load))
+            except:
+                print("\n\t-t (--test_load): enter 'false' to load all posts, or enter an integer to limit the number of posts to load. Default is '2'\n")
+                return
+        for f in files_to_load:
+            f_name = os.path.split(f)[1]
+            print("Loading {}".format(f))
+            load_posts(f, test_load=test_load)
+        print("")
 
-class PartyPost(db.Model):
-    def __init__(self, **kwargs):
-        # if 'hash_id' not in kwargs:
-        #     kwargs['hash_id'] = hash_id(kwargs['post_id'], kwargs['category'], kwargs['label'])
-        #     self.id = kwargs['hash_id']
-        super(PartyPost, self).__init__(**kwargs)
-    # hash_id = db.Column(db.String(63), primary_key=True)
-    post_id = db.Column(db.String(63), primary_key=True)
-    number_comments = db.Column(db.Integer)
-    number_likes = db.Column(db.Integer)
-    party = db.Column(db.String)
-    post_text = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime(timezone=False))
-    labels = db.relationship('PostLabel', backref='party_posts', lazy='dynamic')
+def backup_sqlite_db():
+    if os.path.isfile(DB_FILE):
+        db_f, db_ext = os.path.splitext(DB_FILE)
+        db_backup =  db_f + '_backup.' + db_ext
+        with open(DB_FILE, 'r') as read_f:
+            f = read_f.read()
+            with open(db_backup, 'w') as write_f:
+                write_f.write(f)
 
-
-class PostLabel(db.Model):
-    def __init__(self, **kwargs):
-        if 'hash_id' not in kwargs:
-            kwargs['hash_id'] = hash_id(kwargs['post_id'], kwargs['category'], kwargs['label'])
-            self.id = kwargs['hash_id']
-        super(PostLabels, self).__init__(**kwargs)
-    hash_id = db.Column(db.String(63), primary_key=True)
-    post_id = db.Column(db.String(63), db.ForeignKey('PartyPost.post_id'))
-    category = db.Column(db.String(63))
-    label = db.Column(db.String(123))
-    prediction = db.Column(db.Float)
-
-
-party_post = PartyPost(
-                    post_id=p.get('postId'),
-                    category='domain',
-                    number_comments=p.get('numberComments'),
-                    number_likes=p.get('numberLikes'),
-                    party=p.get('party'),
-                    post_text=p.get('text')[0],
-                    timestamp=convert_from_unix_time(p['timeStamp']) if p.get('timestamp') else None
-                    )
-
-party_post = PostLabel(
-                    post_id=p.get('postId'),
-                    category='domain',
-                    label=p['domain'][0].get('label'),
-                    prediction=p['domain'][0].get('prediction'),
-                    number_comments=p.get('numberComments'),
-                    number_likes=p.get('numberLikes'),
-                    party=p.get('party'),
-                    post_text=p.get('text')[0],
-                    timestamp=convert_from_unix_time(p['timeStamp']) if p.get('timestamp') else None
-                    )
-
-
-loaded_p = db.session.merge(party_post)
-
-db.add(party_post)
-db.session.commit()
-
-db.session.rollback()
-db.session.commit()
-
-def load_post_file(filename):
-    with open(filename, "r") as f:
+def load_posts(filename, test_load=False):
+    with gzip.open(filename, "rb") as f:
         d = f.read()
     posts = "[" + d.replace("}{", "},{") + "]"
     posts = json.loads(posts)
+    posts = posts[:test_load] if test_load else posts
     for p in posts:
+        post_id = p.get('postId')
+        party_post = PartyPost(
+                            post_id=post_id,
+                            number_comments=p.get('numberComments'),
+                            number_likes=p.get('numberLikes'),
+                            party=p.get('party'),
+                            post_text=p.get('text')[0],
+                            timestamp=convert_from_unix_time(p['timeStamp']) if p.get('timestamp') else None
+                            )
+        for category in categories:
+            cat = p.get(category,[])
+            for i in cat:
+                post_label = PostLabel(
+                                    post_id=post_id,
+                                    category=category,
+                                    label=i.get('label'),
+                                    prediction=i.get('prediction')
+                                    )
+                try:
+                    db.session.merge(post_label)
+                    # db.add(post_label)
+                except:
+                    db.session.rollback()
+                finally:
+                    db.session.commit()
+        try:
+            db.session.merge(party_post)
+            # db.add(party_post)
+        except:
+            db.session.rollback()
+        finally:
+            db.session.commit()
 
 
-
-db.create_all()
-db.drop_all()
-
-all_posts = db.query(PartyPost).all()
-
-p1 = all_posts[1]
-p1.post_id
-p1.post_text
+if __name__ == '__main__':
+    setup = SetupDatabase()
+    setup.run(setup.path_to_data, setup.test_load)

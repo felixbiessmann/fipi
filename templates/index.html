@@ -1,73 +1,151 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Politische Bias</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../static/furtive.css" rel="stylesheet" media="screen">
+<head>
+<title>Politische Bias</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../static/furtive.css" rel="stylesheet" media="screen">
+<link href="../static/custom.css" rel="stylesheet" media="screen">
 
-  </head>
-  <body class="bg--off-white">
-    <div class="py2 txt--center">
-      <div class="grd">
-        <div class="grd-row">
-          <div class="grd-row-col-3-6">
-            <div class="grd">
-              <div class="grd-row p2">
-                <h4>Jemand hat einmal gesagt</h4>
-              </div>
-              <div class="grd-row p2">
-                <p>{{my_string}}</p>
-              </div>
+</head>
+<body class="bg--off-white">
+<form method="POST" action="/">
+<div class="grd txt--center">
+    <div class="grd-row">
+        <div class="grd-row-col-2-6">
+            <div class="grd-row">
+                <h3 class="txt--center">Jemand hat einmal gesagt</h3>
             </div>
-          </div>
-          <div class="grd-row-col-3-6">
-            <div class="grd">
-              <div class="grd-row p2">
-                <h4 class="flt--right">was am besten beschreibt thier Gefühl?</h4>
-              </div>
-              <div class="grd-row">
-                <div class="grd-row-col-3-6">
-                  <ul class="list--unstyled">
-                    {% for n in list_1 %}
-                    <li>{{n}}</li>
-                    {% endfor %}
-                  </ul>
-                </div>
-                <div class="grd-row-col-3-6">
-                  <ul class="list--unstyled">
-                    {% for n in list_2 %}
-                    <li>{{n}}</li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              </div>
+            <div class="grd-row p2">
+                <p class="txt--center">{{post_text}}</p>
             </div>
-          </div>
         </div>
-        <div class="grd-row">
+
+        <!-- spacerow -->
+        <div class="grd-row-col-1-6"></div>
+        <div class="grd-row-col-3-6">
+            <div class="grd">
+                <!-- input 1 -->
+                <div class="grd-row">
+                    <div class="grd-row-col-1-6"></div>
+                    <!-- <div class="grd-row-col-2-6"> -->
+                    <div class="grd-row-col-4-6">
+                        <h5 class="flt--right">die Domäne beschreibt den Text am besten?</h5>
+                    </div>
+
+                    </div>
+                    <div class="grd-row-col-1-6"></div>
+
+
+                </div>
+                <div class="grd-row">
+
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_1[:2] %}
+                            <label class="label-w" for="{{n}}">
+                                <span class="label">{{n}}</span>
+                                <input class="input" type="radio" name="category_domain" value="{{n}}">
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_1[2:4] %}
+                            <label class="label-w" for="{{n}}">
+                                <span class="label">{{n}}</span>
+                                <input class="input" type="radio" name="category_domain" value="{{n}}">
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_1[4:] %}
+                        <label class="label-w" for="{{n}}">
+                            <span class="label">{{n}}</span>
+                            <input class="input" type="radio" name="category_domain" value="{{n}}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- input 2 -->
+                <div class="grd-row">
+                    <div class="grd-row-col-1-6"></div>
+                    <div class="grd-row-col-4-6">
+                        <h5 class="flt--right">was am besten beschreibt ihr Gefühl?</h5>
+                    </div>
+                    <div class="grd-row-col-1-6"></div>
+                </div>
+                <div class="grd-row">
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_2[:2] %}
+                        <label class="label-w" for="{{n}}">
+                            <span class="label">{{n}}</span>
+                            <input class="input" type="checkbox" name="category_manifestocode" value="{{n}}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_2[2:4] %}
+                        <label class="label-w" for="{{n}}">
+                            <span class="label">{{n}}</span>
+                            <input class="input" type="checkbox" name="category_manifestocode" value="{{n}}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="grd-row-col-2-6">
+                        {% for n in list_2[4:] %}
+                        <label class="label-w" for="{{n}}">
+                            <span class="label">{{n}}</span>
+                            <input class="input" type="checkbox" name="category_manifestocode" value="{{n}}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- input 3 (submit) -->
+                <div class="grd-row">
+                    <div class="grd-row-col-1-6"></div>
+                    <div class="grd-row-col-4-6">
+                        <h4 class="txt--center">Welche Art und Weise lehnten sie?</h4>
+                        <input type="hidden" name="post_id" value="{{post_id}}">
+                        <input type="hidden" name="human_id" value="{{human_id}}">
+                    </div>
+                    <div class="grd-row-col-1-6"></div>
+
+                </div>
+                <div class="grd-row">
+                    <div class="grd-row-col-1-6"></div>
+                    <div class="grd-row-col-2-6">
+                        <input type="submit" name="category_leftright" value="links"></input>
+                    </div>
+                    <div class="grd-row-col-3-6">
+                        <input type="submit" name="category_leftright" value="recht"></input>
+                    </div>
+                    <div class="grd-row-col-1-6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+</body>
+</html>
+        <!-- <div class="grd-row"> -->
           <!-- <div class="grd"> -->
             <!-- <div class="grd-row"> -->
-              <div class="grd-row-col-2-6"></div>
+              <!-- <div class="grd-row-col-2-6"></div>
               <div class="grd-row-col-2-6">
-              <h5 class="txt--center">Welche Art und Weise lehnten sie?</h5>
-              </div>
-              <div class="grd-row-col-2-6"></div>
 
-            </div>
-            <div class="grd-row">
+
+              </div>
+              <div class="grd-row-col-2-6"></div> -->
+
+            <!-- </div> -->
+            <!-- <div class="grd-row">
               <div class="grd-row-col-2-6">
               </div>
               <div class="grd-row-col-2-6">
-                <button type="button" name="leaning_left" class="btn-grey">LINKS</button>
-                <button type="button" name="leaning_left" class="btn-grey">CENTER</button>
-                <button type="button" name="leaning_left" class="btn-grey">RECHT</button>
               </div>
               <div class="grd-row-col-2-6">
-              </div>
+              </div> -->
             <!-- </div> -->
           <!-- </div> -->
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
