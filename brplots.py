@@ -5,43 +5,44 @@ from bokeh.plotting import output_file, show
 import pandas as pd
 from operator import itemgetter
 
-partyFiles = {
-    'AfD':"41953_2013.csv",
-    'CDU':"41521_2013.csv",
-    'SPD':'41320_2013.csv',
-    'FDP':'41420_2013.csv',
-    'Linke':'41223_2013.csv',
-    'Gruene':'41113_2013.csv'
-    }
+colors = ["purple","red","green","yellow","gray","blue"]
+
+partyFiles = [
+    ('Linke','41223_2013.csv'),
+    ('SPD','41320_2013.csv'),
+    ('Gruene','41113_2013.csv'),
+    ('FDP','41420_2013.csv'),
+    ('CDU',"41521_2013.csv"),
+    ('AfD',"41953_2013.csv")
+    ]
 
 domains = [
     'External Relations',
     'Freedom and Democracy',
     'Political System',
     'Economy',
-    'Welfare and Quality of Life',
-    'Fabric of Society'
+    'Welfare and Quality of Life'
     ]
 
 def plotAllDomains(folder = "data/manifesto/"):
     for dom in domains:
         plotAll(domain=dom)
-        
+
 def plotAll(folder = "data/manifesto/", domain = "Economy"):
     clf = Classifier(train=False)
     predictions = []
-    for party,fn in partyFiles.items():
+    for party,fn in partyFiles:
         print("Getting texts of party %s"%party)
-        data = pd.read_csv(folder+fn).sample(50)
-        pred = getLeftRightForDomain(data.content,clf,domain)
+        data = pd.read_csv(folder+fn)
+        nsamples = min(200,len(data))
+        pred = getLeftRightForDomain(data.sample(nsamples).content,clf,domain)
         predictions += [(x[0],x[1],party) for x in pred]
 
     df = pd.DataFrame(predictions,columns=['rightPrediction','text','party'])
-
     sns.set_style("whitegrid")
 
     ax = sns.violinplot(y="rightPrediction",x="party",
-                    data=df, palette="Set2", split=True,
+                    data=df, palette=sns.color_palette(colors), split=True,
                     scale="count", inner="stick")
     output_file(folder+"violinPlot-%s.html"%domain)
 
