@@ -5,7 +5,7 @@ import json
 
 BASEURL = "https://manifesto-project.wzb.eu/tools/"
 VERSION = "MPDS2016a"
-APIKEY  = ""#AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api
+APIKEY  = "50e679fffb30157c50e28b8d4dda1baf"#AN API KEY STRING FROM https://manifestoproject.wzb.eu/information/documents/api
 COUNTRY = "Germany"
 
 def get_url(url):
@@ -46,14 +46,14 @@ def api_get_text(text_id):
     # get the latest version of this text
     version = api_get_latest_version()
     # get the text metadata and manifesto ID
-    manifestoId = api_get_manifesto_id(text_id,version) 
+    manifestoId = api_get_manifesto_id(text_id,version)
     textUrl = BASEURL + "api_texts_and_annotations.json?keys[]="+manifestoId+"&version="+version+"&api_key="+APIKEY
     textData = json.loads(get_url(textUrl))
     try:
         return [(t['cmp_code'],t['text']) for t in textData['items'][0]['items']]
-    except: 
+    except:
         print('Could not get text %s'%text_id)
-    
+
 def api_get_texts_per_party(country=COUNTRY):
     # get all tuples of party/date corresponding to a manifesto text in this country
     textKeys = api_get_text_keys(country)

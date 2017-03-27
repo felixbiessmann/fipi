@@ -5,12 +5,14 @@ import json
 import os
 import glob
 from itertools import chain
-from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.linear_model import SGDClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn import metrics
+from manifesto_data import api_get_texts
+from operator import itemgetter
 
 # manifestoproject codes for left/right orientation
 label2rightleft = {
@@ -28,15 +30,40 @@ label2domain = {
     'Fabric of Society':6
     }
 
+def plotLeftRightDomain(texts,clf,domain="Economy"):
+    import seaborn as sns
+    from bokeh import mpl
+    from bokeh.plotting import output_file, show
+    leftright = getLeftRightForDomain(texts,clf,domain)
+    df = pd.DataFrame(leftright,columns=['predictionRight','text'])
+
+
+    sns.set_style("whitegrid")
+
+    ax = sns.violinplot(x="prediction", 
+                        data=df, palette="Set2", split=True,
+                        scale="count", inner="stick")
+
+def getLeftRightForDomain(texts,clf,domain="Economy"):
+    result = []
+    for text in texts:
+        prediction = clf.predict(text)
+        domainTuples = [(x['label'],x['prediction']) for x in prediction['domain']]
+        topDomain = sorted(domainTuples,key=itemgetter(1))[-1][0]
+        if topDomain == domain:
+            rightPrediction = [x['prediction'] for x in prediction['leftright'] if x['label'] is 'right'][0]
+            result.append((rightPrediction, text))
+    return result
+
 def saveLabelSchema(folder = ""):
     domainlabels = [{"domain":x[0],"label":x[1]} for x in label2domain.items()]
     manifestocodes = [{"manifestocode":x[0],"topic":x[1]} for x in manifestolabels(folder).items()]
-    
+
     json.dump(
         {
             "leftright":label2rightleft,
             "domain":domainlabels,
-            "manifestocodes":manifestocodes 
+            "manifestocodes":manifestocodes
         },\
         open(folder+"/schema.json","wb"),\
         sort_keys=True, indent=2,separators=(',', ': '))
@@ -50,9 +77,21 @@ def manifestolabels(folder = "data/manifesto"):
 
 mc = manifestolabels()
 
+def get_raw_text_manifesto_api(country = "Germany",folder="data/manifesto"):
+    fn = folder + "/manifesto-%s.csv"%country
+    if os.path.isfile(fn):
+        print("Loading %s"%fn)
+        df = pd.read_csv(fn)
+    else:
+        print("Downloading texts from manifestoproject.")
+        manifestotexts = api_get_texts(country)
+        df = pd.DataFrame(manifestotexts,columns=['cmp_code','content'])
+        df.to_csv(fn,index=False)
+    return df['content'].map(str).tolist(),df['cmp_code'].map(int).tolist()
+
 def get_raw_text(folder="data/manifesto"):
     '''
-    Loads raw text and labels from manifestoproject csv files 
+    Loads raw text and labels from manifestoproject csv files
     (Downloaded from https://visuals.manifesto-project.wzb.eu)
     '''
     files = glob.glob(folder+"/[0-9]*_[0-9]*.csv")
@@ -121,7 +160,7 @@ class Classifier:
 
         INPUT
         folder  the root folder with the raw text data, where the model is stored
-        train   set True if you want to train 
+        train   set True if you want to train
 
         '''
         # if there is no classifier file or training is invoked
@@ -134,13 +173,13 @@ class Classifier:
     def predict(self,text):
         '''
         Uses scikit-learn Bag-of-Word extractor and classifier and
-        applies it to some text. 
+        applies it to some text.
 
         INPUT
         text    a string to assign to a manifestoproject label
-        
+
         '''
-        if (not type(text) is list) & (len(text)<3): 
+        if (not type(text) is list) & (len(text)<3):
             return nullPrediction()
         # make it a list, if it is a string
         if not type(text) is list: text = [text]
@@ -148,7 +187,7 @@ class Classifier:
         text = ["".join([x for x in t if not x.isdigit()]) for t in text]
         probabilities = self.clf.predict_proba(text).flatten()
         predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
-        
+
         # transform the predictions into json output
         return {
                 'text':text,
@@ -156,31 +195,28 @@ class Classifier:
                 'domain':mapPredictions2Domain(predictions),
                 'manifestocode':[{"label":mc[x[0]],"prediction":x[1]} for x in predictions.items()]
                 }
-   
+
     def train(self,folds = 2):
         '''
         trains a classifier on the bag of word vectors
 
         INPUT
-        folds   number of cross-validation folds for model selection 
+        folds   number of cross-validation folds for model selection
 
         '''
         try:
             # load the data
-            data,labels = get_raw_text()
+            data,labels = get_raw_text_manifesto_api()
         except:
             print('Could not load text data file in\n')
             raise
-        # the scikit learn pipeline for vectorizing, normalizing and classifying text 
-        text_clf = Pipeline([('vect', CountVectorizer()),
-                            ('tfidf', TfidfTransformer()),
-                            ('clf',LogisticRegression(class_weight='balanced',dual=True))])
-        parameters = {'vect__ngram_range': [(1, 1)],\
-               'tfidf__use_idf': (True,False),\
-               'clf__C': (10.**arange(4,5,1.)).tolist()}  
+        # the scikit learn pipeline for vectorizing, normalizing and classifying text
+        text_clf = Pipeline([('vect', TfidfVectorizer()),
+                            ('clf',SGDClassifier(loss="log"))])
+        parameters = {'vect__ngram_range': [(1, 2)],
+               'clf__alpha': (10.**arange(-5,-4)).tolist()}
         # perform gridsearch to get the best regularizer
         gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
         pickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'))
-
