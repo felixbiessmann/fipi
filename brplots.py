@@ -25,42 +25,39 @@ domains = [
     'Welfare and Quality of Life'
     ]
 
-def plotAllDomains(folder = "data/manifesto/"):
-    for dom in domains:
-        plotAll(domain=dom)
+def plotAll(folder = "data/manifesto/", nSamples = 100):
 
-def plotAll(folder = "data/manifesto/", domain = "Economy"):
     clf = Classifier(train=False)
+
     predictions = []
     for party,fn in partyFiles:
         print("Getting texts of party %s"%party)
         data = pd.read_csv(folder+fn)
-        nsamples = min(100,len(data))
-        pred = getLeftRightForDomain(data.sample(nsamples).content,clf,domain)
-        predictions += [(x[0],x[1],party) for x in pred]
+        nsamples = min(nSamples,len(data))
+        predict = lambda x: groupPredictions(clf.predict(x))
+        partyPredictions = data['content'].sample(nsamples).apply(predict).apply(pd.Series)
+        partyPredictions['party'] = party
+        predictions.append(partyPredictions)
 
-    df = pd.DataFrame(predictions,columns=['rightPrediction','text','party'])
+    df = pd.concat(predictions)
     sns.set_style("whitegrid")
 
-    ax = sns.violinplot(x="rightPrediction",y="party",
-                    data=df, palette=sns.color_palette(colors), split=True,
-                    scale="count", inner="stick", saturation=0.4)
-    ax.xlim([0,1])
-    ax.xticks(np.arange(0,1,.1))
-    ax.xlabel("p(rechts)")
-    ax.ylabel("Partei")
-    ax.title(domain)
-    output_file(folder+"violinPlot-%s.html"%domain)
+    for domain in domains:
+        idx = df[domains].apply(pd.Series.argmax,axis=1)==domain
+        ax = sns.violinplot(x="right",y="party",
+            data=df[idx][['right','party']], palette=sns.color_palette(colors),
+            split=True,scale="count", inner="stick", saturation=0.5)
+        ax.set_xlim([0,1])
+        ax.set_xticks(np.arange(0,1,.1))
+        ax.set_xlabel("p(rechts)")
+        ax.set_ylabel("Partei")
+        ax.set_title(domain)
+        output_file(folder+"violinPlot-%s.html"%domain)
 
-    show(mpl.to_bokeh())
+        show(mpl.to_bokeh())
 
-def getLeftRightForDomain(texts,clf,domain="Economy"):
-    result = []
-    for text in texts:
-        prediction = clf.predict(text)
-        domainTuples = [(x['label'],x['prediction']) for x in prediction['domain']]
-        topDomain = sorted(domainTuples,key=itemgetter(1))[-1][0]
-        if topDomain == domain:
-            rightPrediction = [x['prediction'] for x in prediction['leftright'] if x['label'] is 'right'][0]
-            result.append((rightPrediction, text))
+def groupPredictions(prediction):
+    domainTuples = [(x['label'],x['prediction']) for x in prediction['domain']]
+    rightPrediction = [(x['label'],x['prediction']) for x in prediction['leftright']]
+    result = {k:v for k,v in domainTuples + rightPrediction}
     return result
