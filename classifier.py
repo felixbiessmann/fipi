@@ -6,13 +6,14 @@ import os
 import glob
 from itertools import chain
 from sklearn.linear_model import SGDClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
 import pandas as pd
 from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn import metrics
-from manifesto_data import api_get_texts
+from manifesto_data import get_manifesto_texts
 from operator import itemgetter
+import numpy as np
 
 # manifestoproject codes for left/right orientation
 label2rightleft = {
@@ -30,126 +31,11 @@ label2domain = {
     'Fabric of Society':6
     }
 
-def plotLeftRightDomain(texts,clf,domain="Economy"):
-    import seaborn as sns
-    from bokeh import mpl
-    from bokeh.plotting import output_file, show
-    leftright = getLeftRightForDomain(texts,clf,domain)
-    df = pd.DataFrame(leftright,columns=['predictionRight','text'])
-
-
-    sns.set_style("whitegrid")
-
-    ax = sns.violinplot(x="prediction", 
-                        data=df, palette="Set2", split=True,
-                        scale="count", inner="stick")
-
-def getLeftRightForDomain(texts,clf,domain="Economy"):
-    result = []
-    for text in texts:
-        prediction = clf.predict(text)
-        domainTuples = [(x['label'],x['prediction']) for x in prediction['domain']]
-        topDomain = sorted(domainTuples,key=itemgetter(1))[-1][0]
-        if topDomain == domain:
-            rightPrediction = [x['prediction'] for x in prediction['leftright'] if x['label'] is 'right'][0]
-            result.append((rightPrediction, text))
-    return result
-
-def saveLabelSchema(folder = ""):
-    domainlabels = [{"domain":x[0],"label":x[1]} for x in label2domain.items()]
-    manifestocodes = [{"manifestocode":x[0],"topic":x[1]} for x in manifestolabels(folder).items()]
-
-    json.dump(
-        {
-            "leftright":label2rightleft,
-            "domain":domainlabels,
-            "manifestocodes":manifestocodes
-        },\
-        open(folder+"/schema.json","wb"),\
-        sort_keys=True, indent=2,separators=(',', ': '))
-
-def nullPrediction(folder = "data/manifesto"):
-    return json.load(open(folder+"/nullPrediction.json"))
+# pd.concat([df,clf.predictBatch(df.message.fillna(''))])
 
 def manifestolabels(folder = "data/manifesto"):
     lines = open(folder+"/manifestolabels.txt").readlines()
     return dict(map(lambda x: (int(x[3:6]), x[8:-2]),lines))
-
-mc = manifestolabels()
-
-def get_raw_text_manifesto_api(country = "Germany",folder="data/manifesto"):
-    fn = folder + "/manifesto-%s.csv"%country
-    if os.path.isfile(fn):
-        print("Loading %s"%fn)
-        df = pd.read_csv(fn)
-    else:
-        print("Downloading texts from manifestoproject.")
-        manifestotexts = api_get_texts(country)
-        df = pd.DataFrame(manifestotexts,columns=['cmp_code','content'])
-        df.to_csv(fn,index=False)
-    return df['content'].map(str).tolist(),df['cmp_code'].map(int).tolist()
-
-def get_raw_text(folder="data/manifesto"):
-    '''
-    Loads raw text and labels from manifestoproject csv files
-    (Downloaded from https://visuals.manifesto-project.wzb.eu)
-    '''
-    files = glob.glob(folder+"/[0-9]*_[0-9]*.csv")
-    return zip(*chain(*filter(None,map(csv2DataTuple,files))))
-
-def csv2DataTuple(f):
-    '''
-    Extracts list of tuples of (text,label) for each manifestoproject file
-    '''
-    df = pd.read_csv(f,quotechar="\"").dropna()
-    return zip(df['content'].tolist(),df['cmp_code'].map(int).tolist())
-
-def mapLabel2RightLeft(label):
-    '''
-    Maps single manifestoproject label (buest guess of classifier)
-    to left right label (non-probabilistic)
-    '''
-    return dict(map(lambda x: (x[0],label in x[1]),label2rightleft.items()))
-
-def mapLabel2Domain(label):
-    '''
-    Maps single manifestoproject label (buest guess of classifier)
-    to domain label (non-probabilistic)
-    '''
-    return dict(map(lambda x: (x[0],label/100 is x[1]),label2domain.items()))
-
-def mapPredictions2RightLeft(pred):
-    '''
-    Maps multivariate probablistic manifestoproject label prediction
-    to left right label (probabilistic)
-    '''
-    rightLeftPred = {label[0]:\
-    sum(map(lambda y: y[1],filter(lambda x: x[0] in label[1],pred.items()))) \
-            for label in label2rightleft.items()}
-    normalizer = sum(rightLeftPred.values())
-    if normalizer == 0:
-        return [{"label":x[0],"prediction":1.0/len(rightLeftPred)} \
-            for x in rightLeftPred.items()]
-    else:
-        return [{"label":x[0],"prediction":x[1]/normalizer} \
-            for x in rightLeftPred.items()]
-
-
-def mapPredictions2Domain(pred):
-    '''
-    Maps multivariate probablistic manifestoproject label prediction
-    to domain label (probabilistic)
-    '''
-    domainPred = {label[0]:\
-    sum(map(lambda y: y[1],filter(lambda x: floor(x[0]/100) == label[1],pred.items()))) \
-            for label in label2domain.items()}
-    normalizer = sum(domainPred.values())
-    if normalizer == 0:
-        return [{"label":x[0],"prediction":1.0/len(domainPred)} \
-            for x in domainPred.items()]
-    else:
-        return [{"label":x[0],"prediction":x[1]/normalizer} \
-            for x in domainPred.items()]
 
 class Classifier:
 
@@ -186,15 +72,34 @@ class Classifier:
         # predict probabilities
         text = ["".join([x for x in t if not x.isdigit()]) for t in text]
         probabilities = self.clf.predict_proba(text).flatten()
-        predictions = dict(zip(self.clf.classes_, probabilities.tolist()))
-
+        predictionsManifestocode = dict(zip(self.clf.classes_, probabilities.tolist()))
+        predictionsDomain = {l:sum(probabilities[np.floor(self.clf.classes_/100) == idx]) for l,idx in label2domain.items()}
+        predictionsRight = sum([p for l,p in predictionsManifestocode.items() if l in label2rightleft['right']])
+        predictionsLeft = sum([p for l,p in predictionsManifestocode.items() if l in label2rightleft['left']])
         # transform the predictions into json output
         return {
-                'text':text,
-                'leftright':mapPredictions2RightLeft(predictions),
-                'domain':mapPredictions2Domain(predictions),
-                'manifestocode':[{"label":mc[x[0]],"prediction":x[1]} for x in predictions.items()]
+                'leftright':{'right':predictionsRight,'left':predictionsLeft},
+                'domain':predictionsDomain,
+                'manifestocode':{mc[x[0]]:x[1] for x in predictionsManifestocode.items()}
                 }
+    def predictBatch(self,texts):
+        '''
+        Uses scikit-learn Bag-of-Word extractor and classifier and
+        applies it to some text.
+
+        INPUT
+        text    a string to assign to a manifestoproject label
+
+        '''
+        mc = manifestolabels()
+        df = pd.DataFrame(self.clf.predict_proba(texts),columns=self.clf.classes_)
+        mcCols = df.columns
+        for dom,domIdx in label2domain.items():
+            df[dom] = df[mcCols[floor(mcCols/100)==domIdx]].sum(axis=1)
+        df['right'] = df[label2rightleft['right']].sum(axis=1)
+        df['left'] = df[label2rightleft['left']].sum(axis=1)
+        return df.rename(index=str,columns=mc)
+
 
     def train(self,folds = 2):
         '''
@@ -206,12 +111,12 @@ class Classifier:
         '''
         try:
             # load the data
-            data,labels = get_raw_text_manifesto_api()
+            data,labels = get_manifesto_texts()
         except:
             print('Could not load text data file in\n')
             raise
         # the scikit learn pipeline for vectorizing, normalizing and classifying text
-        text_clf = Pipeline([('vect', TfidfVectorizer()),
+        text_clf = Pipeline([('vect', HashingVectorizer()),
                             ('clf',SGDClassifier(loss="log"))])
         parameters = {'vect__ngram_range': [(1, 2)],
                'clf__alpha': (10.**arange(-5,-4)).tolist()}
