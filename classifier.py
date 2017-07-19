@@ -118,10 +118,10 @@ class Classifier:
         # the scikit learn pipeline for vectorizing, normalizing and classifying text
         text_clf = Pipeline([('vect', HashingVectorizer()),
                             ('clf',SGDClassifier(loss="log"))])
-        parameters = {'vect__ngram_range': [(1, 2)],
-               'clf__alpha': (10.**arange(-5,-4)).tolist()}
+        parameters = {'vect__ngram_range': [(1, 1), (1, 2), (1, 3), (1, 4)],
+               'clf__alpha': (10.**arange(-5,4)).tolist()}
         # perform gridsearch to get the best regularizer
-        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=3)
+        gs_clf = GridSearchCV(text_clf, parameters, cv=folds, n_jobs=-1,verbose=4)
         gs_clf.fit(data,labels)
         # dump classifier to pickle
         pickle.dump(gs_clf.best_estimator_,open('classifier.pickle','wb'))
