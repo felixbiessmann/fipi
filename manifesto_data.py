@@ -66,7 +66,9 @@ def get_texts(country=COUNTRY):
     texts = get_texts_per_party(country)
     return [x for x in list(itertools.chain(*texts.values())) if x[0]!='NA' and x[0]!='0']
 
-def get_manifesto_texts(country = "Germany", folder="data/manifesto"):
+def get_manifesto_texts(country = "Germany",
+        folder="data/manifesto",
+        min_len=10):
     fn = folder + "/manifesto-%s.csv"%country
     if os.path.isfile(fn):
         print("Loading %s"%fn)
@@ -76,4 +78,5 @@ def get_manifesto_texts(country = "Germany", folder="data/manifesto"):
         manifestotexts = get_texts(country)
         df = pd.DataFrame(manifestotexts,columns=['cmp_code','content'])
         df.to_csv(fn,index=False)
+    df = df[df.content.apply(lambda x: len(str(x)) > min_len)]
     return df['content'].map(str).tolist(),df['cmp_code'].map(int).tolist()
